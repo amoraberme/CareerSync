@@ -42,20 +42,32 @@ export default function Billing() {
                 <div className="pricing-card bg-slate/20 border border-surface/10 rounded-[2rem] p-8 flex flex-col items-center text-center lg:translate-y-4">
                     <h3 className="text-2xl font-bold text-surface mb-2">Base Token</h3>
                     <div className="text-surface/50 font-mono text-xs uppercase tracking-widest mb-6">Pay-As-You-Go</div>
-                    <div className="text-5xl font-sans font-bold text-surface mb-8">50<span className="text-lg text-surface/40 font-normal"> / min</span></div>
+                    <div className="text-5xl font-sans font-bold text-surface mb-8">50<span className="text-lg text-surface/40 font-normal"> / Top-up</span></div>
+
+                    <div className="text-sm text-surface/80 bg-surface/5 p-4 rounded-xl border border-surface/10 mb-8 w-full mt-2 lg:min-h-[100px] flex items-center justify-center">
+                        Perfect for quick, one-off tasks. Every top-up grants 5 credits.
+                    </div>
 
                     <div className="space-y-4 mb-8 w-full text-left text-sm">
-                        <div className="flex items-start text-surface/70">
-                            <Check className="w-4 h-4 text-surface/30 mr-3 mt-1 shrink-0" />
-                            <span>10 analyses per day</span>
+                        <div className="flex items-start text-surface/90">
+                            <Check className="w-4 h-4 text-surface/50 mr-3 mt-1 shrink-0" />
+                            <span>5 Credits per top-up</span>
                         </div>
-                        <div className="flex items-start text-[#EA4335]/80 bg-[#EA4335]/5 p-3 rounded-xl border border-[#EA4335]/10 mt-4">
-                            <AlertCircle className="w-4 h-4 mr-3 mt-0.5 shrink-0" />
-                            <span className="text-xs leading-relaxed">You may hit your daily wall after just 5 complex task computations.</span>
+                        <div className="flex items-start text-surface/90">
+                            <Check className="w-4 h-4 text-surface/50 mr-3 mt-1 shrink-0" />
+                            <span>Basic analysis tools</span>
                         </div>
-                        <div className="flex items-start text-surface/40 mt-4">
-                            <span className="w-4 h-4 mr-3 mt-1 shrink-0 text-center font-bold">✕</span>
-                            <span className="line-through">PDF Export Feature</span>
+                        <div className="flex items-start text-surface/90">
+                            <Check className="w-4 h-4 text-surface/50 mr-3 mt-1 shrink-0" />
+                            <span>30-Day History View</span>
+                        </div>
+                        <div className="flex items-start text-[#EA4335]/60 mt-4">
+                            <span className="w-4 h-4 mr-3 mt-0.5 shrink-0 text-center font-bold">✕</span>
+                            <span className="line-through text-xs">Strictly NO download features</span>
+                        </div>
+                        <div className="flex items-start text-[#EA4335]/60 mt-2">
+                            <span className="w-4 h-4 mr-3 mt-0.5 shrink-0 text-center font-bold">✕</span>
+                            <span className="line-through text-xs">NO Resume Optimization</span>
                         </div>
                     </div>
 
@@ -70,17 +82,17 @@ export default function Billing() {
                         Most Popular
                     </div>
                     <h3 className="text-3xl font-bold text-champagne mb-2">Premium</h3>
-                    <div className="text-champagne/70 font-mono text-xs uppercase tracking-widest mb-6">Full Ecosystem</div>
+                    <div className="text-champagne/70 font-mono text-xs uppercase tracking-widest mb-6">The Professional Upgrade</div>
                     <div className="text-6xl font-sans font-bold text-surface mb-2">295<span className="text-xl text-surface/40 font-normal"> / mo</span></div>
 
-                    <div className="text-sm text-surface/80 bg-champagne/10 p-3 rounded-xl border border-champagne/20 mb-8 w-full mt-2">
-                        For a mathematically insignificant upgrade over the 245 tier, unlock complete PDF download capabilities and workflow freedom.
+                    <div className="text-sm text-surface/80 bg-champagne/10 p-4 rounded-xl border border-champagne/20 mb-8 w-full mt-2 lg:min-h-[100px] flex items-center justify-center">
+                        For a mathematically insignificant upgrade over the 245 tier, unlock complete workflow freedom and powerful resume optimization.
                     </div>
 
                     <div className="space-y-4 mb-8 w-full text-left">
                         <div className="flex items-start text-surface">
                             <Check className="w-5 h-5 text-champagne mr-3 mt-0.5 shrink-0" />
-                            <span><strong className="text-champagne">50 analyses</strong> per day</span>
+                            <span><strong className="text-champagne">35 analyses</strong> per day</span>
                         </div>
                         <div className="flex items-start text-surface">
                             <Download className="w-5 h-5 text-champagne mr-3 mt-0.5 shrink-0" />
@@ -88,11 +100,11 @@ export default function Billing() {
                         </div>
                         <div className="flex items-start text-surface/80">
                             <Check className="w-5 h-5 text-champagne/70 mr-3 mt-0.5 shrink-0" />
-                            <span>Advanced contextual Cover Letters</span>
+                            <span>Detailed resume optimization surgery</span>
                         </div>
                         <div className="flex items-start text-surface/80">
                             <Check className="w-5 h-5 text-champagne/70 mr-3 mt-0.5 shrink-0" />
-                            <span>Detailed resume optimization surgery</span>
+                            <span>Unlimited History View</span>
                         </div>
                     </div>
 
@@ -110,18 +122,26 @@ export default function Billing() {
                     <div className="text-surface/50 font-mono text-xs uppercase tracking-widest mb-6">Monthly Retainer</div>
                     <div className="text-5xl font-sans font-bold text-surface mb-8">245<span className="text-lg text-surface/40 font-normal"> / mo</span></div>
 
+                    <div className="text-sm text-surface/80 bg-surface/5 p-4 rounded-xl border border-surface/10 mb-8 w-full mt-2 lg:min-h-[100px] flex items-center justify-center">
+                        Consistent daily access with full export rights, but limited to standard outputs.
+                    </div>
+
                     <div className="space-y-4 mb-8 w-full text-left text-sm">
                         <div className="flex items-start text-surface/90">
                             <Check className="w-4 h-4 text-surface/50 mr-3 mt-1 shrink-0" />
-                            <span>50 analyses per day</span>
+                            <span>25 analyses per day</span>
+                        </div>
+                        <div className="flex items-start text-surface/90">
+                            <Check className="w-4 h-4 text-surface/50 mr-3 mt-1 shrink-0" />
+                            <span>Full PDF Export capabilities</span>
                         </div>
                         <div className="flex items-start text-surface/90">
                             <Check className="w-4 h-4 text-surface/50 mr-3 mt-1 shrink-0" />
                             <span>Standard Cover Letters</span>
                         </div>
-                        <div className="flex items-start text-[#EA4335]/60 mt-4 bg-[#EA4335]/5 p-3 rounded-xl border border-[#EA4335]/10">
+                        <div className="flex items-start text-[#EA4335]/60 mt-4">
                             <span className="w-4 h-4 mr-3 mt-0.5 shrink-0 text-center font-bold">✕</span>
-                            <span className="line-through text-xs leading-relaxed">Strictly NO download features. Data locked to dashboard.</span>
+                            <span className="line-through text-xs">NO Resume Optimization</span>
                         </div>
                     </div>
 
