@@ -4,10 +4,10 @@ import gsap from 'gsap';
 import { supabase } from '../supabaseClient';
 
 export default function CoreEngine({ onAnalyze, session }) {
-    const [showPasteModal, setShowPasteModal] = useState(false);
     const [jobTitle, setJobTitle] = useState('');
     const [industry, setIndustry] = useState('');
     const [description, setDescription] = useState('');
+    const [pastedText, setPastedText] = useState('');
     const [resumeUploaded, setResumeUploaded] = useState(false);
     const [resumeData, setResumeData] = useState(null);
     const [resumeFileName, setResumeFileName] = useState('');
@@ -32,11 +32,32 @@ export default function CoreEngine({ onAnalyze, session }) {
 
     const handleAutoFill = (e) => {
         e.preventDefault();
-        // Mocking the auto-fill parsing
-        setJobTitle('Senior Frontend Engineer (React)');
-        setIndustry('Technology / SaaS');
-        setDescription("We are looking for a highly skilled Senior Frontend Engineer with deep expertise in React, TypeScript, and modern styling tools like Tailwind CSS. You will architect and build complex user interfaces tailored for high performance.\\n\\nRequirements:\\n- 5+ years of React experience\\n- Strong portfolio of cinematic landing pages\\n- Expertise in GSAP and micro-interactions");
+
+        if (!pastedText.trim()) return;
+
+        // Basic heuristic parsing locally. The backend AI does the heavy lifting later.
+        // We assume the first line might be the title, or we just dump it all in description
+        const lines = pastedText.split('\n').map(l => l.trim()).filter(l => l);
+
+        if (lines.length > 0) {
+            // Very naive extraction for UX feel: Title is usually short and at the top
+            if (lines[0].length < 60) {
+                setJobTitle(lines[0]);
+                // If there's a second short line, guess it's the company/industry
+                if (lines.length > 1 && lines[1].length < 40) {
+                    setIndustry(lines[1]);
+                    setDescription(lines.slice(2).join('\n'));
+                } else {
+                    setDescription(lines.slice(1).join('\n'));
+                }
+            } else {
+                // If it's just a wall of text, put it all in description
+                setDescription(pastedText);
+            }
+        }
+
         setShowPasteModal(false);
+        setPastedText(''); // Clear for next time
     };
 
     const runAnalysis = async () => {
@@ -199,6 +220,8 @@ export default function CoreEngine({ onAnalyze, session }) {
                                 <LinkIcon className="absolute left-4 top-4 text-surface/40 w-5 h-5" />
                                 <textarea
                                     autoFocus
+                                    value={pastedText}
+                                    onChange={(e) => setPastedText(e.target.value)}
                                     placeholder="Paste URL or listing text here..."
                                     className="w-full bg-obsidian border border-surface/10 rounded-2xl pl-12 pr-4 py-3 text-surface placeholder:text-surface/30 focus:outline-none focus:border-champagne/50 transition-colors min-h-[120px] resize-none"
                                 ></textarea>
