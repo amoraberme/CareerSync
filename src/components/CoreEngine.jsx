@@ -6,6 +6,7 @@ import useWorkspaceStore from '../store/useWorkspaceStore';
 
 export default function CoreEngine({ session }) {
     const [showPasteModal, setShowPasteModal] = useState(false);
+    const [isParsing, setIsParsing] = useState(false);
     const {
         jobTitle, industry, experienceLevel, requiredSkills, description, pastedText,
         resumeUploaded, resumeData, resumeFileName, resumeFileSize,
