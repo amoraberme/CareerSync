@@ -158,3 +158,33 @@ insert into plans (plan_name, price, credits_granted) values
 ('Basic Plan - 50 PHP Top Up', 50.00, 10),
 ('Premium Monthly Retainer', 295.00, 3500); -- Example: 100/day for 30 days + 500 bonus
 */
+
+-- ==========================================
+-- PHASE 16: CREDIT DEDUCTION SECURITY
+-- ==========================================
+
+-- Secure RPC to decrement credits by a specific amount
+create or replace function decrement_credits(deduct_amount integer)
+returns boolean as $$
+declare
+    v_current_balance integer;
+begin
+    -- Get the current balance with row-level lock to prevent race conditions
+    select current_credit_balance into v_current_balance
+    from user_profiles
+    where id = auth.uid()
+    for update;
+
+    -- Ensure the user exists and has enough credits
+    if v_current_balance is null or v_current_balance < deduct_amount then
+        return false;
+    end if;
+
+    -- Deduct the credits
+    update user_profiles
+    set current_credit_balance = current_credit_balance - deduct_amount
+    where id = auth.uid();
+
+    return true;
+end;
+$$ language plpgsql security definer;
