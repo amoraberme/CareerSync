@@ -1,10 +1,11 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Check, CreditCard, ShieldCheck } from 'lucide-react';
+import { Check, CreditCard, ShieldCheck, AlertCircle, Download } from 'lucide-react';
 import gsap from 'gsap';
 
 export default function Billing() {
     const containerRef = useRef(null);
     const [showMockModal, setShowMockModal] = useState(false);
+    const [selectedTier, setSelectedTier] = useState(null);
 
     useEffect(() => {
         let ctx = gsap.context(() => {
@@ -20,67 +21,115 @@ export default function Billing() {
         return () => ctx.revert();
     }, []);
 
+    const handleSubscribe = (tierPrice) => {
+        setSelectedTier(tierPrice);
+        setShowMockModal(true);
+    };
+
     return (
-        <div ref={containerRef} className="max-w-6xl mx-auto py-12 px-6">
+        <div ref={containerRef} className="max-w-7xl mx-auto py-12 px-6">
             <div className="text-center mb-16">
                 <h2 className="text-4xl font-sans tracking-tight text-surface mb-4 font-semibold">
-                    Unlock the <span className="font-drama italic text-champagne font-normal">Advantage</span>
+                    Strategic <span className="font-drama italic text-champagne font-normal">Advantage</span>
                 </h2>
-                <p className="text-surface/60 max-w-xl mx-auto text-lg leading-relaxed">
-                    Upgrade your precision toolkit to generate highly contextual cover letters and unlimited AI match analysis.
+                <p className="text-surface/60 max-w-2xl mx-auto text-lg leading-relaxed">
+                    Choose the intelligence capacity that matches your professional throughput. Lock in your precision toolkit today.
                 </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                {/* Free Tier */}
-                <div className="pricing-card bg-slate/20 border border-surface/10 rounded-[2rem] p-8 flex flex-col items-center text-center">
-                    <h3 className="text-2xl font-bold text-surface mb-2">Essential</h3>
-                    <div className="text-surface/50 font-mono text-sm uppercase tracking-widest mb-6">Current Plan</div>
-                    <div className="text-5xl font-sans font-bold text-surface mb-8">$0<span className="text-lg text-surface/40 font-normal">/mo</span></div>
+            <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto items-center">
+                {/* Tier 1: Pay-As-You-Go */}
+                <div className="pricing-card bg-slate/20 border border-surface/10 rounded-[2rem] p-8 flex flex-col items-center text-center lg:translate-y-4">
+                    <h3 className="text-2xl font-bold text-surface mb-2">Base Token</h3>
+                    <div className="text-surface/50 font-mono text-xs uppercase tracking-widest mb-6">Pay-As-You-Go</div>
+                    <div className="text-5xl font-sans font-bold text-surface mb-8">50<span className="text-lg text-surface/40 font-normal"> / min</span></div>
 
-                    <div className="space-y-4 mb-8 w-full">
-                        {['5 AI analyses per month', 'Basic match scoring', 'Standard resume parsing'].map((feature, i) => (
-                            <div key={i} className="flex items-center text-surface/70">
-                                <Check className="w-5 h-5 text-surface/30 mr-3 shrink-0" />
-                                <span>{feature}</span>
-                            </div>
-                        ))}
+                    <div className="space-y-4 mb-8 w-full text-left text-sm">
+                        <div className="flex items-start text-surface/70">
+                            <Check className="w-4 h-4 text-surface/30 mr-3 mt-1 shrink-0" />
+                            <span>10 analyses per day</span>
+                        </div>
+                        <div className="flex items-start text-[#EA4335]/80 bg-[#EA4335]/5 p-3 rounded-xl border border-[#EA4335]/10 mt-4">
+                            <AlertCircle className="w-4 h-4 mr-3 mt-0.5 shrink-0" />
+                            <span className="text-xs leading-relaxed">You may hit your daily wall after just 5 complex task computations.</span>
+                        </div>
+                        <div className="flex items-start text-surface/40 mt-4">
+                            <span className="w-4 h-4 mr-3 mt-1 shrink-0 text-center font-bold">✕</span>
+                            <span className="line-through">PDF Export Feature</span>
+                        </div>
                     </div>
 
-                    <button disabled className="mt-auto w-full py-4 rounded-2xl bg-surface/10 text-surface/50 font-bold cursor-default">
-                        Active Plan
+                    <button className="mt-auto w-full py-4 rounded-2xl border border-surface/10 text-surface/70 font-bold hover:bg-surface/5 transition-colors">
+                        Add Credits
                     </button>
                 </div>
 
-                {/* Pro Tier */}
-                <div className="pricing-card relative bg-slate/40 border-2 border-champagne rounded-[2rem] p-8 flex flex-col items-center text-center shadow-[0_0_50px_rgba(201,168,76,0.15)] transform md:-translate-y-4">
-                    <div className="absolute -top-4 bg-champagne text-obsidian px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
-                        Recommended
+                {/* Tier 3: Premium (Target - Middle) */}
+                <div className="pricing-card relative bg-slate/40 border-[3px] border-champagne rounded-[2rem] p-10 flex flex-col items-center text-center shadow-[0_0_60px_rgba(201,168,76,0.2)] transform z-10 lg:scale-[1.08]">
+                    <div className="absolute -top-5 bg-champagne text-obsidian px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest shadow-lg">
+                        Most Popular
                     </div>
-                    <h3 className="text-2xl font-bold text-champagne mb-2">Performance</h3>
-                    <div className="text-surface/50 font-mono text-sm uppercase tracking-widest mb-6">Full Ecosystem</div>
-                    <div className="text-5xl font-sans font-bold text-surface mb-8">$29<span className="text-lg text-surface/40 font-normal">/mo</span></div>
+                    <h3 className="text-3xl font-bold text-champagne mb-2">Premium</h3>
+                    <div className="text-champagne/70 font-mono text-xs uppercase tracking-widest mb-6">Full Ecosystem</div>
+                    <div className="text-6xl font-sans font-bold text-surface mb-2">295<span className="text-xl text-surface/40 font-normal"> / mo</span></div>
+
+                    <div className="text-sm text-surface/80 bg-champagne/10 p-3 rounded-xl border border-champagne/20 mb-8 w-full mt-2">
+                        For a mathematically insignificant upgrade over the 245 tier, unlock complete PDF download capabilities and workflow freedom.
+                    </div>
 
                     <div className="space-y-4 mb-8 w-full text-left">
-                        {[
-                            'Unlimited AI analyses',
-                            'Advanced contextual Cover Letters',
-                            'Detailed resume optimization surgery',
-                            'ATS keyword injections',
-                            'Priority parsing engine'
-                        ].map((feature, i) => (
-                            <div key={i} className="flex items-center text-surface/90">
-                                <Check className="w-5 h-5 text-champagne mr-3 shrink-0" />
-                                <span>{feature}</span>
-                            </div>
-                        ))}
+                        <div className="flex items-start text-surface">
+                            <Check className="w-5 h-5 text-champagne mr-3 mt-0.5 shrink-0" />
+                            <span><strong className="text-champagne">50 analyses</strong> per day</span>
+                        </div>
+                        <div className="flex items-start text-surface">
+                            <Download className="w-5 h-5 text-champagne mr-3 mt-0.5 shrink-0" />
+                            <span><strong className="text-champagne">Full PDF Export</strong> capabilities</span>
+                        </div>
+                        <div className="flex items-start text-surface/80">
+                            <Check className="w-5 h-5 text-champagne/70 mr-3 mt-0.5 shrink-0" />
+                            <span>Advanced contextual Cover Letters</span>
+                        </div>
+                        <div className="flex items-start text-surface/80">
+                            <Check className="w-5 h-5 text-champagne/70 mr-3 mt-0.5 shrink-0" />
+                            <span>Detailed resume optimization surgery</span>
+                        </div>
                     </div>
 
                     <button
-                        onClick={() => setShowMockModal(true)}
-                        className="mt-auto w-full py-4 rounded-2xl bg-champagne text-obsidian font-bold btn-magnetic"
+                        onClick={() => handleSubscribe('295')}
+                        className="mt-auto w-full py-5 rounded-2xl bg-champagne text-obsidian font-bold text-lg hover:scale-[1.02] transition-transform shadow-xl"
                     >
-                        Upgrade to Performance
+                        Secure Premium Access
+                    </button>
+                </div>
+
+                {/* Tier 2: Standard (Decoy) */}
+                <div className="pricing-card bg-slate/20 border border-surface/10 rounded-[2rem] p-8 flex flex-col items-center text-center lg:translate-y-4 opacity-90 hover:opacity-100 transition-opacity">
+                    <h3 className="text-2xl font-bold text-surface mb-2">Standard</h3>
+                    <div className="text-surface/50 font-mono text-xs uppercase tracking-widest mb-6">Monthly Retainer</div>
+                    <div className="text-5xl font-sans font-bold text-surface mb-8">245<span className="text-lg text-surface/40 font-normal"> / mo</span></div>
+
+                    <div className="space-y-4 mb-8 w-full text-left text-sm">
+                        <div className="flex items-start text-surface/90">
+                            <Check className="w-4 h-4 text-surface/50 mr-3 mt-1 shrink-0" />
+                            <span>50 analyses per day</span>
+                        </div>
+                        <div className="flex items-start text-surface/90">
+                            <Check className="w-4 h-4 text-surface/50 mr-3 mt-1 shrink-0" />
+                            <span>Standard Cover Letters</span>
+                        </div>
+                        <div className="flex items-start text-[#EA4335]/60 mt-4 bg-[#EA4335]/5 p-3 rounded-xl border border-[#EA4335]/10">
+                            <span className="w-4 h-4 mr-3 mt-0.5 shrink-0 text-center font-bold">✕</span>
+                            <span className="line-through text-xs leading-relaxed">Strictly NO download features. Data locked to dashboard.</span>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={() => handleSubscribe('245')}
+                        className="mt-auto w-full py-4 rounded-2xl bg-surface/10 text-surface hover:bg-surface/20 font-bold transition-colors"
+                    >
+                        Subscribe to Standard
                     </button>
                 </div>
             </div>
@@ -93,9 +142,9 @@ export default function Billing() {
                         {/* Mock Stripe Header */}
                         <div className="bg-[#f7f7f7] p-6 border-b border-[#e6e6e6] text-center relative pointer-events-none">
                             <ShieldCheck className="w-12 h-12 text-[#34A853] mx-auto mb-2" />
-                            <h3 className="text-xl font-bold text-[#1a1a1a]">CareerSync PRO</h3>
+                            <h3 className="text-xl font-bold text-[#1a1a1a]">CareerSync {selectedTier === '295' ? 'PREMIUM' : 'STANDARD'}</h3>
                             <p className="text-[#666666] text-sm">per month</p>
-                            <div className="text-4xl font-bold mt-2">$29.00</div>
+                            <div className="text-4xl font-bold mt-2">{selectedTier}</div>
                         </div>
                         {/* Mock Payment Form */}
                         <div className="p-6 pointer-events-none">
