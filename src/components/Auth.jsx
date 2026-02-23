@@ -39,12 +39,15 @@ export default function Auth({ onLogin }) {
                 if (password !== confirmPassword) {
                     throw new Error("Passwords do not match");
                 }
-                const { error } = await supabase.auth.signUp({
+                const { data, error } = await supabase.auth.signUp({
                     email: username,
                     password: password,
                 });
                 if (error) throw error;
-                setError('Check your email to confirm your account!');
+
+                if (!data?.session) {
+                    setError('Success! Please check your email inbox to confirm your account.');
+                }
             }
         } catch (error) {
             setError(error.message);
