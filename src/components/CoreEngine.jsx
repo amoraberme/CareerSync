@@ -8,9 +8,13 @@ export default function CoreEngine({ onAnalyze }) {
     const [industry, setIndustry] = useState('');
     const [description, setDescription] = useState('');
     const [resumeUploaded, setResumeUploaded] = useState(false);
+    const [resumeData, setResumeData] = useState(null);
+    const [resumeFileName, setResumeFileName] = useState('');
+    const [resumeFileSize, setResumeFileSize] = useState('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const containerRef = useRef(null);
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         let ctx = gsap.context(() => {
@@ -40,7 +44,7 @@ export default function CoreEngine({ onAnalyze }) {
             const response = await fetch('/api/analyze', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ jobTitle, industry, description })
+                body: JSON.stringify({ jobTitle, industry, description, resumeData })
             });
             const data = await response.json();
             onAnalyze(data);
@@ -49,6 +53,26 @@ export default function CoreEngine({ onAnalyze }) {
         } finally {
             setIsAnalyzing(false);
         }
+    };
+
+    const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setResumeFileName(file.name);
+        setResumeFileSize((file.size / 1024 / 1024).toFixed(2) + 'MB');
+        setResumeUploaded(true);
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const base64String = event.target.result.split(',')[1];
+            setResumeData({
+                data: base64String,
+                mimeType: file.type || 'text/plain',
+                name: file.name
+            });
+        };
+        reader.readAsDataURL(file);
     };
 
     return (
@@ -94,15 +118,22 @@ export default function CoreEngine({ onAnalyze }) {
 
                 {/* Right Column: Resume Upload */}
                 <div className="engine-element flex flex-col gap-6">
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        onChange={handleFileUpload}
+                        accept=".pdf,.txt,.doc,.docx"
+                    />
                     <div
                         className={`flex-grow border-2 border-dashed ${resumeUploaded ? 'border-champagne/50 bg-champagne/5' : 'border-surface/20 hover:border-surface/40 bg-slate/20 hover:bg-slate/30'} rounded-[2rem] transition-all duration-300 flex flex-col items-center justify-center p-12 cursor-pointer relative overflow-hidden group`}
-                        onClick={() => setResumeUploaded(!resumeUploaded)}
+                        onClick={() => fileInputRef.current?.click()}
                     >
                         {resumeUploaded ? (
                             <div className="text-center z-10">
                                 <CheckCircle className="w-16 h-16 text-champagne mx-auto mb-4" />
                                 <h3 className="text-xl font-medium text-surface mb-2">Resume Secured</h3>
-                                <p className="text-surface/60 font-mono text-sm">j_doe_resume_2026.pdf (1.2MB)</p>
+                                <p className="text-surface/60 font-mono text-sm">{resumeFileName} ({resumeFileSize})</p>
                                 <div className="mt-6 inline-flex items-center text-xs text-surface/40 hover:text-surface uppercase tracking-widest font-mono transition-colors">
                                     Replace File
                                 </div>
