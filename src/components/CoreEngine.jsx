@@ -4,6 +4,7 @@ import gsap from 'gsap';
 import { supabase } from '../supabaseClient';
 
 export default function CoreEngine({ onAnalyze, session }) {
+    const [showPasteModal, setShowPasteModal] = useState(false);
     const [jobTitle, setJobTitle] = useState('');
     const [industry, setIndustry] = useState('');
     const [description, setDescription] = useState('');
