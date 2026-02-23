@@ -7,12 +7,15 @@ export default function CoreEngine({ onAnalyze, session }) {
     const [showPasteModal, setShowPasteModal] = useState(false);
     const [jobTitle, setJobTitle] = useState('');
     const [industry, setIndustry] = useState('');
+    const [experienceLevel, setExperienceLevel] = useState('');
+    const [requiredSkills, setRequiredSkills] = useState([]);
     const [description, setDescription] = useState('');
     const [pastedText, setPastedText] = useState('');
     const [resumeUploaded, setResumeUploaded] = useState(false);
     const [resumeData, setResumeData] = useState(null);
     const [resumeFileName, setResumeFileName] = useState('');
     const [resumeFileSize, setResumeFileSize] = useState('');
+    const [isParsing, setIsParsing] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const containerRef = useRef(null);
@@ -31,34 +34,35 @@ export default function CoreEngine({ onAnalyze, session }) {
         return () => ctx.revert();
     }, []);
 
-    const handleAutoFill = (e) => {
+    const handleAutoFill = async (e) => {
         e.preventDefault();
-
         if (!pastedText.trim()) return;
 
-        // Basic heuristic parsing locally. The backend AI does the heavy lifting later.
-        // We assume the first line might be the title, or we just dump it all in description
-        const lines = pastedText.split('\n').map(l => l.trim()).filter(l => l);
+        setIsParsing(true);
+        try {
+            const response = await fetch('/api/parse', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: pastedText })
+            });
+            const data = await response.json();
 
-        if (lines.length > 0) {
-            // Very naive extraction for UX feel: Title is usually short and at the top
-            if (lines[0].length < 60) {
-                setJobTitle(lines[0]);
-                // If there's a second short line, guess it's the company/industry
-                if (lines.length > 1 && lines[1].length < 40) {
-                    setIndustry(lines[1]);
-                    setDescription(lines.slice(2).join('\n'));
-                } else {
-                    setDescription(lines.slice(1).join('\n'));
-                }
-            } else {
-                // If it's just a wall of text, put it all in description
-                setDescription(pastedText);
-            }
+            setJobTitle(data.jobTitle || '');
+            setIndustry(data.industry || '');
+            setExperienceLevel(data.experienceLevel || '');
+            setRequiredSkills(Array.isArray(data.requiredSkills) ? data.requiredSkills : []);
+            setDescription(data.cleanDescription || pastedText); // Fallback to raw text if fail
+
+            setShowPasteModal(false);
+            setPastedText('');
+        } catch (error) {
+            console.error("Parse failed, falling back to manual entry:", error);
+            setDescription(pastedText); // Just dump the raw text as fallback
+            setShowPasteModal(false);
+            setPastedText('');
+        } finally {
+            setIsParsing(false);
         }
-
-        setShowPasteModal(false);
-        setPastedText(''); // Clear for next time
     };
 
     const runAnalysis = async () => {
@@ -78,7 +82,7 @@ export default function CoreEngine({ onAnalyze, session }) {
                         user_id: session.user.id,
                         job_title: jobTitle,
                         company: industry,
-                        match_score: data.score,
+                        match_score: data.matchScore || 0,
                         report_data: data
                     }]);
                 if (dbError) console.error("Error saving history to Supabase:", dbError);
@@ -145,6 +149,16 @@ export default function CoreEngine({ onAnalyze, session }) {
                         <div>
                             <label className="text-xs font-mono text-surface/60 uppercase tracking-wider ml-1 mb-1 block">Industry</label>
                             <input value={industry} onChange={(e) => setIndustry(e.target.value)} type="text" placeholder="e.g. FinTech" className="w-full bg-obsidian/50 border border-surface/10 rounded-2xl px-4 py-3 text-surface placeholder:text-surface/30 focus:outline-none focus:border-champagne/50 transition-colors" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="text-xs font-mono text-surface/60 uppercase tracking-wider ml-1 mb-1 block">Level</label>
+                                <input value={experienceLevel} onChange={(e) => setExperienceLevel(e.target.value)} type="text" placeholder="e.g. Senior" className="w-full bg-obsidian/50 border border-surface/10 rounded-2xl px-4 py-3 text-surface placeholder:text-surface/30 focus:outline-none focus:border-champagne/50 transition-colors" />
+                            </div>
+                            <div>
+                                <label className="text-xs font-mono text-surface/60 uppercase tracking-wider ml-1 mb-1 block">Key Skills</label>
+                                <input value={requiredSkills.join(', ')} onChange={(e) => setRequiredSkills(e.target.value.split(', '))} type="text" placeholder="React, Node..." title="Comma separated" className="w-full bg-obsidian/50 border border-surface/10 rounded-2xl px-4 py-3 text-surface placeholder:text-surface/30 focus:outline-none focus:border-champagne/50 transition-colors" />
+                            </div>
                         </div>
                         <div className="flex-grow flex flex-col">
                             <label className="text-xs font-mono text-surface/60 uppercase tracking-wider ml-1 mb-1 block">Full Description</label>
@@ -228,11 +242,11 @@ export default function CoreEngine({ onAnalyze, session }) {
                                 ></textarea>
                             </div>
                             <div className="flex justify-end space-x-3">
-                                <button type="button" onClick={() => setShowPasteModal(false)} className="px-6 py-2 rounded-full text-sm font-medium text-surface/60 hover:text-surface transition-colors">
+                                <button type="button" onClick={() => setShowPasteModal(false)} className="px-6 py-2 rounded-full text-sm font-medium text-surface/60 hover:text-surface transition-colors" disabled={isParsing}>
                                     Cancel
                                 </button>
-                                <button type="submit" className="bg-champagne text-obsidian px-6 py-2 rounded-full text-sm font-bold hover:bg-champagne/90 transition-transform hover:scale-105 active:scale-95">
-                                    Parse & Extract
+                                <button type="submit" className="bg-champagne text-obsidian px-6 py-2 rounded-full text-sm font-bold hover:bg-champagne/90 transition-transform hover:scale-105 active:scale-95 flex items-center" disabled={isParsing}>
+                                    {isParsing ? 'Extracting...' : 'Parse & Extract'}
                                 </button>
                             </div>
                         </form>

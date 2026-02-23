@@ -18,29 +18,21 @@ export default async function handler(req, res) {
 
         const promptPart = {
             text: `
-      You are an expert career consultant and technical recruiter. 
-      Analyze the following candidate's resume against the provided job description.
+      Act as an expert ATS and technical recruiter. Compare this Resume against this Job Description.
       
       Job Title: ${jobTitle}
       Industry: ${industry}
       Job Description: ${description}
       
-      Provide a JSON response strictly adhering to this structure:
-      {
-        "score": 85,
-        "scoreSummary": "Brief 1-line reason for score",
-        "strategicSynthesis": "A 3-4 sentence synthesis explaining why they are a good fit and what they lack.",
-        "verifiedStrengths": ["Strength 1", "Strength 2", "Strength 3"],
-        "identifiedGaps": ["Gap 1", "Gap 2"],
-        "coverLetter": "A professional, cinematic 3-paragraph cover letter.",
-        "strategicShift": "1 sentence advice on how to reframe their title or profile.",
-        "atsKeywords": ["Keyword1", "Keyword2"],
-        "structuralEdits": [
-          { "before": "Old bullet point", "after": "Cinematic rewritten bullet point" }
-        ]
-      }
+      Return a strict JSON object containing EXACTLY these keys:
+      - matchScore (number 1-100)
+      - summary (short paragraph explaining the score)
+      - matchedProfile (array of objects, each with 'skill' and 'description' strings)
+      - gapAnalysis (array of objects, each with 'missingSkill' and 'description' strings)
+      - coverLetter (generated text pivoting the candidate's background to fit the role, 3 paragraphs)
+      - optimization (an object with three arrays of strings: 'strategicAdvice', 'structuralEdits' (which is an array of objects showing 'before' and 'after'), and 'atsKeywords')
       
-      Respond ONLY with valid JSON. Do not use markdown blocks around the JSON.
+      Do not include any extra fields or text.
     `};
 
         const parts = [promptPart];
@@ -61,18 +53,15 @@ export default async function handler(req, res) {
             parts[0].text += `\n\nResume Context: ${resumeText || "Senior Frontend Developer, 5 years Experience. React, Tailwind, GSAP. No WebGL."}`;
         }
 
-        const result = await model.generateContent(parts);
+        const result = await model.generateContent({
+            contents: [{ role: "user", parts }],
+            generationConfig: {
+                responseMimeType: "application/json"
+            }
+        });
+
         const text = result.response.text();
-
-        // Clean up potential markdown formatting from Gemini response
-        let cleanJson = text;
-        if (text.startsWith('\`\`\`json')) {
-            cleanJson = text.replace(/^\`\`\`json\n/, '').replace(/\n\`\`\`$/, '');
-        } else if (text.startsWith('\`\`\`')) {
-            cleanJson = text.replace(/^\`\`\`\n/, '').replace(/\n\`\`\`$/, '');
-        }
-
-        const parsedData = JSON.parse(cleanJson);
+        const parsedData = JSON.parse(text);
 
         return res.status(200).json(parsedData);
     } catch (error) {
