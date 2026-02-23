@@ -18,6 +18,21 @@ export default async function handler(req, res) {
             return res.status(500).json({ error: 'No GEMINI_API_KEY configured.' });
         }
 
+        const generatePrompt = `
+        You are a highly analytical technical recruiter. Given the following unstructured text, extract the exact data into strict JSON format.
+        
+        Input text:
+        ${text}
+
+        You MUST respond ONLY with a raw JSON object matching this exact schema:
+        {
+          "jobTitle": "Extracted Job Title (Keep it standard, e.g., Senior Software Engineer)",
+          "industry": "Extracted Industry or Company Name",
+          "experienceLevel": "Entry / Mid / Senior / Lead",
+          "requiredSkills": ["Skill 1", "Skill 2"],
+          "cleanDescription": "A concise, grammatically clean 3-4 sentence paragraph summarizing the core responsibilities of this role."
+        }`;
+
         let result = null;
         let lastError = null;
 
@@ -28,7 +43,7 @@ export default async function handler(req, res) {
                 const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
                 result = await model.generateContent({
-                    contents: [{ role: "user", parts: [{ text: prompt }] }],
+                    contents: [{ role: "user", parts: [{ text: generatePrompt }] }],
                     generationConfig: {
                         responseMimeType: "application/json"
                     }
@@ -51,6 +66,6 @@ export default async function handler(req, res) {
         return res.status(200).json(parsedData);
     } catch (error) {
         console.error("AI Parse Error:", error);
-        return res.status(500).json({ error: 'Failed to process parse request' });
+        return res.status(500).json({ error: error.message || 'Failed to process parse request' });
     }
 }
