@@ -48,9 +48,30 @@ const useWorkspaceStore = create((set, get) => ({
 
     runAnalysis: async (session) => {
         set({ isAnalyzing: true, analysisData: null });
-        const { jobTitle, industry, description, resumeData } = get();
+        const { jobTitle, industry, description, resumeData, creditBalance } = get();
+
+        // 1. Check for sufficient credits locally first
+        if (creditBalance < 1) {
+            alert("Insufficient Credits. Please top up your account to run an AI Analysis.");
+            set({ isAnalyzing: false });
+            return;
+        }
 
         try {
+            // 2. Fire the secure Postgres RPC to officially deduct 1 credit server-side
+            const { data: rpcSuccess, error: rpcError } = await supabase.rpc('decrement_credits', { deduct_amount: 1 });
+
+            if (rpcError || !rpcSuccess) {
+                console.error("RPC Deduction Error:", rpcError);
+                alert("Transaction failed. Could not securely deduct credits.");
+                set({ isAnalyzing: false });
+                return;
+            }
+
+            // 3. Immediately reflect the deduction in the frontend UI
+            set({ creditBalance: creditBalance - 1 });
+
+            // 4. Proceed with the heavy Gemini AI serverless function
             const response = await fetch('/api/analyze', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
