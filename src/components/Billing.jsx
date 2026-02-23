@@ -1,11 +1,13 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Check, CreditCard, ShieldCheck, AlertCircle, Download } from 'lucide-react';
 import gsap from 'gsap';
+// Scaffold PayMongo Checkout Links
+const PAYMONGO_LINK_BASE = "";
+const PAYMONGO_LINK_STANDARD = "";
+const PAYMONGO_LINK_PREMIUM = "";
 
 export default function Billing() {
     const containerRef = useRef(null);
-    const [showMockModal, setShowMockModal] = useState(false);
-    const [selectedTier, setSelectedTier] = useState(null);
 
     useEffect(() => {
         let ctx = gsap.context(() => {
@@ -20,11 +22,6 @@ export default function Billing() {
         }, containerRef);
         return () => ctx.revert();
     }, []);
-
-    const handleSubscribe = (tierPrice) => {
-        setSelectedTier(tierPrice);
-        setShowMockModal(true);
-    };
 
     return (
         <div ref={containerRef} className="max-w-7xl mx-auto py-12 px-6">
@@ -71,9 +68,14 @@ export default function Billing() {
                         </div>
                     </div>
 
-                    <button className="mt-auto w-full py-4 rounded-2xl border border-surface/10 text-surface/70 font-bold hover:bg-surface/5 transition-colors">
+                    <a
+                        href={PAYMONGO_LINK_BASE || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-auto w-full py-4 rounded-2xl border border-surface/10 text-surface/70 font-bold hover:bg-surface/5 transition-colors block text-center"
+                    >
                         Add Credits
-                    </button>
+                    </a>
                 </div>
 
                 {/* Tier 3: Premium (Target - Middle) */}
@@ -108,12 +110,14 @@ export default function Billing() {
                         </div>
                     </div>
 
-                    <button
-                        onClick={() => handleSubscribe('295')}
-                        className="mt-auto w-full py-5 rounded-2xl bg-champagne text-obsidian font-bold text-lg hover:scale-[1.02] transition-transform shadow-xl"
+                    <a
+                        href={PAYMONGO_LINK_PREMIUM || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-auto w-full py-5 rounded-2xl bg-champagne text-obsidian font-bold text-lg hover:scale-[1.02] transition-transform shadow-xl block text-center"
                     >
                         Secure Premium Access
-                    </button>
+                    </a>
                 </div>
 
                 {/* Tier 2: Standard (Decoy) */}
@@ -145,46 +149,16 @@ export default function Billing() {
                         </div>
                     </div>
 
-                    <button
-                        onClick={() => handleSubscribe('245')}
-                        className="mt-auto w-full py-4 rounded-2xl bg-surface/10 text-surface hover:bg-surface/20 font-bold transition-colors"
+                    <a
+                        href={PAYMONGO_LINK_STANDARD || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-auto w-full py-4 rounded-2xl bg-surface/10 text-surface hover:bg-surface/20 font-bold transition-colors block text-center"
                     >
                         Subscribe to Standard
-                    </button>
+                    </a>
                 </div>
             </div>
-
-            {/* Stripe Mockup Modal */}
-            {showMockModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-obsidian/80 backdrop-blur-sm" onClick={() => setShowMockModal(false)}></div>
-                    <div className="relative bg-[#ffffff] text-[#1a1a1a] rounded-xl w-full max-w-md p-0 shadow-2xl animate-fade-in-up overflow-hidden">
-                        {/* Mock Stripe Header */}
-                        <div className="bg-[#f7f7f7] p-6 border-b border-[#e6e6e6] text-center relative pointer-events-none">
-                            <ShieldCheck className="w-12 h-12 text-[#34A853] mx-auto mb-2" />
-                            <h3 className="text-xl font-bold text-[#1a1a1a]">CareerSync {selectedTier === '295' ? 'PREMIUM' : 'STANDARD'}</h3>
-                            <p className="text-[#666666] text-sm">per month</p>
-                            <div className="text-4xl font-bold mt-2">{selectedTier}</div>
-                        </div>
-                        {/* Mock Payment Form */}
-                        <div className="p-6 pointer-events-none">
-                            <div className="mb-4">
-                                <label className="block text-xs font-bold text-[#666] mb-1 uppercase tracking-wide">Card Information</label>
-                                <div className="border border-[#e6e6e6] rounded-md flex items-center p-3">
-                                    <CreditCard className="w-5 h-5 text-[#999] mr-2" />
-                                    <span className="text-[#ccc]">4242 4242 4242 4242</span>
-                                </div>
-                            </div>
-                            <button onClick={(e) => { e.stopPropagation(); setShowMockModal(false); }} className="w-full bg-[#0D0D12] text-white rounded-md py-3 font-bold mt-4 pointer-events-auto hover:bg-[#2A2A35] transition-colors">
-                                Subscribe
-                            </button>
-                            <p className="text-center text-xs text-[#999] mt-4 flex items-center justify-center">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" alt="Stripe" className="h-4 opacity-50 block grayscale" />
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
