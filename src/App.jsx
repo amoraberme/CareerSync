@@ -1,5 +1,61 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Component } from 'react';
 import { supabase } from './supabaseClient';
+
+class GlobalErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("Global React Crash:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-obsidian text-surface flex flex-col items-center justify-center p-8 text-center">
+          <div className="w-16 h-16 bg-[#EA4335]/20 rounded-full flex items-center justify-center mb-6">
+            <span className="text-[#EA4335] text-2xl font-bold">!</span>
+          </div>
+          <h1 className="text-3xl font-sans tracking-tight mb-4">Something went wrong.</h1>
+          <p className="text-surface/60 max-w-lg mb-8">
+            Your session or browser cache might be corrupted. Please try clearing your browser cookies and local storage for this site, or try logging out and back in.
+          </p>
+          <div className="flex space-x-4">
+            <button
+              onClick={() => {
+                localStorage.clear();
+                window.location.reload();
+              }}
+              className="bg-surface text-obsidian px-6 py-2 rounded-full font-medium"
+            >
+              Clear Cache & Reload
+            </button>
+            <button
+              onClick={async () => {
+                await supabase.auth.signOut();
+                window.location.reload();
+              }}
+              className="bg-surface/10 text-surface px-6 py-2 rounded-full font-medium border border-surface/20"
+            >
+              Force Logout
+            </button>
+          </div>
+          <pre className="mt-12 p-4 bg-slate/50 rounded-xl text-xs text-left max-w-2xl overflow-auto text-[#EA4335]/80 font-mono">
+            {this.state.error?.toString()}
+          </pre>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 import Auth from './components/Auth';
 import Navbar from './components/Navbar';
@@ -16,10 +72,22 @@ function App() {
   const [analysisData, setAnalysisData] = useState(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
+    try {
+      supabase.auth.getSession().then(({ data: { session }, error }) => {
+        if (error) {
+          console.error("Session fetch error:", error);
+          // If session is totally busted (corrupt localstorage), wipe it
+          localStorage.removeItem('supabase.auth.token');
+        }
+        setSession(session);
+        setLoading(false);
+      }).catch(err => {
+        console.error("Critical session crash:", err);
+        setLoading(false);
+      });
+    } catch (err) {
       setLoading(false);
-    });
+    }
 
     const {
       data: { subscription },
@@ -59,26 +127,28 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-obsidian text-surface selection:bg-champagne selection:text-obsidian relative">
-      <Navbar
-        currentView={currentView}
-        setCurrentView={(v) => {
-          setCurrentView(v);
-          if (v === 'workspace') setWorkspaceState('engine');
-        }}
-        onLogout={() => supabase.auth.signOut()}
-      />
+    <GlobalErrorBoundary>
+      <div className="min-h-screen bg-obsidian text-surface selection:bg-champagne selection:text-obsidian relative">
+        <Navbar
+          currentView={currentView}
+          setCurrentView={(v) => {
+            setCurrentView(v);
+            if (v === 'workspace') setWorkspaceState('engine');
+          }}
+          onLogout={() => supabase.auth.signOut()}
+        />
 
-      {/* Main Content Area */}
-      <main className="pt-32 pb-24 relative z-10">
-        {renderView()}
-      </main>
+        {/* Main Content Area */}
+        <main className="pt-32 pb-24 relative z-10">
+          {renderView()}
+        </main>
 
-      {/* Footer */}
-      <footer className="mt-auto py-8 text-center text-surface/30 text-xs font-mono uppercase tracking-widest border-t border-surface/5 bg-slate/10">
-        <p>&copy; 2026 Career Sync. All rights reserved.</p>
-      </footer>
-    </div>
+        {/* Footer */}
+        <footer className="mt-auto py-8 text-center text-surface/30 text-xs font-mono uppercase tracking-widest border-t border-surface/5 bg-slate/10">
+          <p>&copy; 2026 Career Sync. All rights reserved.</p>
+        </footer>
+      </div>
+    </GlobalErrorBoundary>
   );
 }
 
