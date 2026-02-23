@@ -10,9 +10,7 @@ export default function HistoryDashboard({ session, setCurrentView }) {
     const [loading, setLoading] = useState(true);
 
     // Filters State
-    const [searchTerm, setSearchTerm] = useState('');
     const [dateFilter, setDateFilter] = useState('all'); // 'all', '7', '30'
-    const [roleFilter, setRoleFilter] = useState('all');
     const [scoreFilter, setScoreFilter] = useState('all'); // 'all', 'high', 'medium', 'low'
 
     const { setAnalysisData } = useWorkspaceStore();
@@ -73,15 +71,7 @@ export default function HistoryDashboard({ session, setCurrentView }) {
         setCurrentView('workspace');
     };
 
-    const uniqueRoles = [...new Set(applications.map(app => app.role))];
-
     const filteredApplications = applications.filter(app => {
-        // Search Filter
-        if (searchTerm && !app.role.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-
-        // Role Dropdown Filter
-        if (roleFilter !== 'all' && app.role !== roleFilter) return false;
-
         // Date Filter
         if (dateFilter !== 'all') {
             const appDate = new Date(app.analysis_date);
@@ -111,21 +101,6 @@ export default function HistoryDashboard({ session, setCurrentView }) {
                     <p className="text-surface/60 text-lg">Your candidate management dashboard.</p>
                 </div>
                 <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-2.5 w-4 h-4 text-surface/40" />
-                        <input
-                            type="text"
-                            placeholder="Search titles..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            list="history-roles"
-                            className="bg-slate/40 border border-surface/10 rounded-full pl-10 pr-4 py-2 text-surface text-sm focus:outline-none focus:border-champagne/50 w-full md:w-64 transition-colors"
-                        />
-                        <datalist id="history-roles">
-                            {uniqueRoles.map((r, i) => <option key={i} value={r} />)}
-                        </datalist>
-                    </div>
-
                     <select value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="bg-slate/40 border border-surface/10 rounded-full px-4 py-2 text-surface text-sm focus:outline-none focus:border-champagne/50 outline-none appearance-none cursor-pointer">
                         <option value="all">All Dates</option>
                         <option value="7">Last 7 Days</option>
@@ -137,11 +112,6 @@ export default function HistoryDashboard({ session, setCurrentView }) {
                         <option value="high">High (71-100%)</option>
                         <option value="medium">Medium (61-70%)</option>
                         <option value="low">Low (&lt; 60%)</option>
-                    </select>
-
-                    <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="bg-slate/40 border border-surface/10 rounded-full px-4 py-2 text-surface text-sm focus:outline-none focus:border-champagne/50 outline-none appearance-none cursor-pointer max-w-[200px] truncate">
-                        <option value="all">All Roles</option>
-                        {uniqueRoles.map((r, i) => <option key={i} value={r}>{r}</option>)}
                     </select>
                 </div>
             </div>

@@ -42,9 +42,8 @@ export default function AnalysisTabs() {
     const handleExport = async () => {
         if (!exportRef.current) return;
         setIsExporting(true);
-        // Ensure all tabs are visible for the export by rendering everything temporarily if needed, 
-        // or just export the currently active tab. For now, we export the active view.
-        await exportElementToPDF(exportRef.current, `CareerSync_${analysisData?.jobTitle || 'Report'}.pdf`);
+        // We now pass the raw JSON object instead of the DOM reference
+        await exportElementToPDF(analysisData, `CareerSync_${analysisData?.jobTitle || 'Report'}.pdf`);
         setIsExporting(false);
     };
 
