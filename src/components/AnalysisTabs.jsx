@@ -10,6 +10,7 @@ export default function AnalysisTabs() {
     const { analysisData, resetWorkspace } = useWorkspaceStore();
 
     const containerRef = useRef(null);
+    const exportRef = useRef(null);
     const scoreOffset = Math.max(0, 283 - (283 * (analysisData?.matchScore || 0) / 100));
 
     useEffect(() => {
