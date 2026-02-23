@@ -8,6 +8,7 @@ export default function Auth({ onLogin }) {
     const [isLogin, setIsLogin] = useState(true);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
 
     useEffect(() => {
@@ -35,6 +36,9 @@ export default function Auth({ onLogin }) {
                 });
                 if (error) throw error;
             } else {
+                if (password !== confirmPassword) {
+                    throw new Error("Passwords do not match");
+                }
                 const { error } = await supabase.auth.signUp({
                     email: username,
                     password: password,
@@ -71,7 +75,7 @@ export default function Auth({ onLogin }) {
             <div className="auth-card w-full max-w-md bg-slate/40 backdrop-blur-xl border border-surface/10 rounded-[2rem] p-10 shadow-2xl">
                 <div className="mb-8 text-center">
                     <h2 className="text-3xl font-sans tracking-tight text-surface mb-2 font-semibold">
-                        {isLogin ? 'Welcome Back' : 'Create Account'}
+                        {isLogin ? 'Welcome' : 'Create Account'}
                     </h2>
                     <p className="text-surface/60 font-sans text-sm">
                         {isLogin ? 'Enter your details to access your workspace.' : 'Join the precision career toolkit.'}
@@ -114,6 +118,19 @@ export default function Auth({ onLogin }) {
                             className="w-full bg-obsidian/50 border border-surface/10 rounded-2xl px-4 py-3 text-surface placeholder:text-surface/30 focus:outline-none focus:border-champagne/50 transition-colors"
                         />
                     </div>
+
+                    {!isLogin && (
+                        <div className="space-y-1">
+                            <label className="text-xs font-mono text-surface/60 uppercase tracking-wider ml-1">Confirm Password</label>
+                            <input
+                                type="password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                placeholder="••••••••"
+                                className="w-full bg-obsidian/50 border border-surface/10 rounded-2xl px-4 py-3 text-surface placeholder:text-surface/30 focus:outline-none focus:border-champagne/50 transition-colors"
+                            />
+                        </div>
+                    )}
 
                     {error && (
                         <div className="text-[#EA4335] text-sm text-center font-medium my-2">
