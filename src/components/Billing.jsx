@@ -39,7 +39,7 @@ export default function Billing() {
 
             <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto items-center">
                 {/* Tier 1: Pay-As-You-Go */}
-                <div className="pricing-card order-1 lg:order-1 bg-slate/20 border border-surface/10 rounded-[2rem] p-8 flex flex-col items-center text-center lg:translate-y-4">
+                <div className="pricing-card bg-slate/20 border border-surface/10 rounded-[2rem] p-8 flex flex-col items-center text-center lg:translate-y-4">
                     <h3 className="text-2xl font-bold text-surface mb-2">Base Token</h3>
                     <div className="text-surface/50 font-mono text-xs uppercase tracking-widest mb-6">Pay-As-You-Go</div>
                     <div className="text-5xl font-sans font-bold text-surface mb-8">50<span className="text-lg text-surface/40 font-normal"> / min</span></div>
@@ -64,37 +64,8 @@ export default function Billing() {
                     </button>
                 </div>
 
-                {/* Tier 2: Standard (Decoy) */}
-                <div className="pricing-card order-2 lg:order-3 bg-slate/20 border border-surface/10 rounded-[2rem] p-8 flex flex-col items-center text-center lg:translate-y-4 transition-opacity">
-                    <h3 className="text-2xl font-bold text-surface mb-2">Standard</h3>
-                    <div className="text-surface/50 font-mono text-xs uppercase tracking-widest mb-6">Monthly Retainer</div>
-                    <div className="text-5xl font-sans font-bold text-surface mb-8">245<span className="text-lg text-surface/40 font-normal"> / mo</span></div>
-
-                    <div className="space-y-4 mb-8 w-full text-left text-sm">
-                        <div className="flex items-start text-surface/90">
-                            <Check className="w-4 h-4 text-surface/50 mr-3 mt-1 shrink-0" />
-                            <span>50 analyses per day</span>
-                        </div>
-                        <div className="flex items-start text-surface/90">
-                            <Check className="w-4 h-4 text-surface/50 mr-3 mt-1 shrink-0" />
-                            <span>Standard Cover Letters</span>
-                        </div>
-                        <div className="flex items-start text-[#EA4335]/60 mt-4 bg-[#EA4335]/5 p-3 rounded-xl border border-[#EA4335]/10">
-                            <span className="w-4 h-4 mr-3 mt-0.5 shrink-0 text-center font-bold">✕</span>
-                            <span className="line-through text-xs leading-relaxed">Strictly NO download features. Data locked to dashboard.</span>
-                        </div>
-                    </div>
-
-                    <button
-                        onClick={() => handleSubscribe('245')}
-                        className="mt-auto w-full py-4 rounded-2xl bg-surface/10 text-surface hover:bg-surface/20 font-bold transition-colors"
-                    >
-                        Subscribe to Standard
-                    </button>
-                </div>
-
                 {/* Tier 3: Premium (Target - Middle) */}
-                <div className="pricing-card order-3 lg:order-2 relative bg-slate/40 border-[3px] border-champagne rounded-[2rem] p-10 flex flex-col items-center text-center shadow-[0_0_60px_rgba(201,168,76,0.2)] transform z-10 lg:scale-[1.08]">
+                <div className="pricing-card relative bg-slate/40 border-[3px] border-champagne rounded-[2rem] p-10 flex flex-col items-center text-center shadow-[0_0_60px_rgba(201,168,76,0.2)] transform z-10 lg:scale-[1.08]">
                     <div className="absolute -top-5 bg-champagne text-obsidian px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest shadow-lg">
                         Most Popular
                     </div>
@@ -130,6 +101,35 @@ export default function Billing() {
                         className="mt-auto w-full py-5 rounded-2xl bg-champagne text-obsidian font-bold text-lg hover:scale-[1.02] transition-transform shadow-xl"
                     >
                         Secure Premium Access
+                    </button>
+                </div>
+
+                {/* Tier 2: Standard (Decoy) */}
+                <div className="pricing-card bg-slate/20 border border-surface/10 rounded-[2rem] p-8 flex flex-col items-center text-center lg:translate-y-4 relative z-0">
+                    <h3 className="text-2xl font-bold text-surface mb-2">Standard</h3>
+                    <div className="text-surface/50 font-mono text-xs uppercase tracking-widest mb-6">Monthly Retainer</div>
+                    <div className="text-5xl font-sans font-bold text-surface mb-8">245<span className="text-lg text-surface/40 font-normal"> / mo</span></div>
+
+                    <div className="space-y-4 mb-8 w-full text-left text-sm">
+                        <div className="flex items-start text-surface/90">
+                            <Check className="w-4 h-4 text-surface/50 mr-3 mt-1 shrink-0" />
+                            <span>50 analyses per day</span>
+                        </div>
+                        <div className="flex items-start text-surface/90">
+                            <Check className="w-4 h-4 text-surface/50 mr-3 mt-1 shrink-0" />
+                            <span>Standard Cover Letters</span>
+                        </div>
+                        <div className="flex items-start text-[#EA4335]/60 mt-4 bg-[#EA4335]/5 p-3 rounded-xl border border-[#EA4335]/10">
+                            <span className="w-4 h-4 mr-3 mt-0.5 shrink-0 text-center font-bold">✕</span>
+                            <span className="line-through text-xs leading-relaxed">Strictly NO download features. Data locked to dashboard.</span>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={() => handleSubscribe('245')}
+                        className="mt-auto w-full py-4 rounded-2xl bg-surface/10 text-surface hover:bg-surface/20 font-bold transition-colors"
+                    >
+                        Subscribe to Standard
                     </button>
                 </div>
             </div>
