@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Target, PenTool, LayoutTemplate, Activity, ChevronRight, Download } from 'lucide-react';
+import { Target, PenTool, LayoutTemplate, Activity, ChevronRight, Download, CheckCircle, ArrowRight } from 'lucide-react';
 import gsap from 'gsap';
 
 export default function AnalysisTabs({ onBack, analysisData }) {
