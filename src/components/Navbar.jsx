@@ -31,8 +31,8 @@ export default function Navbar({ currentView, setCurrentView, onLogout }) {
                             key={view.id}
                             onClick={() => setCurrentView(view.id)}
                             className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${currentView === view.id
-                                    ? 'bg-surface text-obsidian shadow-lg'
-                                    : 'text-surface/60 hover:text-surface'
+                                ? 'bg-surface text-obsidian shadow-lg'
+                                : 'text-surface/60 hover:text-surface'
                                 }`}
                         >
                             {view.label}
@@ -44,10 +44,10 @@ export default function Navbar({ currentView, setCurrentView, onLogout }) {
                 <div className="flex items-center space-x-4">
                     <div className="hidden lg:flex items-center space-x-2">
                         <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34A853] opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#34A853]"></span>
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-champagne opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-champagne"></span>
                         </span>
-                        <span className="text-xs font-mono text-surface/50 uppercase tracking-widest">System Online</span>
+                        <span className="text-xs font-mono text-surface/50 uppercase tracking-widest">0 Credits</span>
                     </div>
                     <button onClick={onLogout} className="bg-surface/10 hover:bg-surface/20 text-surface text-sm font-medium px-4 py-2 rounded-full transition-colors border border-surface/10">
                         Sign Out
