@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Target, PenTool, LayoutTemplate, Activity, ChevronRight, Download, CheckCircle, ArrowRight } from 'lucide-react';
 import gsap from 'gsap';
+import useWorkspaceStore from '../store/useWorkspaceStore';
 
-export default function AnalysisTabs({ onBack, analysisData }) {
+export default function AnalysisTabs() {
     const [activeTab, setActiveTab] = useState('analysis');
+    const { analysisData, resetWorkspace } = useWorkspaceStore();
+
     const containerRef = useRef(null);
     const scoreOffset = Math.max(0, 283 - (283 * (analysisData?.matchScore || 0) / 100));
 
@@ -35,7 +38,7 @@ export default function AnalysisTabs({ onBack, analysisData }) {
 
     return (
         <div ref={containerRef} className="max-w-6xl mx-auto py-12 px-6">
-            <button onClick={onBack} className="text-surface/50 hover:text-surface font-mono text-xs uppercase tracking-widest flex items-center mb-8 transition-colors">
+            <button onClick={resetWorkspace} className="text-surface/50 hover:text-surface font-mono text-xs uppercase tracking-widest flex items-center mb-8 transition-colors">
                 <ChevronRight className="w-4 h-4 mr-1 rotate-180" /> Back to Workspace
             </button>
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Component } from 'react';
 import { supabase } from './supabaseClient';
+import useWorkspaceStore from './store/useWorkspaceStore';
 
 class GlobalErrorBoundary extends Component {
   constructor(props) {
@@ -68,8 +69,9 @@ function App() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState('workspace'); // workspace, history, billing
-  const [workspaceState, setWorkspaceState] = useState('engine'); // engine, analysis
-  const [analysisData, setAnalysisData] = useState(null);
+
+  const analysisData = useWorkspaceStore(state => state.analysisData);
+  const resetWorkspace = useWorkspaceStore(state => state.resetWorkspace);
 
   useEffect(() => {
     try {
@@ -118,10 +120,10 @@ function App() {
         return <Billing />;
       case 'workspace':
       default:
-        return workspaceState === 'engine' ? (
-          <CoreEngine session={session} onAnalyze={(data) => { setAnalysisData(data); setWorkspaceState('analysis'); }} />
+        return analysisData ? (
+          <AnalysisTabs session={session} />
         ) : (
-          <AnalysisTabs session={session} onBack={() => setWorkspaceState('engine')} analysisData={analysisData} />
+          <CoreEngine session={session} />
         );
     }
   };
@@ -133,9 +135,11 @@ function App() {
           currentView={currentView}
           setCurrentView={(v) => {
             setCurrentView(v);
-            if (v === 'workspace') setWorkspaceState('engine');
           }}
-          onLogout={() => supabase.auth.signOut()}
+          onLogout={() => {
+            resetWorkspace();
+            supabase.auth.signOut();
+          }}
         />
 
         {/* Main Content Area */}

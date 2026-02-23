@@ -2,21 +2,18 @@ import React, { useState, useRef, useEffect } from 'react';
 import { UploadCloud, Link as LinkIcon, FileText, CheckCircle, Wand2, ArrowRight } from 'lucide-react';
 import gsap from 'gsap';
 import { supabase } from '../supabaseClient';
+import useWorkspaceStore from '../store/useWorkspaceStore';
 
-export default function CoreEngine({ onAnalyze, session }) {
+export default function CoreEngine({ session }) {
     const [showPasteModal, setShowPasteModal] = useState(false);
-    const [jobTitle, setJobTitle] = useState('');
-    const [industry, setIndustry] = useState('');
-    const [experienceLevel, setExperienceLevel] = useState('');
-    const [requiredSkills, setRequiredSkills] = useState([]);
-    const [description, setDescription] = useState('');
-    const [pastedText, setPastedText] = useState('');
-    const [resumeUploaded, setResumeUploaded] = useState(false);
-    const [resumeData, setResumeData] = useState(null);
-    const [resumeFileName, setResumeFileName] = useState('');
-    const [resumeFileSize, setResumeFileSize] = useState('');
     const [isParsing, setIsParsing] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+    const {
+        jobTitle, industry, experienceLevel, requiredSkills, description, pastedText,
+        resumeUploaded, resumeData, resumeFileName, resumeFileSize,
+        updateField, setAnalysisData
+    } = useWorkspaceStore();
 
     const containerRef = useRef(null);
     const fileInputRef = useRef(null);
@@ -47,19 +44,19 @@ export default function CoreEngine({ onAnalyze, session }) {
             });
             const data = await response.json();
 
-            setJobTitle(data.jobTitle || '');
-            setIndustry(data.industry || '');
-            setExperienceLevel(data.experienceLevel || '');
-            setRequiredSkills(Array.isArray(data.requiredSkills) ? data.requiredSkills : []);
-            setDescription(data.cleanDescription || pastedText); // Fallback to raw text if fail
+            updateField('jobTitle', data.jobTitle || '');
+            updateField('industry', data.industry || '');
+            updateField('experienceLevel', data.experienceLevel || '');
+            updateField('requiredSkills', Array.isArray(data.requiredSkills) ? data.requiredSkills : []);
+            updateField('description', data.cleanDescription || pastedText); // Fallback to raw text if fail
 
             setShowPasteModal(false);
-            setPastedText('');
+            updateField('pastedText', '');
         } catch (error) {
             console.error("Parse failed, falling back to manual entry:", error);
-            setDescription(pastedText); // Just dump the raw text as fallback
+            updateField('description', pastedText); // Just dump the raw text as fallback
             setShowPasteModal(false);
-            setPastedText('');
+            updateField('pastedText', '');
         } finally {
             setIsParsing(false);
         }
@@ -88,7 +85,7 @@ export default function CoreEngine({ onAnalyze, session }) {
                 if (dbError) console.error("Error saving history to Supabase:", dbError);
             }
 
-            onAnalyze(data);
+            setAnalysisData(data);
         } catch (error) {
             console.error("Failed to run analysis", error);
         } finally {
@@ -100,14 +97,14 @@ export default function CoreEngine({ onAnalyze, session }) {
         const file = e.target.files[0];
         if (!file) return;
 
-        setResumeFileName(file.name);
-        setResumeFileSize((file.size / 1024 / 1024).toFixed(2) + 'MB');
-        setResumeUploaded(true);
+        updateField('resumeFileName', file.name);
+        updateField('resumeFileSize', (file.size / 1024 / 1024).toFixed(2) + 'MB');
+        updateField('resumeUploaded', true);
 
         const reader = new FileReader();
         reader.onload = (event) => {
             const base64String = event.target.result.split(',')[1];
-            setResumeData({
+            updateField('resumeData', {
                 data: base64String,
                 mimeType: file.type || 'text/plain',
                 name: file.name
@@ -144,25 +141,25 @@ export default function CoreEngine({ onAnalyze, session }) {
                     <div className="space-y-5 flex-grow">
                         <div>
                             <label className="text-xs font-mono text-surface/60 uppercase tracking-wider ml-1 mb-1 block">Job Title</label>
-                            <input value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} type="text" placeholder="e.g. Lead Designer" className="w-full bg-obsidian/50 border border-surface/10 rounded-2xl px-4 py-3 text-surface placeholder:text-surface/30 focus:outline-none focus:border-champagne/50 transition-colors" />
+                            <input value={jobTitle} onChange={(e) => updateField('jobTitle', e.target.value)} type="text" placeholder="e.g. Lead Designer" className="w-full bg-obsidian/50 border border-surface/10 rounded-2xl px-4 py-3 text-surface placeholder:text-surface/30 focus:outline-none focus:border-champagne/50 transition-colors" />
                         </div>
                         <div>
                             <label className="text-xs font-mono text-surface/60 uppercase tracking-wider ml-1 mb-1 block">Industry</label>
-                            <input value={industry} onChange={(e) => setIndustry(e.target.value)} type="text" placeholder="e.g. FinTech" className="w-full bg-obsidian/50 border border-surface/10 rounded-2xl px-4 py-3 text-surface placeholder:text-surface/30 focus:outline-none focus:border-champagne/50 transition-colors" />
+                            <input value={industry} onChange={(e) => updateField('industry', e.target.value)} type="text" placeholder="e.g. FinTech" className="w-full bg-obsidian/50 border border-surface/10 rounded-2xl px-4 py-3 text-surface placeholder:text-surface/30 focus:outline-none focus:border-champagne/50 transition-colors" />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="text-xs font-mono text-surface/60 uppercase tracking-wider ml-1 mb-1 block">Level</label>
-                                <input value={experienceLevel} onChange={(e) => setExperienceLevel(e.target.value)} type="text" placeholder="e.g. Senior" className="w-full bg-obsidian/50 border border-surface/10 rounded-2xl px-4 py-3 text-surface placeholder:text-surface/30 focus:outline-none focus:border-champagne/50 transition-colors" />
+                                <input value={experienceLevel} onChange={(e) => updateField('experienceLevel', e.target.value)} type="text" placeholder="e.g. Senior" className="w-full bg-obsidian/50 border border-surface/10 rounded-2xl px-4 py-3 text-surface placeholder:text-surface/30 focus:outline-none focus:border-champagne/50 transition-colors" />
                             </div>
                             <div>
                                 <label className="text-xs font-mono text-surface/60 uppercase tracking-wider ml-1 mb-1 block">Key Skills</label>
-                                <input value={requiredSkills.join(', ')} onChange={(e) => setRequiredSkills(e.target.value.split(', '))} type="text" placeholder="React, Node..." title="Comma separated" className="w-full bg-obsidian/50 border border-surface/10 rounded-2xl px-4 py-3 text-surface placeholder:text-surface/30 focus:outline-none focus:border-champagne/50 transition-colors" />
+                                <input value={requiredSkills.join(', ')} onChange={(e) => updateField('requiredSkills', e.target.value.split(', '))} type="text" placeholder="React, Node..." title="Comma separated" className="w-full bg-obsidian/50 border border-surface/10 rounded-2xl px-4 py-3 text-surface placeholder:text-surface/30 focus:outline-none focus:border-champagne/50 transition-colors" />
                             </div>
                         </div>
                         <div className="flex-grow flex flex-col">
                             <label className="text-xs font-mono text-surface/60 uppercase tracking-wider ml-1 mb-1 block">Full Description</label>
-                            <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Paste full job description here..." className="w-full flex-grow min-h-[160px] bg-obsidian/50 border border-surface/10 rounded-2xl px-4 py-3 text-surface placeholder:text-surface/30 focus:outline-none focus:border-champagne/50 transition-colors resize-none"></textarea>
+                            <textarea value={description} onChange={(e) => updateField('description', e.target.value)} placeholder="Paste full job description here..." className="w-full flex-grow min-h-[160px] bg-obsidian/50 border border-surface/10 rounded-2xl px-4 py-3 text-surface placeholder:text-surface/30 focus:outline-none focus:border-champagne/50 transition-colors resize-none"></textarea>
                         </div>
                     </div>
                 </div>
@@ -236,7 +233,7 @@ export default function CoreEngine({ onAnalyze, session }) {
                                 <textarea
                                     autoFocus
                                     value={pastedText}
-                                    onChange={(e) => setPastedText(e.target.value)}
+                                    onChange={(e) => updateField('pastedText', e.target.value)}
                                     placeholder="Paste URL or listing text here..."
                                     className="w-full bg-obsidian border border-surface/10 rounded-2xl pl-12 pr-4 py-3 text-surface placeholder:text-surface/30 focus:outline-none focus:border-champagne/50 transition-colors min-h-[120px] resize-none"
                                 ></textarea>
