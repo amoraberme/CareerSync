@@ -8,6 +8,7 @@ export default function CoreEngine({ onAnalyze }) {
     const [industry, setIndustry] = useState('');
     const [description, setDescription] = useState('');
     const [resumeUploaded, setResumeUploaded] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const containerRef = useRef(null);
 
@@ -31,6 +32,23 @@ export default function CoreEngine({ onAnalyze }) {
         setIndustry('Technology / SaaS');
         setDescription("We are looking for a highly skilled Senior Frontend Engineer with deep expertise in React, TypeScript, and modern styling tools like Tailwind CSS. You will architect and build complex user interfaces tailored for high performance.\\n\\nRequirements:\\n- 5+ years of React experience\\n- Strong portfolio of cinematic landing pages\\n- Expertise in GSAP and micro-interactions");
         setShowPasteModal(false);
+    };
+
+    const runAnalysis = async () => {
+        setIsAnalyzing(true);
+        try {
+            const response = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ jobTitle, industry, description })
+            });
+            const data = await response.json();
+            onAnalyze(data);
+        } catch (error) {
+            console.error("Failed to run analysis", error);
+        } finally {
+            setIsAnalyzing(false);
+        }
     };
 
     return (
@@ -109,15 +127,15 @@ export default function CoreEngine({ onAnalyze }) {
                     </div>
 
                     <button
-                        onClick={onAnalyze}
-                        disabled={!jobTitle || !resumeUploaded}
-                        className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 transition-all duration-300 shadow-xl ${jobTitle && resumeUploaded
-                                ? 'bg-surface text-obsidian hover:bg-surface/90 hover:scale-[1.02] active:scale-[0.98] btn-magnetic cursor-pointer'
-                                : 'bg-surface/20 text-surface/40 cursor-not-allowed'
+                        onClick={runAnalysis}
+                        disabled={!jobTitle || !resumeUploaded || isAnalyzing}
+                        className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 transition-all duration-300 shadow-xl ${jobTitle && resumeUploaded && !isAnalyzing
+                            ? 'bg-surface text-obsidian hover:bg-surface/90 hover:scale-[1.02] active:scale-[0.98] btn-magnetic cursor-pointer'
+                            : 'bg-surface/20 text-surface/40 cursor-not-allowed'
                             }`}
                     >
-                        <span>Run Deep Analysis</span>
-                        <ArrowRight className="w-5 h-5" />
+                        <span>{isAnalyzing ? 'Running AI Parsing Model...' : 'Run Deep Analysis'}</span>
+                        {!isAnalyzing && <ArrowRight className="w-5 h-5" />}
                     </button>
                 </div>
             </div>

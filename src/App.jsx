@@ -10,6 +10,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentView, setCurrentView] = useState('workspace'); // workspace, history, billing
   const [workspaceState, setWorkspaceState] = useState('engine'); // engine, analysis
+  const [analysisData, setAnalysisData] = useState(null);
 
   if (!isAuthenticated) {
     return <Auth onLogin={() => setIsAuthenticated(true)} />;
@@ -24,9 +25,9 @@ function App() {
       case 'workspace':
       default:
         return workspaceState === 'engine' ? (
-          <CoreEngine onAnalyze={() => setWorkspaceState('analysis')} />
+          <CoreEngine onAnalyze={(data) => { setAnalysisData(data); setWorkspaceState('analysis'); }} />
         ) : (
-          <AnalysisTabs onBack={() => setWorkspaceState('engine')} />
+          <AnalysisTabs onBack={() => setWorkspaceState('engine')} analysisData={analysisData} />
         );
     }
   };
