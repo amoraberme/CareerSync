@@ -42,8 +42,14 @@ export default function AnalysisTabs() {
     const handleExport = async () => {
         if (!exportRef.current) return;
         setIsExporting(true);
+
+        const safeTitle = (analysisData?.jobTitle || 'Role').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_');
+        const safeCompany = (analysisData?.company || 'Company').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_');
+        const safeDate = (analysisData?.date || 'Date').replace(/[, ]+/g, '_');
+        const fileName = `${safeTitle}_-_${safeCompany}_-_${safeDate}.pdf`;
+
         // We now pass the raw JSON object instead of the DOM reference
-        await exportElementToPDF(analysisData, `CareerSync_${analysisData?.jobTitle || 'Report'}.pdf`);
+        await exportElementToPDF(analysisData, fileName);
         setIsExporting(false);
     };
 

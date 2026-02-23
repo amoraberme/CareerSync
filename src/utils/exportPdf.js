@@ -49,6 +49,12 @@ export const exportElementToPDF = async (analysisData, filename = 'CareerSync_Re
 
         // Job Role Info
         addText(`Target Role: ${analysisData.jobTitle || 'Unknown'}`, 12, false, { bottomMargin: 2 });
+        if (analysisData.company) {
+            addText(`Company: ${analysisData.company}`, 12, false, { bottomMargin: 2 });
+        }
+        if (analysisData.date) {
+            addText(`Date: ${analysisData.date}`, 12, false, { bottomMargin: 2 });
+        }
         addText(`Match Score: ${analysisData.matchScore || 0}%`, 12, true, { bottomMargin: 15 });
 
         // 1. Strategic Synthesis

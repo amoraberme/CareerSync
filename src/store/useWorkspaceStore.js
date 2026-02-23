@@ -37,6 +37,13 @@ const useWorkspaceStore = create((set, get) => ({
             });
             const data = await response.json();
 
+            const enrichedData = {
+                ...data,
+                jobTitle,
+                company: industry,
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            };
+
             if (session?.user) {
                 const { error: dbError } = await supabase
                     .from('candidates_history')
@@ -45,12 +52,12 @@ const useWorkspaceStore = create((set, get) => ({
                         job_title: jobTitle,
                         company: industry,
                         match_score: data.matchScore || 0,
-                        report_data: data
+                        report_data: enrichedData
                     }]);
                 if (dbError) console.error("Error saving history to Supabase:", dbError);
             }
 
-            set({ analysisData: data });
+            set({ analysisData: enrichedData });
         } catch (error) {
             console.error("Failed to run analysis", error);
         } finally {

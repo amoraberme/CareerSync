@@ -67,7 +67,12 @@ export default function HistoryDashboard({ session, setCurrentView }) {
     };
 
     const handleRowClick = (app) => {
-        setAnalysisData(app.report_data);
+        setAnalysisData({
+            ...app.report_data,
+            jobTitle: app.role,
+            company: app.company,
+            date: app.date
+        });
         setCurrentView('workspace');
     };
 
