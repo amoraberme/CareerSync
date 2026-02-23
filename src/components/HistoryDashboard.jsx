@@ -1,29 +1,49 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Download, ExternalLink, Calendar, Search, Filter } from 'lucide-react';
 import gsap from 'gsap';
+import { supabase } from '../supabaseClient';
 
-export default function HistoryDashboard() {
+export default function HistoryDashboard({ session }) {
     const containerRef = useRef(null);
-
-    const applications = [
-        { id: 1, date: 'Oct 14, 2026', role: 'Senior Frontend Engineer', company: 'Acme Corp', score: 85, status: 'Analyzed' },
-        { id: 2, date: 'Oct 12, 2026', role: 'Lead React Developer', company: 'Nexus Tech', score: 92, status: 'Interviewing' },
-        { id: 3, date: 'Oct 08, 2026', role: 'Frontend Architect', company: 'Orbit Systems', score: 68, status: 'Analyzed' },
-        { id: 4, date: 'Sep 29, 2026', role: 'UI Engineer', company: 'Pinnacle Labs', score: 74, status: 'Applied' },
-    ];
+    const [applications, setApplications] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        async function fetchHistory() {
+            if (!session?.user) return;
+            const { data, error } = await supabase
+                .from('candidates_history')
+                .select('*')
+                .order('analysis_date', { ascending: false });
+
+            if (!error && data) {
+                setApplications(data.map(item => ({
+                    id: item.id,
+                    date: new Date(item.analysis_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                    role: item.job_title,
+                    company: item.company || 'Unknown',
+                    score: item.match_score,
+                    status: 'Analyzed'
+                })));
+            }
+            setLoading(false);
+        }
+
+        fetchHistory();
+
         let ctx = gsap.context(() => {
-            gsap.from('.history-row', {
-                y: 20,
-                opacity: 0,
-                stagger: 0.1,
-                duration: 0.8,
-                ease: 'power3.out'
-            });
+            if (!loading && applications.length > 0) {
+                gsap.from('.history-row', {
+                    y: 20,
+                    opacity: 0,
+                    stagger: 0.1,
+                    duration: 0.8,
+                    ease: 'power3.out'
+                });
+            }
         }, containerRef);
         return () => ctx.revert();
-    }, []);
+    }, [session, loading, applications.length]);
 
     return (
         <div ref={containerRef} className="max-w-6xl mx-auto py-12 px-6">
@@ -55,42 +75,48 @@ export default function HistoryDashboard() {
                 </div>
 
                 <div className="divide-y divide-surface/5">
-                    {applications.map((app) => (
-                        <div key={app.id} className="history-row grid grid-cols-6 gap-4 p-6 items-center hover:bg-surface/5 transition-colors group">
-                            <div className="col-span-2">
-                                <h4 className="font-medium text-surface mb-1 group-hover:text-champagne transition-colors">{app.role}</h4>
-                                <p className="text-sm text-surface/50">{app.company}</p>
-                            </div>
-                            <div className="text-surface/70 flex items-center text-sm">
-                                <Calendar className="w-4 h-4 mr-2 opacity-50" />
-                                {app.date}
-                            </div>
-                            <div>
-                                <div className="flex items-center space-x-2">
-                                    <div className="w-8 h-8 rounded-full border border-champagne/30 flex items-center justify-center text-champagne font-bold text-sm bg-champagne/10">
-                                        {app.score}
-                                    </div>
-                                    <span className="text-xs text-surface/40">/100</span>
+                    {loading ? (
+                        <div className="p-12 text-center text-surface/50 font-mono text-sm">Loading history...</div>
+                    ) : applications.length === 0 ? (
+                        <div className="p-12 text-center text-surface/50 font-mono text-sm">No analysis history found. Start by running an analysis in the Core Engine!</div>
+                    ) : (
+                        applications.map((app) => (
+                            <div key={app.id} className="history-row grid grid-cols-6 gap-4 p-6 items-center hover:bg-surface/5 transition-colors group">
+                                <div className="col-span-2">
+                                    <h4 className="font-medium text-surface mb-1 group-hover:text-champagne transition-colors">{app.role}</h4>
+                                    <p className="text-sm text-surface/50">{app.company}</p>
                                 </div>
-                            </div>
-                            <div>
-                                <span className={`px-3 py-1 text-xs rounded-full border ${app.status === 'Interviewing' ? 'bg-[#34A853]/10 border-[#34A853]/30 text-[#34A853]' :
+                                <div className="text-surface/70 flex items-center text-sm">
+                                    <Calendar className="w-4 h-4 mr-2 opacity-50" />
+                                    {app.date}
+                                </div>
+                                <div>
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-8 h-8 rounded-full border border-champagne/30 flex items-center justify-center text-champagne font-bold text-sm bg-champagne/10">
+                                            {app.score}
+                                        </div>
+                                        <span className="text-xs text-surface/40">/100</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span className={`px-3 py-1 text-xs rounded-full border ${app.status === 'Interviewing' ? 'bg-[#34A853]/10 border-[#34A853]/30 text-[#34A853]' :
                                         app.status === 'Applied' ? 'bg-[#0B66C2]/10 border-[#0B66C2]/30 text-[#0B66C2]' :
                                             'bg-surface/10 border-surface/20 text-surface/70'
-                                    }`}>
-                                    {app.status}
-                                </span>
+                                        }`}>
+                                        {app.status}
+                                    </span>
+                                </div>
+                                <div className="flex justify-end space-x-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button className="p-2 text-surface/50 hover:text-surface hover:bg-surface/10 rounded-full transition-colors" title="Download Report">
+                                        <Download className="w-4 h-4" />
+                                    </button>
+                                    <button className="p-2 text-surface/50 hover:text-champagne hover:bg-champagne/10 rounded-full transition-colors" title="View Report">
+                                        <ExternalLink className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
-                            <div className="flex justify-end space-x-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button className="p-2 text-surface/50 hover:text-surface hover:bg-surface/10 rounded-full transition-colors" title="Download Report">
-                                    <Download className="w-4 h-4" />
-                                </button>
-                                <button className="p-2 text-surface/50 hover:text-champagne hover:bg-champagne/10 rounded-full transition-colors" title="View Report">
-                                    <ExternalLink className="w-4 h-4" />
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+                        ))
+                    )}
                 </div>
             </div>
         </div>

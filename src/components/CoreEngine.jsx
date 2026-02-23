@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { UploadCloud, Link as LinkIcon, FileText, CheckCircle, Wand2, ArrowRight } from 'lucide-react';
 import gsap from 'gsap';
+import { supabase } from '../supabaseClient';
 
-export default function CoreEngine({ onAnalyze }) {
+export default function CoreEngine({ onAnalyze, session }) {
     const [showPasteModal, setShowPasteModal] = useState(false);
     const [jobTitle, setJobTitle] = useState('');
     const [industry, setIndustry] = useState('');
@@ -47,6 +48,20 @@ export default function CoreEngine({ onAnalyze }) {
                 body: JSON.stringify({ jobTitle, industry, description, resumeData })
             });
             const data = await response.json();
+
+            if (session?.user) {
+                const { error: dbError } = await supabase
+                    .from('candidates_history')
+                    .insert([{
+                        user_id: session.user.id,
+                        job_title: jobTitle,
+                        company: industry,
+                        match_score: data.score,
+                        report_data: data
+                    }]);
+                if (dbError) console.error("Error saving history to Supabase:", dbError);
+            }
+
             onAnalyze(data);
         } catch (error) {
             console.error("Failed to run analysis", error);

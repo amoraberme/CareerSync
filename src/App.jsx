@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from './supabaseClient';
+
 import Auth from './components/Auth';
 import Navbar from './components/Navbar';
 import CoreEngine from './components/CoreEngine';
@@ -7,27 +9,51 @@ import HistoryDashboard from './components/HistoryDashboard';
 import Billing from './components/Billing';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState('workspace'); // workspace, history, billing
   const [workspaceState, setWorkspaceState] = useState('engine'); // engine, analysis
   const [analysisData, setAnalysisData] = useState(null);
 
-  if (!isAuthenticated) {
-    return <Auth onLogin={() => setIsAuthenticated(true)} />;
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-obsidian flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-champagne border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return <Auth />;
   }
 
   const renderView = () => {
     switch (currentView) {
       case 'history':
-        return <HistoryDashboard />;
+        return <HistoryDashboard session={session} />;
       case 'billing':
         return <Billing />;
       case 'workspace':
       default:
         return workspaceState === 'engine' ? (
-          <CoreEngine onAnalyze={(data) => { setAnalysisData(data); setWorkspaceState('analysis'); }} />
+          <CoreEngine session={session} onAnalyze={(data) => { setAnalysisData(data); setWorkspaceState('analysis'); }} />
         ) : (
-          <AnalysisTabs onBack={() => setWorkspaceState('engine')} analysisData={analysisData} />
+          <AnalysisTabs session={session} onBack={() => setWorkspaceState('engine')} analysisData={analysisData} />
         );
     }
   };
@@ -40,7 +66,7 @@ function App() {
           setCurrentView(v);
           if (v === 'workspace') setWorkspaceState('engine');
         }}
-        onLogout={() => setIsAuthenticated(false)}
+        onLogout={() => supabase.auth.signOut()}
       />
 
       {/* Main Content Area */}
