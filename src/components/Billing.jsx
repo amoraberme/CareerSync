@@ -89,7 +89,7 @@ export default function Billing({ session }) {
                         </div>
                         <div className="flex items-start text-surface/90">
                             <Check className="w-4 h-4 text-surface/50 mr-3 mt-1 shrink-0" />
-                            <span>30-Day History View</span>
+                            <span>3-Day History View</span>
                         </div>
                         <div className="flex items-start text-[#EA4335]/60 mt-4">
                             <span className="w-4 h-4 mr-3 mt-0.5 shrink-0 text-center font-bold">✕</span>
