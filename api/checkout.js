@@ -17,7 +17,7 @@ export default async function handler(req, res) {
 
         // Map tiers to amounts (in centavos) and descriptions
         const tierMapping = {
-            base: { amount: 5000, description: 'CareerSync Base Token (5 Credits)' },
+            base: { amount: 10000, description: 'CareerSync Base Token (10 Credits)' },
             standard: { amount: 24500, description: 'CareerSync Standard (Monthly Retainer)' },
             premium: { amount: 29500, description: 'CareerSync Premium (The Professional Upgrade)' }
         };

@@ -72,16 +72,16 @@ export default function Billing({ session }) {
                 <div className="pricing-card bg-slate/20 border border-surface/10 rounded-[2rem] p-8 flex flex-col items-center text-center lg:translate-y-4">
                     <h3 className="text-2xl font-bold text-surface mb-2">Base Token</h3>
                     <div className="text-surface/50 font-mono text-xs uppercase tracking-widest mb-6">Pay-As-You-Go</div>
-                    <div className="text-5xl font-sans font-bold text-surface mb-8">50<span className="text-lg text-surface/40 font-normal"> / Top-up</span></div>
+                    <div className="text-5xl font-sans font-bold text-surface mb-8">100<span className="text-lg text-surface/40 font-normal"> / Top-up</span></div>
 
                     <div className="text-sm text-surface/80 bg-surface/5 p-4 rounded-xl border border-surface/10 mb-8 w-full mt-2 lg:min-h-[100px] flex items-center justify-center">
-                        Perfect for quick, one-off tasks. Every top-up grants 5 credits.
+                        Perfect for quick, one-off tasks. Every top-up grants 10 credits.
                     </div>
 
                     <div className="space-y-4 mb-8 w-full text-left text-sm">
                         <div className="flex items-start text-surface/90">
                             <Check className="w-4 h-4 text-surface/50 mr-3 mt-1 shrink-0" />
-                            <span>5 Credits per top-up</span>
+                            <span>10 Credits per top-up</span>
                         </div>
                         <div className="flex items-start text-surface/90">
                             <Check className="w-4 h-4 text-surface/50 mr-3 mt-1 shrink-0" />
