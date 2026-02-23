@@ -6,13 +6,10 @@ import useWorkspaceStore from '../store/useWorkspaceStore';
 
 export default function CoreEngine({ session }) {
     const [showPasteModal, setShowPasteModal] = useState(false);
-    const [isParsing, setIsParsing] = useState(false);
-    const [isAnalyzing, setIsAnalyzing] = useState(false);
-
     const {
         jobTitle, industry, experienceLevel, requiredSkills, description, pastedText,
         resumeUploaded, resumeData, resumeFileName, resumeFileSize,
-        updateField, setAnalysisData
+        isAnalyzing, updateField, runAnalysis
     } = useWorkspaceStore();
 
     const containerRef = useRef(null);
@@ -59,37 +56,6 @@ export default function CoreEngine({ session }) {
             updateField('pastedText', '');
         } finally {
             setIsParsing(false);
-        }
-    };
-
-    const runAnalysis = async () => {
-        setIsAnalyzing(true);
-        try {
-            const response = await fetch('/api/analyze', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ jobTitle, industry, description, resumeData })
-            });
-            const data = await response.json();
-
-            if (session?.user) {
-                const { error: dbError } = await supabase
-                    .from('candidates_history')
-                    .insert([{
-                        user_id: session.user.id,
-                        job_title: jobTitle,
-                        company: industry,
-                        match_score: data.matchScore || 0,
-                        report_data: data
-                    }]);
-                if (dbError) console.error("Error saving history to Supabase:", dbError);
-            }
-
-            setAnalysisData(data);
-        } catch (error) {
-            console.error("Failed to run analysis", error);
-        } finally {
-            setIsAnalyzing(false);
         }
     };
 
@@ -206,7 +172,7 @@ export default function CoreEngine({ session }) {
                     </div>
 
                     <button
-                        onClick={runAnalysis}
+                        onClick={() => runAnalysis(session)}
                         disabled={!jobTitle || !resumeUploaded || isAnalyzing}
                         className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 transition-all duration-300 shadow-xl ${jobTitle && resumeUploaded && !isAnalyzing
                             ? 'bg-surface text-obsidian hover:bg-surface/90 hover:scale-[1.02] active:scale-[0.98] btn-magnetic cursor-pointer'

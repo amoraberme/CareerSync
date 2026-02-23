@@ -71,6 +71,7 @@ function App() {
   const [currentView, setCurrentView] = useState('workspace'); // workspace, history, billing
 
   const analysisData = useWorkspaceStore(state => state.analysisData);
+  const isAnalyzing = useWorkspaceStore(state => state.isAnalyzing);
   const resetWorkspace = useWorkspaceStore(state => state.resetWorkspace);
 
   useEffect(() => {
@@ -115,7 +116,7 @@ function App() {
   const renderView = () => {
     switch (currentView) {
       case 'history':
-        return <HistoryDashboard session={session} />;
+        return <HistoryDashboard session={session} setCurrentView={setCurrentView} />;
       case 'billing':
         return <Billing />;
       case 'workspace':
@@ -146,6 +147,17 @@ function App() {
         <main className="pt-32 pb-24 relative z-10">
           {renderView()}
         </main>
+
+        {/* Global Loading Overlay for AI Analysis */}
+        {isAnalyzing && (
+          <div className="fixed inset-0 z-[100] bg-obsidian/80 backdrop-blur-md flex flex-col items-center justify-center p-4">
+            <div className="bg-slate border border-surface/10 rounded-3xl p-10 flex flex-col items-center shadow-2xl max-w-sm w-full animate-fade-in-up text-center">
+              <div className="w-16 h-16 border-4 border-champagne border-t-transparent rounded-full animate-spin mb-6"></div>
+              <h3 className="text-xl font-sans font-bold text-surface mb-2">Analyzing Profile...</h3>
+              <p className="text-surface/60 text-sm">Our AI is comparing your resume against the target role and generating your custom strategic report.</p>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <footer className="mt-auto py-8 text-center text-surface/30 text-xs font-mono uppercase tracking-widest border-t border-surface/5 bg-slate/10">

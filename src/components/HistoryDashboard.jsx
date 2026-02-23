@@ -1,12 +1,21 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Download, ExternalLink, Calendar, Search, Filter } from 'lucide-react';
+import { Trash2, Calendar, Search, Filter } from 'lucide-react';
 import gsap from 'gsap';
 import { supabase } from '../supabaseClient';
+import useWorkspaceStore from '../store/useWorkspaceStore';
 
-export default function HistoryDashboard({ session }) {
+export default function HistoryDashboard({ session, setCurrentView }) {
     const containerRef = useRef(null);
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Filters State
+    const [searchTerm, setSearchTerm] = useState('');
+    const [dateFilter, setDateFilter] = useState('all'); // 'all', '7', '30'
+    const [roleFilter, setRoleFilter] = useState('all');
+    const [scoreFilter, setScoreFilter] = useState('all'); // 'all', 'high', 'medium', 'low'
+
+    const { setAnalysisData } = useWorkspaceStore();
 
     useEffect(() => {
         async function fetchHistory() {
@@ -19,11 +28,13 @@ export default function HistoryDashboard({ session }) {
             if (!error && data) {
                 setApplications(data.map(item => ({
                     id: item.id,
+                    analysis_date: item.analysis_date,
                     date: new Date(item.analysis_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
                     role: item.job_title,
                     company: item.company || 'Unknown',
                     score: item.match_score,
-                    status: 'Analyzed'
+                    status: 'Analyzed',
+                    report_data: item.report_data
                 })));
             }
             setLoading(false);
@@ -45,6 +56,51 @@ export default function HistoryDashboard({ session }) {
         return () => ctx.revert();
     }, [session, loading, applications.length]);
 
+    const handleDelete = async (e, id) => {
+        e.stopPropagation(); // Prevent row click
+        if (window.confirm('Are you sure you want to delete this analysis?')) {
+            const { error } = await supabase.from('candidates_history').delete().eq('id', id);
+            if (!error) {
+                setApplications(prev => prev.filter(app => app.id !== id));
+            } else {
+                console.error("Failed to delete", error);
+            }
+        }
+    };
+
+    const handleRowClick = (app) => {
+        setAnalysisData(app.report_data);
+        setCurrentView('workspace');
+    };
+
+    const uniqueRoles = [...new Set(applications.map(app => app.role))];
+
+    const filteredApplications = applications.filter(app => {
+        // Search Filter
+        if (searchTerm && !app.role.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+
+        // Role Dropdown Filter
+        if (roleFilter !== 'all' && app.role !== roleFilter) return false;
+
+        // Date Filter
+        if (dateFilter !== 'all') {
+            const appDate = new Date(app.analysis_date);
+            const now = new Date();
+            const diffDays = (now - appDate) / (1000 * 60 * 60 * 24);
+            if (dateFilter === '7' && diffDays > 7) return false;
+            if (dateFilter === '30' && diffDays > 30) return false;
+        }
+
+        // Score Filter
+        if (scoreFilter !== 'all') {
+            if (scoreFilter === 'high' && app.score < 71) return false;
+            if (scoreFilter === 'medium' && (app.score < 61 || app.score > 70)) return false;
+            if (scoreFilter === 'low' && app.score >= 61) return false;
+        }
+
+        return true;
+    });
+
     return (
         <div ref={containerRef} className="max-w-6xl mx-auto py-12 px-6">
             <div className="flex justify-between items-end mb-12">
@@ -54,14 +110,39 @@ export default function HistoryDashboard({ session }) {
                     </h2>
                     <p className="text-surface/60 text-lg">Your candidate management dashboard.</p>
                 </div>
-                <div className="flex space-x-4">
+                <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
                     <div className="relative">
                         <Search className="absolute left-3 top-2.5 w-4 h-4 text-surface/40" />
-                        <input type="text" placeholder="Search roles..." className="bg-slate/40 border border-surface/10 rounded-full pl-10 pr-4 py-2 text-surface text-sm focus:outline-none focus:border-champagne/50 w-64 transition-colors" />
+                        <input
+                            type="text"
+                            placeholder="Search titles..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            list="history-roles"
+                            className="bg-slate/40 border border-surface/10 rounded-full pl-10 pr-4 py-2 text-surface text-sm focus:outline-none focus:border-champagne/50 w-full md:w-64 transition-colors"
+                        />
+                        <datalist id="history-roles">
+                            {uniqueRoles.map((r, i) => <option key={i} value={r} />)}
+                        </datalist>
                     </div>
-                    <button className="bg-slate/40 border border-surface/10 p-2.5 rounded-full text-surface/60 hover:text-surface hover:bg-slate/60 transition-colors">
-                        <Filter className="w-4 h-4" />
-                    </button>
+
+                    <select value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="bg-slate/40 border border-surface/10 rounded-full px-4 py-2 text-surface text-sm focus:outline-none focus:border-champagne/50 outline-none appearance-none cursor-pointer">
+                        <option value="all">All Dates</option>
+                        <option value="7">Last 7 Days</option>
+                        <option value="30">Last 30 Days</option>
+                    </select>
+
+                    <select value={scoreFilter} onChange={(e) => setScoreFilter(e.target.value)} className="bg-slate/40 border border-surface/10 rounded-full px-4 py-2 text-surface text-sm focus:outline-none focus:border-champagne/50 outline-none appearance-none cursor-pointer">
+                        <option value="all">All Scores</option>
+                        <option value="high">High (71-100%)</option>
+                        <option value="medium">Medium (61-70%)</option>
+                        <option value="low">Low (&lt; 60%)</option>
+                    </select>
+
+                    <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="bg-slate/40 border border-surface/10 rounded-full px-4 py-2 text-surface text-sm focus:outline-none focus:border-champagne/50 outline-none appearance-none cursor-pointer max-w-[200px] truncate">
+                        <option value="all">All Roles</option>
+                        {uniqueRoles.map((r, i) => <option key={i} value={r}>{r}</option>)}
+                    </select>
                 </div>
             </div>
 
@@ -77,11 +158,11 @@ export default function HistoryDashboard({ session }) {
                 <div className="divide-y divide-surface/5">
                     {loading ? (
                         <div className="p-12 text-center text-surface/50 font-mono text-sm">Loading history...</div>
-                    ) : applications.length === 0 ? (
-                        <div className="p-12 text-center text-surface/50 font-mono text-sm">No analysis history found. Start by running an analysis in the Core Engine!</div>
+                    ) : filteredApplications.length === 0 ? (
+                        <div className="p-12 text-center text-surface/50 font-mono text-sm">No analysis history found matching these filters.</div>
                     ) : (
-                        applications.map((app) => (
-                            <div key={app.id} className="history-row grid grid-cols-6 gap-4 p-6 items-center hover:bg-surface/5 transition-colors group">
+                        filteredApplications.map((app) => (
+                            <div key={app.id} onClick={() => handleRowClick(app)} className="history-row grid grid-cols-6 gap-4 p-6 items-center hover:bg-surface/5 transition-colors group cursor-pointer relative">
                                 <div className="col-span-2">
                                     <h4 className="font-medium text-surface mb-1 group-hover:text-champagne transition-colors">{app.role}</h4>
                                     <p className="text-sm text-surface/50">{app.company}</p>
@@ -92,7 +173,7 @@ export default function HistoryDashboard({ session }) {
                                 </div>
                                 <div>
                                     <div className="flex items-center space-x-2">
-                                        <div className="w-8 h-8 rounded-full border border-champagne/30 flex items-center justify-center text-champagne font-bold text-sm bg-champagne/10">
+                                        <div className={`w-8 h-8 rounded-full border flex items-center justify-center font-bold text-sm ${app.score >= 71 ? 'border-[#34A853]/30 text-[#34A853] bg-[#34A853]/10' : app.score >= 61 ? 'border-champagne/30 text-champagne bg-champagne/10' : 'border-[#EA4335]/30 text-[#EA4335] bg-[#EA4335]/10'}`}>
                                             {app.score}
                                         </div>
                                         <span className="text-xs text-surface/40">/100</span>
@@ -107,11 +188,8 @@ export default function HistoryDashboard({ session }) {
                                     </span>
                                 </div>
                                 <div className="flex justify-end space-x-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button className="p-2 text-surface/50 hover:text-surface hover:bg-surface/10 rounded-full transition-colors" title="Download Report">
-                                        <Download className="w-4 h-4" />
-                                    </button>
-                                    <button className="p-2 text-surface/50 hover:text-champagne hover:bg-champagne/10 rounded-full transition-colors" title="View Report">
-                                        <ExternalLink className="w-4 h-4" />
+                                    <button onClick={(e) => handleDelete(e, app.id)} className="p-2 text-surface/50 hover:text-[#EA4335] hover:bg-[#EA4335]/10 rounded-full transition-colors" title="Delete Analysis">
+                                        <Trash2 className="w-4 h-4" />
                                     </button>
                                 </div>
                             </div>
