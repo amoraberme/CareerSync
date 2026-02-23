@@ -6,6 +6,7 @@ import { exportElementToPDF } from '../utils/exportPdf';
 
 export default function AnalysisTabs() {
     const [activeTab, setActiveTab] = useState('analysis');
+    const [isExporting, setIsExporting] = useState(false);
     const { analysisData, resetWorkspace } = useWorkspaceStore();
 
     const containerRef = useRef(null);
