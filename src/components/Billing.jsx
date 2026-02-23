@@ -126,7 +126,7 @@ export default function Billing({ session }) {
                     <div className="space-y-4 mb-8 w-full text-left">
                         <div className="flex items-start text-surface">
                             <Check className="w-5 h-5 text-champagne mr-3 mt-0.5 shrink-0" />
-                            <span><strong className="text-champagne">35 analyses</strong> per day</span>
+                            <span><strong className="text-champagne">35 credits</strong> per day</span>
                         </div>
                         <div className="flex items-start text-surface">
                             <Download className="w-5 h-5 text-champagne mr-3 mt-0.5 shrink-0" />
@@ -164,7 +164,7 @@ export default function Billing({ session }) {
                     <div className="space-y-4 mb-8 w-full text-left text-sm">
                         <div className="flex items-start text-surface/90">
                             <Check className="w-4 h-4 text-surface/50 mr-3 mt-1 shrink-0" />
-                            <span>25 analyses per day</span>
+                            <span>25 credits per day</span>
                         </div>
                         <div className="flex items-start text-surface/90">
                             <Check className="w-4 h-4 text-surface/50 mr-3 mt-1 shrink-0" />
