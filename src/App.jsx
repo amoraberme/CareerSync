@@ -118,7 +118,7 @@ function App() {
       case 'history':
         return <HistoryDashboard session={session} setCurrentView={setCurrentView} />;
       case 'billing':
-        return <Billing />;
+        return <Billing session={session} />;
       case 'workspace':
       default:
         return analysisData ? (

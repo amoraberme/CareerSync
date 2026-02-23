@@ -1,13 +1,46 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Check, CreditCard, ShieldCheck, AlertCircle, Download } from 'lucide-react';
 import gsap from 'gsap';
-// Scaffold PayMongo Checkout Links
-const PAYMONGO_LINK_BASE = "";
-const PAYMONGO_LINK_STANDARD = "";
-const PAYMONGO_LINK_PREMIUM = "";
-
-export default function Billing() {
+export default function Billing({ session }) {
     const containerRef = useRef(null);
+    const [isProcessing, setIsProcessing] = useState(null);
+
+    const handleCheckout = async (tier) => {
+        if (!session?.user?.id) {
+            alert('Please log in to proceed with checkout.');
+            return;
+        }
+
+        setIsProcessing(tier);
+        try {
+            const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    tier,
+                    userId: session.user.id
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to generate checkout link');
+            }
+
+            if (data.checkout_url) {
+                // Open the secure PayMongo link in a new tab
+                window.open(data.checkout_url, '_blank', 'noopener,noreferrer');
+            }
+        } catch (error) {
+            console.error('Checkout error:', error);
+            alert('Unable to initialize checkout. Please try again.');
+        } finally {
+            setIsProcessing(null);
+        }
+    };
 
     useEffect(() => {
         let ctx = gsap.context(() => {
@@ -68,14 +101,13 @@ export default function Billing() {
                         </div>
                     </div>
 
-                    <a
-                        href={PAYMONGO_LINK_BASE || "#"}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-auto w-full py-4 rounded-2xl border border-surface/10 text-surface/70 font-bold hover:bg-surface/5 transition-colors block text-center"
+                    <button
+                        onClick={() => handleCheckout('base')}
+                        disabled={isProcessing !== null}
+                        className="mt-auto w-full py-4 rounded-2xl border border-surface/10 text-surface/70 font-bold hover:bg-surface/5 transition-colors block text-center disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Add Credits
-                    </a>
+                        {isProcessing === 'base' ? 'Generating Secure Link...' : 'Add Credits'}
+                    </button>
                 </div>
 
                 {/* Tier 3: Premium (Target - Middle) */}
@@ -110,14 +142,13 @@ export default function Billing() {
                         </div>
                     </div>
 
-                    <a
-                        href={PAYMONGO_LINK_PREMIUM || "#"}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-auto w-full py-5 rounded-2xl bg-champagne text-obsidian font-bold text-lg hover:scale-[1.02] transition-transform shadow-xl block text-center"
+                    <button
+                        onClick={() => handleCheckout('premium')}
+                        disabled={isProcessing !== null}
+                        className="mt-auto w-full py-5 rounded-2xl bg-champagne text-obsidian font-bold text-lg hover:scale-[1.02] transition-transform shadow-xl block text-center disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Secure Premium Access
-                    </a>
+                        {isProcessing === 'premium' ? 'Securing Premium Access...' : 'Secure Premium Access'}
+                    </button>
                 </div>
 
                 {/* Tier 2: Standard (Decoy) */}
@@ -149,14 +180,13 @@ export default function Billing() {
                         </div>
                     </div>
 
-                    <a
-                        href={PAYMONGO_LINK_STANDARD || "#"}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-auto w-full py-4 rounded-2xl bg-surface/10 text-surface hover:bg-surface/20 font-bold transition-colors block text-center"
+                    <button
+                        onClick={() => handleCheckout('standard')}
+                        disabled={isProcessing !== null}
+                        className="mt-auto w-full py-4 rounded-2xl bg-surface/10 text-surface hover:bg-surface/20 font-bold transition-colors block text-center disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Subscribe to Standard
-                    </a>
+                        {isProcessing === 'standard' ? 'Initializing Checkout...' : 'Subscribe to Standard'}
+                    </button>
                 </div>
             </div>
         </div>
