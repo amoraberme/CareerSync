@@ -12,36 +12,38 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'No text provided for parsing.' });
         }
 
-        const apiKey = process.env.GEMINI_API_KEY;
-        if (!apiKey) {
-            return res.status(500).json({ error: 'GEMINI_API_KEY is not configured.' });
+        const apiKeys = [process.env.GEMINI_API_KEY, 'AIzaSyD1fkQkgw76nEnaEOA3Iqp6fz6wNjFLkc8'].filter(Boolean);
+
+        if (apiKeys.length === 0) {
+            return res.status(500).json({ error: 'No GEMINI_API_KEY configured.' });
         }
 
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        let result = null;
+        let lastError = null;
 
-        const prompt = `
-      Extract the following details from this job listing and return it strictly as a JSON object with these exact keys:
-      - jobTitle (string)
-      - industry (string)
-      - experienceLevel (string)
-      - requiredSkills (array of strings)
-      - cleanDescription (string)
+        // Round-Robin Retry Loop
+        for (let i = 0; i < apiKeys.length; i++) {
+            try {
+                const genAI = new GoogleGenerativeAI(apiKeys[i]);
+                const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-      Raw Listing Context:
-      """
-      ${text}
-      """
-      
-      Respond ONLY with valid JSON. Do not use markdown blocks around the JSON.
-    `;
+                result = await model.generateContent({
+                    contents: [{ role: "user", parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json"
+                    }
+                });
 
-        const result = await model.generateContent({
-            contents: [{ role: "user", parts: [{ text: prompt }] }],
-            generationConfig: {
-                responseMimeType: "application/json"
+                break; // Success, exit retry loop
+            } catch (error) {
+                lastError = error;
+                console.warn(`[Load Balancer Parse] Key at index ${i} failed. Attempting fallback...`);
             }
-        });
+        }
+
+        if (!result) {
+            throw lastError || new Error("All API keys for extraction were exhausted or rate limited.");
+        }
 
         const responseText = result.response.text();
         const parsedData = JSON.parse(responseText);

@@ -8,57 +8,40 @@ export default async function handler(req, res) {
     try {
         const { jobTitle, industry, description, resumeText, resumeData } = req.body;
 
-        const apiKey = process.env.GEMINI_API_KEY;
-        if (!apiKey) {
-            return res.status(500).json({ error: 'GEMINI_API_KEY is not configured.' });
+        const apiKeys = [process.env.GEMINI_API_KEY, 'AIzaSyD1fkQkgw76nEnaEOA3Iqp6fz6wNjFLkc8'].filter(Boolean);
+
+        if (apiKeys.length === 0) {
+            return res.status(500).json({ error: 'No GEMINI_API_KEY configured.' });
         }
 
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        let result = null;
+        let lastError = null;
 
-        const promptPart = {
-            text: `
-      Act as an expert ATS and technical recruiter. Compare this Resume against this Job Description.
-      
-      Job Title: ${jobTitle}
-      Industry: ${industry}
-      Job Description: ${description}
-      
-      Return a strict JSON object containing EXACTLY these keys:
-      - matchScore (number 1-100)
-      - summary (short paragraph explaining the score)
-      - matchedProfile (array of objects, each with 'skill' and 'description' strings)
-      - gapAnalysis (array of objects, each with 'missingSkill' and 'description' strings)
-      - coverLetter (generated text pivoting the candidate's background to fit the role, 3 paragraphs)
-      - optimization (an object with three arrays of strings: 'strategicAdvice', 'structuralEdits' (which is an array of objects showing 'before' and 'after'), and 'atsKeywords')
-      
-      Do not include any extra fields or text.
-    `};
+        // Round-Robin Retry Loop
+        for (let i = 0; i < apiKeys.length; i++) {
+            try {
+                const genAI = new GoogleGenerativeAI(apiKeys[i]);
+                const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-        const parts = [promptPart];
+                result = await model.generateContent({
+                    contents: [{ role: "user", parts }],
+                    generationConfig: {
+                        responseMimeType: "application/json"
+                    }
+                });
 
-        if (resumeData && resumeData.mimeType === 'application/pdf') {
-            parts.push({
-                inlineData: {
-                    data: resumeData.data,
-                    mimeType: resumeData.mimeType
-                }
-            });
-        } else if (resumeData && resumeData.mimeType.startsWith('text/')) {
-            const decodedText = Buffer.from(resumeData.data, 'base64').toString('utf-8');
-            parts[0].text += `\n\nResume Context (Extracted Text):\n${decodedText}`;
-        } else if (resumeData) {
-            parts[0].text += `\n\nResume Context: The user uploaded a file named ${resumeData.name}, but its contents could not be extracted. Use standard inferences based on the job requirements.`;
-        } else {
-            parts[0].text += `\n\nResume Context: ${resumeText || "Senior Frontend Developer, 5 years Experience. React, Tailwind, GSAP. No WebGL."}`;
-        }
-
-        const result = await model.generateContent({
-            contents: [{ role: "user", parts }],
-            generationConfig: {
-                responseMimeType: "application/json"
+                // If successful, break out of the retry loop
+                break;
+            } catch (error) {
+                lastError = error;
+                console.warn(`[Load Balancer] Key at index ${i} failed. Attempting fallback...`);
+                // If it's the last key in the array, the loop will exit and we throw later
             }
-        });
+        }
+
+        if (!result) {
+            throw lastError || new Error("All API keys exhausted or rate limited.");
+        }
 
         const text = result.response.text();
         const parsedData = JSON.parse(text);
