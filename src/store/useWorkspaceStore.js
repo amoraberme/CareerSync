@@ -20,10 +20,31 @@ const useWorkspaceStore = create((set, get) => ({
     analysisData: null,
     isAnalyzing: false,
 
+    // Billing & Credits
+    creditBalance: 0,
+
     // Actions
     updateField: (field, value) => set({ [field]: value }),
 
     setAnalysisData: (data) => set({ analysisData: data }),
+
+    fetchCreditBalance: async (userId) => {
+        if (!userId) return;
+        try {
+            const { data, error } = await supabase
+                .from('user_profiles')
+                .select('current_credit_balance')
+                .eq('id', userId)
+                .single();
+
+            if (error) throw error;
+            if (data) {
+                set({ creditBalance: data.current_credit_balance });
+            }
+        } catch (error) {
+            console.error("Error fetching credit balance:", error);
+        }
+    },
 
     runAnalysis: async (session) => {
         set({ isAnalyzing: true, analysisData: null });
@@ -77,7 +98,8 @@ const useWorkspaceStore = create((set, get) => ({
         resumeFileName: '',
         resumeFileSize: '',
         analysisData: null,
-        isAnalyzing: false
+        isAnalyzing: false,
+        creditBalance: 0
     })
 }));
 

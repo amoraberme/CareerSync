@@ -83,6 +83,9 @@ function App() {
           localStorage.removeItem('supabase.auth.token');
         }
         setSession(session);
+        if (session?.user?.id) {
+          useWorkspaceStore.getState().fetchCreditBalance(session.user.id);
+        }
         setLoading(false);
       }).catch(err => {
         console.error("Critical session crash:", err);
@@ -96,6 +99,9 @@ function App() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session?.user?.id) {
+        useWorkspaceStore.getState().fetchCreditBalance(session.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();
