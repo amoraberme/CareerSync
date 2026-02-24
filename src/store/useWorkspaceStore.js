@@ -62,8 +62,9 @@ const useWorkspaceStore = create((set, get) => ({
             const { data: rpcSuccess, error: rpcError } = await supabase.rpc('decrement_credits', { deduct_amount: 1 });
 
             if (rpcError || !rpcSuccess) {
-                console.error("RPC Deduction Error:", rpcError);
-                alert("Transaction failed. Could not securely deduct credits.");
+                console.error("RPC Deduction Error:", rpcError || "Function returned false (Insufficient balance natively)");
+                const errorMsg = rpcError?.message || "Insufficient balance or missing database function. Please ensure the Phase 16 SQL script completed fully.";
+                alert(`Transaction failed: ${errorMsg}`);
                 set({ isAnalyzing: false });
                 return;
             }
