@@ -188,3 +188,58 @@ begin
     return true;
 end;
 $$ language plpgsql security definer;
+
+-- ==========================================
+-- PHASE 30: CREDIT-AWARE ACCOUNT DELETION
+-- ==========================================
+
+-- 1. Fix Missing ON DELETE CASCADE on FKs
+-- Without these, deleting an auth.users row will FAIL due to FK constraints.
+
+ALTER TABLE candidates_history
+  DROP CONSTRAINT IF EXISTS candidates_history_user_id_fkey;
+ALTER TABLE candidates_history
+  ADD CONSTRAINT candidates_history_user_id_fkey
+  FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+ALTER TABLE user_profiles
+  DROP CONSTRAINT IF EXISTS user_profiles_id_fkey;
+ALTER TABLE user_profiles
+  ADD CONSTRAINT user_profiles_id_fkey
+  FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+ALTER TABLE transactions
+  DROP CONSTRAINT IF EXISTS transactions_user_id_fkey;
+ALTER TABLE transactions
+  ADD CONSTRAINT transactions_user_id_fkey
+  FOREIGN KEY (user_id) REFERENCES user_profiles(id) ON DELETE CASCADE;
+
+-- 2. Create previously_registered_emails table
+-- Tracks emails of deleted accounts so re-registrations get 0 free credits.
+CREATE TABLE IF NOT EXISTS previously_registered_emails (
+    email TEXT PRIMARY KEY,
+    deleted_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+ALTER TABLE previously_registered_emails ENABLE ROW LEVEL SECURITY;
+
+-- 3. Update handle_new_user() to check for returning users
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_was_previously_registered BOOLEAN;
+BEGIN
+    SELECT EXISTS (
+        SELECT 1 FROM public.previously_registered_emails
+        WHERE email = NEW.email
+    ) INTO v_was_previously_registered;
+
+    INSERT INTO public.user_profiles (id, full_name, current_credit_balance)
+    VALUES (
+        NEW.id,
+        NEW.raw_user_meta_data->>'full_name',
+        CASE WHEN v_was_previously_registered THEN 0 ELSE 1 END
+    );
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
