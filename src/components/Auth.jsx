@@ -3,6 +3,45 @@ import { Mail, ChevronRight, Github } from 'lucide-react';
 import gsap from 'gsap';
 import { supabase } from '../supabaseClient';
 import { ReviewCard } from './ui/card-1';
+import { AnimatePresence } from 'framer-motion';
+
+const features = [
+    {
+        name: "Deep AI Parsing",
+        handle: "Core Capability",
+        review: "Instantly extracts 50+ key requirements from raw job descriptions, including hidden technical prerequisites, soft skills, and strategic imperatives.",
+        rating: 5.0,
+        imageUrl: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&auto=format&fit=crop&q=60"
+    },
+    {
+        name: "Automated Strategy",
+        handle: "Core Capability",
+        review: "Generates step-by-step interview blueprints, exact phrasing corrections, and identifies specific experience gaps holding you back.",
+        rating: 5.0,
+        imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=60"
+    },
+    {
+        name: "1:1 Theme Parity",
+        handle: "Design System",
+        review: "Impeccable visual harmony across true dark and light modes. Snow White Luxe meets Obsidian. Built for extended focus sessions.",
+        rating: 5.0,
+        imageUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&auto=format&fit=crop&q=60"
+    },
+    {
+        name: "Secure Ecosystem",
+        handle: "Infrastructure",
+        review: "Enterprise-grade row level security with strict tier validation, encrypted workflows, and resilient Postgres architecture.",
+        rating: 5.0,
+        imageUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=60"
+    },
+    {
+        name: "Instant Feedback",
+        handle: "Core Capability",
+        review: "Real-time match scoring algorithm instantly benchmarks your current resume against the specific market demands of the target role.",
+        rating: 5.0,
+        imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=60"
+    }
+];
 
 export default function Auth({ onLogin }) {
     const containerRef = useRef(null);
@@ -11,6 +50,8 @@ export default function Auth({ onLogin }) {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
+    const [activeIndex, setActiveIndex] = useState(0);
+    const [isHovered, setIsHovered] = useState(false);
 
     useEffect(() => {
         let ctx = gsap.context(() => {
@@ -24,6 +65,14 @@ export default function Auth({ onLogin }) {
         }, containerRef);
         return () => ctx.revert();
     }, []);
+
+    useEffect(() => {
+        if (isHovered) return;
+        const interval = setInterval(() => {
+            setActiveIndex((prev) => (prev + 1) % features.length);
+        }, 4000);
+        return () => clearInterval(interval);
+    }, [isHovered]);
 
     const handleEmailAuth = async (e) => {
         e.preventDefault();
@@ -74,72 +123,31 @@ export default function Auth({ onLogin }) {
         }
     };
 
-    const features = [
-        {
-            name: "Deep AI Parsing",
-            handle: "Core Capability",
-            review: "Instantly extracts 50+ key requirements from raw job descriptions, including hidden technical prerequisites, soft skills, and strategic imperatives.",
-            rating: 5.0,
-            imageUrl: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&auto=format&fit=crop&q=60"
-        },
-        {
-            name: "Automated Strategy",
-            handle: "Core Capability",
-            review: "Generates step-by-step interview blueprints, exact phrasing corrections, and identifies specific experience gaps holding you back.",
-            rating: 5.0,
-            imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=60"
-        },
-        {
-            name: "1:1 Theme Parity",
-            handle: "Design System",
-            review: "Impeccable visual harmony across true dark and light modes. Snow White Luxe meets Obsidian. Built for extended focus sessions.",
-            rating: 5.0,
-            imageUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&auto=format&fit=crop&q=60"
-        },
-        {
-            name: "Secure Ecosystem",
-            handle: "Infrastructure",
-            review: "Enterprise-grade row level security with strict tier validation, encrypted workflows, and resilient Postgres architecture.",
-            rating: 5.0,
-            imageUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=60"
-        },
-        {
-            name: "Instant Feedback",
-            handle: "Core Capability",
-            review: "Real-time match scoring algorithm instantly benchmarks your current resume against the specific market demands of the target role.",
-            rating: 5.0,
-            imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=60"
-        }
-    ];
-
-    // Double the array to make the infinite loop seamless
-    const marqueeItems = [...features, ...features, ...features];
-
     return (
         <div ref={containerRef} className="min-h-screen bg-background dark:bg-darkBg flex w-full relative z-10 overflow-hidden font-sans">
 
-            {/* Left Column: Moving Marquee (Hidden on smaller screens) */}
+            {/* Left Column: Vertical Ticker (Hidden on smaller screens) */}
             <div className="hidden lg:flex flex-col flex-1 relative bg-surface dark:bg-darkCard/20 overflow-hidden border-r border-obsidian/10 dark:border-darkText/10">
                 {/* Decorative gradients */}
                 <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-surface dark:from-darkBg to-transparent z-10 pointer-events-none"></div>
                 <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-surface dark:from-darkBg to-transparent z-10 pointer-events-none"></div>
-                <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-surface dark:from-darkBg to-transparent z-10 pointer-events-none"></div>
-                <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-surface dark:from-darkBg to-transparent z-10 pointer-events-none"></div>
 
-                <div className="h-full w-full flex flex-col justify-center gap-8 px-12 relative overflow-hidden">
-                    {/* Row 1 - Moving Left */}
-                    <div className="flex w-[200%] animate-marquee">
-                        {marqueeItems.map((feature, idx) => (
-                            <ReviewCard key={`row1-${idx}`} {...feature} />
-                        ))}
-                    </div>
-
-                    {/* Row 2 - Moving Left (Slightly slower) */}
-                    <div className="flex w-[200%] animate-marquee-slow ml-24">
-                        {[...marqueeItems].reverse().map((feature, idx) => (
-                            <ReviewCard key={`row2-${idx}`} {...feature} />
-                        ))}
-                    </div>
+                <div
+                    className="h-full w-full flex flex-col items-center justify-center relative overflow-hidden"
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                >
+                    <AnimatePresence>
+                        <ReviewCard
+                            key={`feature-${activeIndex}`}
+                            {...features[activeIndex]}
+                            initial={{ opacity: 0, y: 50, filter: "blur(10px)" }}
+                            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                            exit={{ opacity: 0, y: -50, filter: "blur(10px)" }}
+                            transition={{ duration: 0.8, ease: "easeInOut" }}
+                            className="absolute"
+                        />
+                    </AnimatePresence>
                 </div>
 
                 <div className="absolute top-10 left-12 z-20">

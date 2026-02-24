@@ -4,30 +4,20 @@ import { motion } from "framer-motion";
 import { cn } from "../../lib/utils";
 
 const ReviewCard = React.forwardRef(
-    ({ name, handle, review, rating, imageUrl, className }, ref) => {
-        // Animation variants for framer-motion
-        const cardVariants = {
-            hidden: { opacity: 0, y: 20 },
-            visible: {
-                opacity: 1,
-                y: 0,
-                transition: {
-                    duration: 0.4,
-                    ease: "easeOut",
-                },
-            },
-        };
-
+    ({ name, handle, review, rating, imageUrl, className, variants, initial, animate, exit, transition, custom }, ref) => {
         return (
             <motion.div
                 ref={ref}
                 className={cn(
-                    "bg-white dark:bg-darkCard text-obsidian dark:text-darkText border border-obsidian/10 dark:border-darkText/10 rounded-2xl p-6 shadow-sm w-full max-w-sm shrink-0 mx-4",
+                    "bg-white dark:bg-darkCard text-obsidian dark:text-darkText border border-obsidian/10 dark:border-darkText/10 rounded-2xl p-6 shadow-sm w-full max-w-sm mx-auto",
                     className
                 )}
-                variants={cardVariants}
-                initial="hidden"
-                animate="visible"
+                variants={variants}
+                initial={initial}
+                animate={animate}
+                exit={exit}
+                transition={transition}
+                custom={custom}
                 role="article"
                 aria-labelledby={`review-author-${name.replace(/\s+/g, '-')}`}
                 aria-describedby={`review-content-${name.replace(/\s+/g, '-')}`}
