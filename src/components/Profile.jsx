@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { User, Lock, Mail, Fingerprint, Award, Coins, Key, ShieldCheck } from 'lucide-react';
+import useWorkspaceStore from '../store/useWorkspaceStore';
+import { User, Lock, Mail, Fingerprint, Award, Coins, Key, ShieldCheck, AlertTriangle, Trash2 } from 'lucide-react';
 
 export default function Profile({ session, setCurrentView }) {
     const [profileData, setProfileData] = useState(null);
@@ -10,6 +11,11 @@ export default function Profile({ session, setCurrentView }) {
     const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
     const [toast, setToast] = useState(null);
 
+    // Account deletion state
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteConfirmText, setDeleteConfirmText] = useState('');
+    const [isDeleting, setIsDeleting] = useState(false);
+
     useEffect(() => {
         async function fetchProfile() {
             if (!session?.user?.id) return;
@@ -18,7 +24,6 @@ export default function Profile({ session, setCurrentView }) {
                 const email = session.user.email;
                 const uid = session.user.id;
 
-                // Query user_profiles and join with plans
                 const { data, error } = await supabase
                     .from('user_profiles')
                     .select(`
@@ -28,7 +33,7 @@ export default function Profile({ session, setCurrentView }) {
                     .eq('id', uid)
                     .single();
 
-                if (error && error.code !== 'PGRST116') throw error; // Ignore 'No rows' error
+                if (error && error.code !== 'PGRST116') throw error;
 
                 const credits = data?.current_credit_balance ?? 1;
                 const tier = data?.plans?.plan_name || 'Basic';
@@ -45,7 +50,6 @@ export default function Profile({ session, setCurrentView }) {
         fetchProfile();
     }, [session]);
 
-    // Handle toast timeouts automatically
     useEffect(() => {
         if (toast) {
             const timer = setTimeout(() => setToast(null), 5000);
@@ -78,6 +82,43 @@ export default function Profile({ session, setCurrentView }) {
             setToast({ message: error.message || 'Failed to update password.', type: 'error' });
         } finally {
             setIsUpdatingPassword(false);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        if (deleteConfirmText !== 'Confirm') return;
+
+        setIsDeleting(true);
+        try {
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+
+            const response = await fetch('/api/user/delete', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(currentSession?.access_token && { 'Authorization': `Bearer ${currentSession.access_token}` })
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to delete account.');
+            }
+
+            // Success: sign out, clear all state, redirect
+            await supabase.auth.signOut();
+            useWorkspaceStore.getState().resetWorkspace();
+            setShowDeleteModal(false);
+            // The onAuthStateChange listener in App.jsx will handle the redirect to Auth
+
+        } catch (error) {
+            console.error('Account deletion error:', error);
+            setToast({ message: error.message || 'Failed to delete account. Please try again.', type: 'error' });
+            setShowDeleteModal(false);
+        } finally {
+            setIsDeleting(false);
+            setDeleteConfirmText('');
         }
     };
 
@@ -201,6 +242,17 @@ export default function Profile({ session, setCurrentView }) {
                             )}
                         </button>
                     </form>
+
+                    {/* Danger Zone: Delete Account */}
+                    <div className="mt-8 pt-6 border-t border-[#EA4335]/20">
+                        <button
+                            onClick={() => setShowDeleteModal(true)}
+                            className="w-full flex items-center justify-center space-x-2 py-3 px-6 rounded-2xl border-2 border-[#EA4335]/30 text-[#EA4335] font-medium text-sm hover:bg-[#EA4335]/5 hover:border-[#EA4335]/50 transition-all active:scale-[0.98]"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                            <span>Delete Account</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -209,6 +261,73 @@ export default function Profile({ session, setCurrentView }) {
                     &larr; Return to Workspace
                 </button>
             </div>
+
+            {/* Account Deletion Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-white/60 dark:bg-darkBg/60 backdrop-blur-md" onClick={() => { if (!isDeleting) { setShowDeleteModal(false); setDeleteConfirmText(''); } }}></div>
+
+                    <div className="relative bg-white dark:bg-darkBg border border-[#EA4335]/20 rounded-[2rem] w-full max-w-md p-8 shadow-2xl animate-fade-in-up">
+                        {/* Warning Icon */}
+                        <div className="flex items-center justify-center mb-6">
+                            <div className="w-16 h-16 bg-[#EA4335]/10 border border-[#EA4335]/20 rounded-full flex items-center justify-center">
+                                <AlertTriangle className="w-8 h-8 text-[#EA4335]" />
+                            </div>
+                        </div>
+
+                        <h3 className="text-2xl font-sans font-bold text-obsidian dark:text-darkText text-center mb-2">Delete Account</h3>
+                        <p className="text-slate dark:text-darkText/60 text-center text-sm mb-6 leading-relaxed">
+                            This action is <strong className="text-[#EA4335]">permanent and irreversible</strong>. All your data, analysis history, credits, and account information will be permanently erased.
+                        </p>
+
+                        {/* Warning Banner */}
+                        <div className="bg-[#EA4335]/5 border border-[#EA4335]/15 rounded-xl p-4 mb-6 flex items-start">
+                            <AlertTriangle className="w-5 h-5 text-[#EA4335] mr-3 mt-0.5 shrink-0" />
+                            <p className="text-xs text-[#EA4335]/90 leading-relaxed">
+                                Your account will be immediately terminated. Remaining credits will not be refunded. This cannot be undone.
+                            </p>
+                        </div>
+
+                        {/* Confirmation Input */}
+                        <div className="mb-6">
+                            <label className="text-xs font-mono uppercase tracking-widest text-slate dark:text-darkText/50 mb-2 block">
+                                Type <strong className="text-[#EA4335]">Confirm</strong> to proceed
+                            </label>
+                            <input
+                                type="text"
+                                value={deleteConfirmText}
+                                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                                placeholder="Type Confirm here..."
+                                disabled={isDeleting}
+                                className="w-full bg-background dark:bg-darkCard border border-obsidian/10 dark:border-darkText/10 rounded-xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-[#EA4335]/50 focus:ring-1 focus:ring-[#EA4335]/50 transition-colors disabled:opacity-50"
+                                autoComplete="off"
+                            />
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-col gap-3">
+                            <button
+                                onClick={handleDeleteAccount}
+                                disabled={deleteConfirmText !== 'Confirm' || isDeleting}
+                                className="w-full py-4 rounded-2xl bg-[#EA4335] text-white font-bold transition-all shadow-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#D33426] active:scale-[0.98] flex items-center justify-center"
+                            >
+                                {isDeleting ? (
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                ) : (
+                                    'Permanently Delete Account'
+                                )}
+                            </button>
+                            <button
+                                onClick={() => { setShowDeleteModal(false); setDeleteConfirmText(''); }}
+                                disabled={isDeleting}
+                                className="w-full py-3 rounded-2xl text-slate dark:text-darkText/70 font-medium hover:text-obsidian dark:hover:text-darkText hover:bg-obsidian/5 dark:hover:bg-darkText/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
