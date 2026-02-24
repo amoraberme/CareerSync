@@ -35,9 +35,13 @@ export default function CoreEngine({ session, setCurrentView }) {
 
         setIsParsing(true);
         try {
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
             const response = await fetch('/api/parse', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(currentSession?.access_token && { 'Authorization': `Bearer ${currentSession.access_token}` })
+                },
                 body: JSON.stringify({ text: pastedText })
             });
             const data = await response.json();

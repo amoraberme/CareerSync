@@ -1,13 +1,20 @@
+import { verifyAuth } from './_lib/authMiddleware.js';
+
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    try {
-        const { tier, userId } = req.body;
+    // 1. Verify Authentication — userId comes from JWT, not client body
+    const user = await verifyAuth(req, res);
+    if (!user) return; // 401 already sent by middleware
 
-        if (!tier || !userId) {
-            return res.status(400).json({ error: 'Missing tier or userId' });
+    try {
+        const { tier } = req.body;
+        const userId = user.id; // Server-verified, not client-supplied
+
+        if (!tier) {
+            return res.status(400).json({ error: 'Missing tier' });
         }
 
         const secretKey = process.env.PAYMONGO_SECRET_KEY;

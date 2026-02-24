@@ -107,9 +107,13 @@ const useWorkspaceStore = create((set, get) => ({
             set({ creditBalance: creditBalance - 1 });
 
             // 4. Proceed with the heavy Gemini AI serverless function
+            const accessToken = session?.access_token;
             const response = await fetch('/api/analyze', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(accessToken && { 'Authorization': `Bearer ${accessToken}` })
+                },
                 body: JSON.stringify({ jobTitle, industry, description, resumeData })
             });
             const data = await response.json();

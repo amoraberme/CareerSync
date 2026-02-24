@@ -1,6 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Check, CreditCard, ShieldCheck, AlertCircle, Download } from 'lucide-react';
 import gsap from 'gsap';
+import { supabase } from '../supabaseClient';
+
 export default function Billing({ session }) {
     const containerRef = useRef(null);
     const [isProcessing, setIsProcessing] = useState(null);
@@ -20,15 +22,14 @@ export default function Billing({ session }) {
 
         setIsProcessing(tier);
         try {
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
             const response = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    ...(currentSession?.access_token && { 'Authorization': `Bearer ${currentSession.access_token}` })
                 },
-                body: JSON.stringify({
-                    tier,
-                    userId: session.user.id
-                })
+                body: JSON.stringify({ tier })
             });
 
             const data = await response.json();
