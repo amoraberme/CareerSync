@@ -6,6 +6,7 @@ export default function Profile({ session, setCurrentView }) {
     const [profileData, setProfileData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
     const [toast, setToast] = useState(null);
 
@@ -59,6 +60,11 @@ export default function Profile({ session, setCurrentView }) {
             return;
         }
 
+        if (newPassword !== confirmPassword) {
+            setToast({ message: 'Passwords do not match.', type: 'error' });
+            return;
+        }
+
         setIsUpdatingPassword(true);
         setToast(null);
 
@@ -67,6 +73,7 @@ export default function Profile({ session, setCurrentView }) {
             if (error) throw error;
             setToast({ message: 'Password updated successfully.', type: 'success' });
             setNewPassword('');
+            setConfirmPassword('');
         } catch (error) {
             setToast({ message: error.message || 'Failed to update password.', type: 'error' });
         } finally {
@@ -156,6 +163,17 @@ export default function Profile({ session, setCurrentView }) {
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
                                 placeholder="Min. 6 characters"
+                                className="w-full bg-background dark:bg-darkCard border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-xl px-4 py-3 mb-4 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors"
+                            />
+
+                            <label className="text-xs font-mono uppercase tracking-widest text-slate dark:text-darkText/50 mb-2 flex items-center">
+                                <Key className="w-3 h-3 mr-2 opacity-50" /> Confirm Password
+                            </label>
+                            <input
+                                type="password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                placeholder="Re-enter password"
                                 className="w-full bg-background dark:bg-darkCard border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors"
                             />
                         </div>
@@ -173,7 +191,7 @@ export default function Profile({ session, setCurrentView }) {
 
                         <button
                             type="submit"
-                            disabled={isUpdatingPassword || !newPassword}
+                            disabled={isUpdatingPassword || !newPassword || !confirmPassword}
                             className="mt-6 w-full py-4 rounded-2xl bg-obsidian dark:bg-darkText text-background dark:text-darkBg font-bold hover:scale-[1.02] transition-transform shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                         >
                             {isUpdatingPassword ? (
