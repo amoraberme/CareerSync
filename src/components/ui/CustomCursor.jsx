@@ -62,7 +62,13 @@ export default function CustomCursor() {
     }, []);
 
     return (
-        <div style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.3s', pointerEvents: 'none' }} className="hidden md:block">
+        <div
+            style={{
+                opacity: isVisible ? 1 : 0,
+                transition: 'opacity 0.3s'
+            }}
+            className="hidden md:block fixed inset-0 pointer-events-none mix-blend-difference z-[99999]"
+        >
             <div ref={dotRef} className="cursor-dot"></div>
             <div ref={outlineRef} className="cursor-outline"></div>
         </div>
