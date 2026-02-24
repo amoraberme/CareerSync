@@ -104,7 +104,7 @@ export default function HistoryDashboard({ session, setCurrentView }) {
 
     return (
         <div ref={containerRef} className="max-w-6xl mx-auto py-12 px-6">
-            <div className="flex justify-between items-end mb-12">
+            <div className="flex flex-wrap gap-4 justify-between items-end mb-8">
                 <div>
                     <h2 className="text-4xl font-sans tracking-tight text-obsidian dark:text-darkText mb-2 font-semibold">
                         Application <span className="font-drama italic text-champagne font-normal">History</span>
@@ -112,13 +112,13 @@ export default function HistoryDashboard({ session, setCurrentView }) {
                     <p className="text-slate dark:text-darkText/70 text-lg">Your candidate management dashboard.</p>
                 </div>
                 <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-                    <select value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="bg-white dark:bg-darkCard/40 shadow-sm border border-obsidian/10 dark:border-darkText/10 rounded-full px-4 py-2 text-obsidian dark:text-darkText text-sm focus:outline-none focus:border-champagne/50 outline-none appearance-none cursor-pointer">
+                    <select value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="bg-white dark:bg-darkCard/40 shadow-sm border border-obsidian/10 dark:border-darkText/10 rounded-full px-4 py-3 text-obsidian dark:text-darkText text-sm focus:outline-none focus:border-champagne/50 outline-none appearance-none cursor-pointer">
                         <option value="all">All Dates</option>
                         <option value="7">Last 7 Days</option>
                         <option value="30">Last 30 Days</option>
                     </select>
 
-                    <select value={scoreFilter} onChange={(e) => setScoreFilter(e.target.value)} className="bg-white dark:bg-darkCard/40 shadow-sm border border-obsidian/10 dark:border-darkText/10 rounded-full px-4 py-2 text-obsidian dark:text-darkText text-sm focus:outline-none focus:border-champagne/50 outline-none appearance-none cursor-pointer">
+                    <select value={scoreFilter} onChange={(e) => setScoreFilter(e.target.value)} className="bg-white dark:bg-darkCard/40 shadow-sm border border-obsidian/10 dark:border-darkText/10 rounded-full px-4 py-3 text-obsidian dark:text-darkText text-sm focus:outline-none focus:border-champagne/50 outline-none appearance-none cursor-pointer">
                         <option value="all">All Scores</option>
                         <option value="high">High (71-100%)</option>
                         <option value="medium">Medium (61-70%)</option>

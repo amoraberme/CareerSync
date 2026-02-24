@@ -82,12 +82,12 @@ export default function Billing({ session }) {
                 </p>
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-center">
                 {/* Tier 1: Pay-As-You-Go */}
-                <div className="pricing-card bg-white dark:bg-darkCard/40 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-[2rem] p-8 flex flex-col items-center text-center lg:translate-y-4">
+                <div className="pricing-card bg-white dark:bg-darkCard/40 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-[2rem] p-6 md:p-8 flex flex-col items-center text-center order-2 lg:order-1 lg:translate-y-4">
                     <h3 className="text-2xl font-bold text-obsidian dark:text-darkText mb-2">Base Token</h3>
                     <div className="text-slate dark:text-darkText/70 font-mono text-xs uppercase tracking-widest mb-6">Pay-As-You-Go</div>
-                    <div className="text-5xl font-sans font-bold text-obsidian dark:text-darkText mb-8">100<span className="text-lg text-slate dark:text-darkText/70 font-normal"> / Top-up</span></div>
+                    <div className="text-4xl md:text-5xl font-sans font-bold text-obsidian dark:text-darkText mb-8">100<span className="text-base md:text-lg text-slate dark:text-darkText/70 font-normal"> / Top-up</span></div>
 
                     <div className="text-sm text-obsidian/80 dark:text-darkText/80 bg-background dark:bg-darkCard p-4 rounded-xl border border-obsidian/5 dark:border-darkText/5 mb-8 w-full mt-2 lg:min-h-[100px] flex items-center justify-center">
                         Perfect for quick, one-off tasks. Every top-up grants 10 credits.
@@ -125,14 +125,14 @@ export default function Billing({ session }) {
                     </button>
                 </div>
 
-                {/* Tier 3: Premium (Target - Middle) */}
-                <div className="pricing-card relative bg-white/70 dark:bg-darkCard/60 backdrop-blur-md border-[3px] border-champagne rounded-[2rem] p-10 flex flex-col items-center text-center shadow-xl transform z-10 lg:scale-[1.08]">
+                {/* Tier 3: Premium (Target - Middle, first on mobile) */}
+                <div className="pricing-card relative bg-white/70 dark:bg-darkCard/60 backdrop-blur-md border-[3px] border-champagne rounded-[2rem] p-8 md:p-10 flex flex-col items-center text-center shadow-xl order-1 lg:order-2 z-10">
                     <div className="absolute -top-5 bg-champagne text-obsidian px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest shadow-md">
                         Most Popular
                     </div>
                     <h3 className="text-3xl font-bold text-champagne mb-2">Premium</h3>
                     <div className="text-champagne/80 font-mono text-xs uppercase tracking-widest mb-6">The Professional Upgrade</div>
-                    <div className="text-6xl font-sans font-bold text-obsidian dark:text-darkText mb-2">295<span className="text-xl text-slate dark:text-darkText/70 font-normal"> / mo</span></div>
+                    <div className="text-5xl md:text-6xl font-sans font-bold text-obsidian dark:text-darkText mb-2">295<span className="text-lg md:text-xl text-slate dark:text-darkText/70 font-normal"> / mo</span></div>
 
                     <div className="text-sm text-obsidian/80 dark:text-darkText/80 bg-champagne/10 dark:bg-champagne/5 p-4 rounded-xl border border-champagne/20 dark:border-champagne/10 mb-8 w-full mt-2 lg:min-h-[100px] flex items-center justify-center">
                         For a mathematically insignificant upgrade over the 245 tier, unlock complete workflow freedom and powerful resume optimization.
@@ -167,10 +167,10 @@ export default function Billing({ session }) {
                 </div>
 
                 {/* Tier 2: Standard (Decoy) */}
-                <div className="pricing-card bg-white dark:bg-darkCard/40 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-[2rem] p-8 flex flex-col items-center text-center lg:translate-y-4 relative z-0">
+                <div className="pricing-card bg-white dark:bg-darkCard/40 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-[2rem] p-6 md:p-8 flex flex-col items-center text-center order-3 lg:order-3 lg:translate-y-4 relative z-0">
                     <h3 className="text-2xl font-bold text-obsidian dark:text-darkText mb-2">Standard</h3>
                     <div className="text-slate dark:text-darkText/70 font-mono text-xs uppercase tracking-widest mb-6">Monthly Retainer</div>
-                    <div className="text-5xl font-sans font-bold text-obsidian dark:text-darkText mb-8">245<span className="text-lg text-slate dark:text-darkText/70 font-normal"> / mo</span></div>
+                    <div className="text-4xl md:text-5xl font-sans font-bold text-obsidian dark:text-darkText mb-8">245<span className="text-base md:text-lg text-slate dark:text-darkText/70 font-normal"> / mo</span></div>
 
                     <div className="text-sm text-obsidian/80 dark:text-darkText/80 bg-background dark:bg-darkCard p-4 rounded-xl border border-obsidian/5 dark:border-darkText/5 mb-8 w-full mt-2 lg:min-h-[100px] flex items-center justify-center">
                         Consistent daily access with full export rights, but limited to standard outputs.

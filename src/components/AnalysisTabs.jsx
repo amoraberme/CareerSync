@@ -54,15 +54,15 @@ export default function AnalysisTabs() {
     };
 
     return (
-        <div ref={containerRef} className="max-w-6xl mx-auto py-12 px-6">
-            <div className="flex justify-between items-center mb-8">
-                <button onClick={resetWorkspace} className="text-slate hover:text-obsidian dark:text-darkText/70 dark:hover:text-darkText font-mono text-xs uppercase tracking-widest flex items-center transition-colors">
+        <div ref={containerRef} className="max-w-6xl mx-auto py-8 md:py-12 px-4 md:px-6">
+            <div className="flex flex-col gap-3 md:flex-row md:justify-between md:items-center mb-8">
+                <button onClick={resetWorkspace} className="text-slate hover:text-obsidian dark:text-darkText/70 dark:hover:text-darkText font-mono text-xs uppercase tracking-widest flex items-center transition-colors py-2">
                     <ChevronRight className="w-4 h-4 mr-1 rotate-180" /> Back to Workspace
                 </button>
                 <button
                     onClick={handleExport}
                     disabled={isExporting}
-                    className="flex items-center space-x-2 text-xs font-mono uppercase tracking-widest text-obsidian dark:text-darkText hover:bg-obsidian dark:hover:bg-darkText hover:text-white dark:hover:text-darkBg transition-colors border border-obsidian/10 dark:border-darkText/10 bg-white dark:bg-darkCard shadow-sm px-4 py-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center justify-center space-x-2 text-xs font-mono uppercase tracking-widest text-obsidian dark:text-darkText hover:bg-obsidian dark:hover:bg-darkText hover:text-white dark:hover:text-darkBg transition-colors border border-obsidian/10 dark:border-darkText/10 bg-white dark:bg-darkCard shadow-sm px-4 py-3 md:py-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <Download className="w-4 h-4" />
                     <span>{isExporting ? 'Exporting...' : 'Export Report'}</span>
@@ -73,8 +73,8 @@ export default function AnalysisTabs() {
                 {/* Hero Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
                     {/* Score Card */}
-                    <div className="bg-white/70 dark:bg-darkCard/40 backdrop-blur-xl border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-[2rem] p-8 flex flex-col items-center justify-center text-center">
-                        <div className="relative w-32 h-32 mb-4">
+                    <div className="bg-white/70 dark:bg-darkCard/40 backdrop-blur-xl border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-[2rem] p-6 md:p-8 flex flex-col items-center justify-center text-center">
+                        <div className="relative w-24 h-24 md:w-32 md:h-32 mb-4">
                             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                                 <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(17,17,17,0.05)" strokeWidth="8" />
                                 <circle
@@ -85,7 +85,7 @@ export default function AnalysisTabs() {
                                 />
                             </svg>
                             <div className="absolute inset-0 flex items-center justify-center score-text">
-                                <span className="text-4xl font-sans font-bold text-obsidian dark:text-darkText">{analysisData?.matchScore || 0}<span className="text-xl text-slate dark:text-darkText/70">%</span></span>
+                                <span className="text-3xl md:text-4xl font-sans font-bold text-obsidian dark:text-darkText">{analysisData?.matchScore || 0}<span className="text-lg md:text-xl text-slate dark:text-darkText/70">%</span></span>
                             </div>
                         </div>
                         <h3 className="text-lg font-medium text-obsidian dark:text-darkText">Match Processed</h3>
