@@ -128,7 +128,7 @@ export default function HistoryDashboard({ session, setCurrentView }) {
             </div>
 
             <div className="bg-white dark:bg-darkCard/40 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-[2rem] overflow-hidden">
-                <div className="grid grid-cols-6 gap-4 p-6 border-b border-obsidian/5 dark:border-darkText/5 text-xs font-mono uppercase tracking-widest text-slate dark:text-darkText/70">
+                <div className="hidden lg:grid grid-cols-6 gap-4 p-6 border-b border-obsidian/5 dark:border-darkText/5 text-xs font-mono uppercase tracking-widest text-slate dark:text-darkText/70">
                     <div className="col-span-2">Target Role & Company</div>
                     <div>Date</div>
                     <div>Match Score</div>
@@ -143,8 +143,8 @@ export default function HistoryDashboard({ session, setCurrentView }) {
                         <div className="p-12 text-center text-slate dark:text-darkText/70 font-mono text-sm">No analysis history found matching these filters.</div>
                     ) : (
                         filteredApplications.map((app) => (
-                            <div key={app.id} onClick={() => handleRowClick(app)} className="history-row grid grid-cols-6 gap-4 p-6 items-center hover:bg-background dark:hover:bg-darkCard/60 transition-colors group cursor-pointer relative">
-                                <div className="col-span-2">
+                            <div key={app.id} onClick={() => handleRowClick(app)} className="history-row flex flex-col gap-3 p-6 lg:grid lg:grid-cols-6 lg:gap-4 lg:items-center hover:bg-background dark:hover:bg-darkCard/60 transition-colors group cursor-pointer relative">
+                                <div className="lg:col-span-2">
                                     <h4 className="font-medium text-obsidian dark:text-darkText mb-1 group-hover:text-champagne transition-colors">{app.role}</h4>
                                     <p className="text-sm text-slate dark:text-darkText/70">{app.company}</p>
                                 </div>
@@ -168,7 +168,7 @@ export default function HistoryDashboard({ session, setCurrentView }) {
                                         {app.status}
                                     </span>
                                 </div>
-                                <div className="flex justify-end space-x-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="flex justify-end space-x-3 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                     <button onClick={(e) => handleDelete(e, app.id)} className="p-2 text-slate dark:text-darkText/50 hover:text-[#EA4335] hover:bg-[#EA4335]/10 rounded-full transition-colors" title="Delete Analysis">
                                         <Trash2 className="w-4 h-4" />
                                     </button>

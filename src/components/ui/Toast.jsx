@@ -28,7 +28,7 @@ const toastStore = {
         const toast = { id, text, preserve, action, onAction, onUndoAction, type };
 
         if (!toast.preserve) {
-            toast.remaining = 6000;
+            toast.remaining = 4000;
             toast.start = Date.now();
             const close = () => {
                 this.toasts = this.toasts.filter((t) => t.id !== id);
@@ -189,5 +189,5 @@ export const toast = {
     message: (text, options) => { mountContainer(); toastStore.add(text, "message", options?.preserve, options?.action, options?.onAction, options?.onUndoAction); },
     success: (text) => { mountContainer(); toastStore.add(text, "success", false); },
     warning: (text) => { mountContainer(); toastStore.add(text, "warning", false); },
-    error: (text, options) => { mountContainer(); toastStore.add(text, "error", options?.preserve || true, options?.action, options?.onAction); }
+    error: (text, options) => { mountContainer(); toastStore.add(text, "error", options?.preserve ?? false, options?.action, options?.onAction); }
 };
