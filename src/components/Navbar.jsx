@@ -79,30 +79,35 @@ export default function Navbar({ currentView, setCurrentView, onLogout }) {
                         </button>
 
                         {isSettingsOpen && (
-                            <div className="absolute right-0 mt-3 w-56 bg-surface dark:bg-darkCard border border-obsidian/10 dark:border-darkText/10 rounded-2xl shadow-xl py-2 flex flex-col items-start origin-top-right animate-fade-in-up">
-                                <div className="px-5 py-3 border-b border-obsidian/5 dark:border-darkText/5 w-full mb-1">
-                                    <p className="text-xs font-mono text-slate dark:text-darkText/50 uppercase tracking-widest">Account Settings</p>
+                            <div className="absolute right-0 top-full w-56">
+                                {/* Invisible bridge to prevent hover gap */}
+                                <div className="pt-3">
+                                    <div className="bg-surface dark:bg-darkCard border border-obsidian/10 dark:border-darkText/10 rounded-2xl shadow-xl py-2 flex flex-col items-start origin-top-right animate-fade-in-up">
+                                        <div className="px-5 py-3 border-b border-obsidian/5 dark:border-darkText/5 w-full mb-1">
+                                            <p className="text-xs font-mono text-slate dark:text-darkText/50 uppercase tracking-widest">Account Settings</p>
+                                        </div>
+                                        <button
+                                            onClick={() => { setCurrentView('profile'); setIsSettingsOpen(false); }}
+                                            className="w-full text-left px-5 py-3 text-sm font-medium text-obsidian dark:text-darkText hover:bg-obsidian/5 dark:hover:bg-darkText/5 flex items-center transition-colors"
+                                        >
+                                            <User className="w-4 h-4 mr-3 opacity-70" /> Profile
+                                        </button>
+                                        <button
+                                            onClick={() => { toggleTheme(); }}
+                                            className="w-full text-left px-5 py-3 text-sm font-medium text-obsidian dark:text-darkText hover:bg-obsidian/5 dark:hover:bg-darkText/5 flex items-center transition-colors"
+                                        >
+                                            {isDark ? <Sun className="w-4 h-4 mr-3 opacity-70" /> : <Moon className="w-4 h-4 mr-3 opacity-70" />}
+                                            {isDark ? 'Light Mode' : 'Dark Mode'}
+                                        </button>
+                                        <div className="border-t border-obsidian/5 dark:border-darkText/5 my-1 w-full"></div>
+                                        <button
+                                            onClick={() => { onLogout(); setIsSettingsOpen(false); }}
+                                            className="w-full text-left px-5 py-3 text-sm font-medium text-[#EA4335] hover:bg-[#EA4335]/10 dark:hover:bg-[#EA4335]/20 flex items-center transition-colors"
+                                        >
+                                            <LogOut className="w-4 h-4 mr-3 opacity-70" /> Sign out
+                                        </button>
+                                    </div>
                                 </div>
-                                <button
-                                    onClick={() => { setCurrentView('profile'); setIsSettingsOpen(false); }}
-                                    className="w-full text-left px-5 py-3 text-sm font-medium text-obsidian dark:text-darkText hover:bg-obsidian/5 dark:hover:bg-darkText/5 flex items-center transition-colors"
-                                >
-                                    <User className="w-4 h-4 mr-3 opacity-70" /> Profile
-                                </button>
-                                <button
-                                    onClick={() => { toggleTheme(); }}
-                                    className="w-full text-left px-5 py-3 text-sm font-medium text-obsidian dark:text-darkText hover:bg-obsidian/5 dark:hover:bg-darkText/5 flex items-center transition-colors"
-                                >
-                                    {isDark ? <Sun className="w-4 h-4 mr-3 opacity-70" /> : <Moon className="w-4 h-4 mr-3 opacity-70" />}
-                                    {isDark ? 'Light Mode' : 'Dark Mode'}
-                                </button>
-                                <div className="border-t border-obsidian/5 dark:border-darkText/5 my-1 w-full"></div>
-                                <button
-                                    onClick={() => { onLogout(); setIsSettingsOpen(false); }}
-                                    className="w-full text-left px-5 py-3 text-sm font-medium text-[#EA4335] hover:bg-[#EA4335]/10 dark:hover:bg-[#EA4335]/20 flex items-center transition-colors"
-                                >
-                                    <LogOut className="w-4 h-4 mr-3 opacity-70" /> Sign out
-                                </button>
                             </div>
                         )}
                     </div>
