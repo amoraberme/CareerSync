@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { UploadCloud, Link as LinkIcon, FileText, CheckCircle, Wand2, ArrowRight } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle, Wand2, ArrowRight } from 'lucide-react';
 import gsap from 'gsap';
 import { supabase } from '../supabaseClient';
 import useWorkspaceStore from '../store/useWorkspaceStore';
@@ -192,16 +192,16 @@ export default function CoreEngine({ session, setCurrentView }) {
                     <div className="absolute inset-0 bg-white/60 dark:bg-darkBg/60 backdrop-blur-md" onClick={() => setShowPasteModal(false)}></div>
                     <div className="relative bg-white dark:bg-darkBg border border-obsidian/10 dark:border-darkText/10 rounded-[2rem] w-full max-w-lg p-8 shadow-xl animate-fade-in-up">
                         <h3 className="text-2xl font-sans font-semibold text-obsidian dark:text-darkText mb-2">Auto-Fill Listing</h3>
-                        <p className="text-slate dark:text-darkText/60 mb-6 text-sm">Paste the raw URL or text of the job listing. Our engine will extract the core requirements instantly.</p>
+                        <p className="text-slate dark:text-darkText/60 mb-6 text-sm">Paste the full text of the job listing below. Our engine will extract the core requirements instantly.</p>
 
                         <form onSubmit={handleAutoFill}>
                             <div className="mb-6 relative">
-                                <LinkIcon className="absolute left-4 top-4 text-slate w-5 h-5" />
+                                <FileText className="absolute left-4 top-4 text-slate w-5 h-5" />
                                 <textarea
                                     autoFocus
                                     value={pastedText}
                                     onChange={(e) => updateField('pastedText', e.target.value)}
-                                    placeholder="Paste URL or listing text here..."
+                                    placeholder="Paste job listing text here..."
                                     className="w-full bg-surface dark:bg-darkCard/40 border border-obsidian/10 dark:border-darkText/10 shadow-inner rounded-2xl pl-12 pr-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/40 dark:placeholder:text-darkText/40 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors min-h-[120px] resize-none"
                                 ></textarea>
                             </div>
