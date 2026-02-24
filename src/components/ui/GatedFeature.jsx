@@ -27,7 +27,7 @@ export default function GatedFeature({ tier, feature, onUpgrade, fallbackMessage
     return (
         <div className="relative">
             {/* Blurred/dimmed content underneath */}
-            <div className="opacity-30 pointer-events-none select-none blur-[1px]">
+            <div className="opacity-30 pointer-events-none select-none blur-[3px]">
                 {children}
             </div>
 
