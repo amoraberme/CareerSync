@@ -4,14 +4,15 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        background: '#FFFFFF',     // Pure White
-        surface: '#F8F9FA',      // Icy Off-White for subtle sectioning
-        obsidian: '#111111',     // Near Black for heavy high-contrast headings
-        slate: '#666666',        // Medium Gray for elegant readable paragraphs
-        champagne: '#C9A84C',    // Elegant gold accent remains
+        background: 'rgb(var(--color-background) / <alpha-value>)',
+        surface: 'rgb(var(--color-surface) / <alpha-value>)',
+        obsidian: 'rgb(var(--color-obsidian) / <alpha-value>)',
+        slate: 'rgb(var(--color-slate) / <alpha-value>)',
+        champagne: 'rgb(var(--color-champagne) / <alpha-value>)',
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],

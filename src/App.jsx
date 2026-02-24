@@ -76,6 +76,11 @@ function App() {
   const resetWorkspace = useWorkspaceStore(state => state.resetWorkspace);
 
   useEffect(() => {
+    // Initialize Theme
+    if (useWorkspaceStore.getState().isDark) {
+      document.documentElement.classList.add('dark');
+    }
+
     // Initialize Lenis Smooth Scrolling
     const lenis = new Lenis({
       duration: 1.5,
@@ -151,6 +156,19 @@ function App() {
         return <HistoryDashboard session={session} setCurrentView={setCurrentView} />;
       case 'billing':
         return <Billing session={session} />;
+      case 'profile':
+        return (
+          <div className="max-w-4xl mx-auto py-24 px-6 text-center animate-fade-in-up">
+            <div className="w-24 h-24 bg-obsidian/5 border border-obsidian/10 rounded-full mx-auto mb-6 flex items-center justify-center">
+              <span className="text-4xl">👤</span>
+            </div>
+            <h2 className="text-4xl font-sans tracking-tight text-obsidian mb-4 font-semibold">User Profile</h2>
+            <p className="text-slate">Profile management features are currently under construction.</p>
+            <button onClick={() => setCurrentView('workspace')} className="mt-8 bg-obsidian text-background px-6 py-3 rounded-full font-medium shadow-md transition-transform hover:scale-105">
+              Return to Workspace
+            </button>
+          </div>
+        );
       case 'workspace':
       default:
         return analysisData ? (
@@ -163,7 +181,7 @@ function App() {
 
   return (
     <GlobalErrorBoundary>
-      <div className="min-h-screen bg-background text-obsidian selection:bg-obsidian selection:text-white relative font-sans">
+      <div className="min-h-screen bg-background text-obsidian selection:bg-obsidian selection:text-background relative font-sans">
         <Navbar
           currentView={currentView}
           setCurrentView={(v) => {

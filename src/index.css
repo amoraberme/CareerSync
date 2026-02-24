@@ -3,19 +3,41 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-background text-obsidian font-sans antialiased overflow-x-hidden selection:bg-obsidian selection:text-white;
+  :root {
+    --color-background: 255 255 255;
+    --color-surface: 248 249 250;
+    --color-obsidian: 17 17 17;
+    --color-slate: 102 102 102;
+    --color-champagne: 201 168 76;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
+
+  html.dark {
+    --color-background: 13 13 18;
+    --color-surface: 26 26 36;
+    --color-obsidian: 255 255 255;
+    --color-slate: 161 161 170;
+    --color-champagne: 201 168 76;
+  }
+
+  body {
+    @apply bg-background text-obsidian font-sans antialiased overflow-x-hidden selection:bg-obsidian selection:text-background;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-sans tracking-tight;
   }
 }
 
 @layer utilities {
+
   /* Magnetic Button Layer */
   .btn-magnetic {
-    @apply relative overflow-hidden inline-flex items-center justify-center transition-transform hover:scale-[1.03] active:scale-[0.98] duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)];
+    @apply relative overflow-hidden inline-flex items-center justify-center transition-transform hover:scale-[1.03] active:scale-[0.98] duration-300 ease-[cubic-bezier(0.25, 0.46, 0.45, 0.94)];
   }
 }
 

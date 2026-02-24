@@ -1,9 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import useWorkspaceStore from '../store/useWorkspaceStore';
+import { Settings, User, Moon, Sun, LogOut } from 'lucide-react';
 
 export default function Navbar({ currentView, setCurrentView, onLogout }) {
     const [scrolled, setScrolled] = useState(false);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
     const creditBalance = useWorkspaceStore(state => state.creditBalance);
+    const isDark = useWorkspaceStore(state => state.isDark);
+    const toggleTheme = useWorkspaceStore(state => state.toggleTheme);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -11,6 +17,16 @@ export default function Navbar({ currentView, setCurrentView, onLogout }) {
         };
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsSettingsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     return (
@@ -51,9 +67,45 @@ export default function Navbar({ currentView, setCurrentView, onLogout }) {
                         </span>
                         <span className="text-xs font-mono text-slate uppercase tracking-widest">{creditBalance} Credits</span>
                     </div>
-                    <button onClick={onLogout} className="bg-obsidian/5 hover:bg-obsidian/10 text-obsidian text-sm font-medium px-4 py-2 rounded-full transition-colors border border-obsidian/10">
-                        Sign Out
-                    </button>
+
+                    {/* Settings Dropdown */}
+                    <div className="relative" ref={dropdownRef}>
+                        <button
+                            onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                            className={`p-2 rounded-full transition-colors flex items-center justify-center transform active:scale-95 border ${isSettingsOpen ? 'bg-obsidian/10 border-obsidian/20' : 'bg-obsidian/5 hover:bg-obsidian/10 border-obsidian/10'}`}
+                            title="Settings"
+                        >
+                            <Settings className="w-5 h-5 text-obsidian" />
+                        </button>
+
+                        {isSettingsOpen && (
+                            <div className="absolute right-0 mt-3 w-56 bg-surface border border-obsidian/10 rounded-2xl shadow-xl py-2 flex flex-col items-start origin-top-right animate-fade-in-up">
+                                <div className="px-5 py-3 border-b border-obsidian/5 w-full mb-1">
+                                    <p className="text-xs font-mono text-slate uppercase tracking-widest">Account Settings</p>
+                                </div>
+                                <button
+                                    onClick={() => { setCurrentView('profile'); setIsSettingsOpen(false); }}
+                                    className="w-full text-left px-5 py-3 text-sm font-medium text-obsidian hover:bg-obsidian/5 flex items-center transition-colors"
+                                >
+                                    <User className="w-4 h-4 mr-3 opacity-70" /> Profile
+                                </button>
+                                <button
+                                    onClick={() => { toggleTheme(); }}
+                                    className="w-full text-left px-5 py-3 text-sm font-medium text-obsidian hover:bg-obsidian/5 flex items-center transition-colors"
+                                >
+                                    {isDark ? <Sun className="w-4 h-4 mr-3 opacity-70" /> : <Moon className="w-4 h-4 mr-3 opacity-70" />}
+                                    {isDark ? 'Light Mode' : 'Dark Mode'}
+                                </button>
+                                <div className="border-t border-obsidian/5 my-1 w-full"></div>
+                                <button
+                                    onClick={() => { onLogout(); setIsSettingsOpen(false); }}
+                                    className="w-full text-left px-5 py-3 text-sm font-medium text-[#EA4335] hover:bg-[#EA4335]/10 flex items-center transition-colors"
+                                >
+                                    <LogOut className="w-4 h-4 mr-3 opacity-70" /> Sign out
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </nav>
         </div>

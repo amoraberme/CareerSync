@@ -20,6 +20,9 @@ const useWorkspaceStore = create((set, get) => ({
     analysisData: null,
     isAnalyzing: false,
 
+    // Theme state
+    isDark: JSON.parse(localStorage.getItem('theme_isDark')) || false,
+
     // Billing & Credits
     creditBalance: 0,
 
@@ -27,6 +30,17 @@ const useWorkspaceStore = create((set, get) => ({
     updateField: (field, value) => set({ [field]: value }),
 
     setAnalysisData: (data) => set({ analysisData: data }),
+
+    toggleTheme: () => set((state) => {
+        const newIsDark = !state.isDark;
+        localStorage.setItem('theme_isDark', JSON.stringify(newIsDark));
+        if (newIsDark) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        return { isDark: newIsDark };
+    }),
 
     fetchCreditBalance: async (userId) => {
         if (!userId) return;
