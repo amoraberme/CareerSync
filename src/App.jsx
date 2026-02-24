@@ -174,7 +174,7 @@ function App() {
       case 'workspace':
       default:
         return analysisData ? (
-          <AnalysisTabs session={session} />
+          <AnalysisTabs session={session} setCurrentView={setCurrentView} />
         ) : (
           <CoreEngine session={session} setCurrentView={setCurrentView} />
         );

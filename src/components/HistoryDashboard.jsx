@@ -1,8 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Trash2, Calendar, Search, Filter } from 'lucide-react';
+import { Trash2, Calendar, Search, Filter, Lock } from 'lucide-react';
 import gsap from 'gsap';
 import { supabase } from '../supabaseClient';
 import useWorkspaceStore from '../store/useWorkspaceStore';
+import { getHistoryLimit } from '../lib/tierPermissions';
 
 export default function HistoryDashboard({ session, setCurrentView }) {
     const containerRef = useRef(null);
@@ -14,6 +15,7 @@ export default function HistoryDashboard({ session, setCurrentView }) {
     const [scoreFilter, setScoreFilter] = useState('all'); // 'all', 'high', 'medium', 'low'
 
     const { setAnalysisData } = useWorkspaceStore();
+    const userTier = useWorkspaceStore(state => state.userTier);
 
     const hasAnimated = useRef(false);
 
@@ -102,6 +104,11 @@ export default function HistoryDashboard({ session, setCurrentView }) {
         return true;
     });
 
+    // Apply tier-based history limit
+    const historyLimit = getHistoryLimit(userTier);
+    const displayedApplications = filteredApplications.slice(0, historyLimit);
+    const isLimited = filteredApplications.length > historyLimit;
+
     return (
         <div ref={containerRef} className="max-w-6xl mx-auto py-12 px-6">
             <div className="flex flex-wrap gap-4 justify-between items-end mb-8">
@@ -109,7 +116,9 @@ export default function HistoryDashboard({ session, setCurrentView }) {
                     <h2 className="text-4xl font-sans tracking-tight text-obsidian dark:text-darkText mb-2 font-semibold">
                         Application <span className="font-drama italic text-champagne font-normal">History</span>
                     </h2>
-                    <p className="text-slate dark:text-darkText/70 text-lg">Your candidate management dashboard.</p>
+                    <p className="text-slate dark:text-darkText/70 text-lg">
+                        {historyLimit === Infinity ? 'Unlimited history access.' : `Showing ${Math.min(historyLimit, filteredApplications.length)} most recent analyses.`}
+                    </p>
                 </div>
                 <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
                     <select value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="bg-white dark:bg-darkCard/40 shadow-sm border border-obsidian/10 dark:border-darkText/10 rounded-full px-4 py-3 text-obsidian dark:text-darkText text-sm focus:outline-none focus:border-champagne/50 outline-none appearance-none cursor-pointer">
@@ -142,7 +151,7 @@ export default function HistoryDashboard({ session, setCurrentView }) {
                     ) : filteredApplications.length === 0 ? (
                         <div className="p-12 text-center text-slate dark:text-darkText/70 font-mono text-sm">No analysis history found matching these filters.</div>
                     ) : (
-                        filteredApplications.map((app) => (
+                        displayedApplications.map((app) => (
                             <div key={app.id} onClick={() => handleRowClick(app)} className="history-row flex flex-col gap-3 p-6 lg:grid lg:grid-cols-6 lg:gap-4 lg:items-center hover:bg-background dark:hover:bg-darkCard/60 transition-colors group cursor-pointer relative">
                                 <div className="lg:col-span-2">
                                     <h4 className="font-medium text-obsidian dark:text-darkText mb-1 group-hover:text-champagne transition-colors">{app.role}</h4>
@@ -178,6 +187,24 @@ export default function HistoryDashboard({ session, setCurrentView }) {
                     )}
                 </div>
             </div>
+
+            {/* Upgrade banner for base tier users */}
+            {isLimited && (
+                <div className="mt-4 p-5 bg-champagne/5 border border-champagne/20 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center space-x-3">
+                        <Lock className="w-5 h-5 text-champagne shrink-0" />
+                        <p className="text-sm text-obsidian dark:text-darkText">
+                            <strong>{filteredApplications.length - historyLimit} more</strong> analyses hidden. Upgrade for unlimited history.
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => setCurrentView('billing')}
+                        className="bg-champagne text-obsidian px-5 py-2.5 rounded-full text-sm font-bold hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-md whitespace-nowrap"
+                    >
+                        Upgrade Plan
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

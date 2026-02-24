@@ -104,7 +104,7 @@ export default function Billing({ session }) {
                         </div>
                         <div className="flex items-start text-obsidian/90 dark:text-darkText/90">
                             <Check className="w-4 h-4 text-slate dark:text-darkText/70 mr-3 mt-1 shrink-0" />
-                            <span>3-Day History View</span>
+                            <span>5-Recent History View</span>
                         </div>
                         <div className="flex items-start text-[#EA4335]/80 mt-4">
                             <span className="w-4 h-4 mr-3 mt-0.5 shrink-0 text-center font-bold">✕</span>

@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Target, PenTool, LayoutTemplate, Activity, ChevronRight, Download, CheckCircle, ArrowRight } from 'lucide-react';
+import { Target, PenTool, LayoutTemplate, Activity, ChevronRight, Download, CheckCircle, ArrowRight, Lock } from 'lucide-react';
 import gsap from 'gsap';
 import useWorkspaceStore from '../store/useWorkspaceStore';
 import { exportElementToPDF } from '../utils/exportPdf';
+import { canAccess } from '../lib/tierPermissions';
+import GatedFeature from './ui/GatedFeature';
 
-export default function AnalysisTabs() {
+export default function AnalysisTabs({ setCurrentView }) {
     const [activeTab, setActiveTab] = useState('analysis');
     const [isExporting, setIsExporting] = useState(false);
     const { analysisData, resetWorkspace } = useWorkspaceStore();
+    const userTier = useWorkspaceStore(state => state.userTier);
 
     const containerRef = useRef(null);
     const exportRef = useRef(null);
@@ -61,11 +64,19 @@ export default function AnalysisTabs() {
                 </button>
                 <button
                     onClick={handleExport}
-                    disabled={isExporting}
-                    className="flex items-center justify-center space-x-2 text-xs font-mono uppercase tracking-widest text-obsidian dark:text-darkText hover:bg-obsidian dark:hover:bg-darkText hover:text-white dark:hover:text-darkBg transition-colors border border-obsidian/10 dark:border-darkText/10 bg-white dark:bg-darkCard shadow-sm px-4 py-3 md:py-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isExporting || !canAccess(userTier, 'pdf_export')}
+                    title={!canAccess(userTier, 'pdf_export') ? 'Upgrade to Standard or Premium to export' : ''}
+                    className={`flex items-center justify-center space-x-2 text-xs font-mono uppercase tracking-widest transition-colors border border-obsidian/10 dark:border-darkText/10 shadow-sm px-4 py-3 md:py-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed ${canAccess(userTier, 'pdf_export')
+                            ? 'text-obsidian dark:text-darkText hover:bg-obsidian dark:hover:bg-darkText hover:text-white dark:hover:text-darkBg bg-white dark:bg-darkCard'
+                            : 'text-obsidian/40 dark:text-darkText/40 bg-obsidian/5 dark:bg-darkCard/20'
+                        }`}
                 >
-                    <Download className="w-4 h-4" />
-                    <span>{isExporting ? 'Exporting...' : 'Export Report'}</span>
+                    {!canAccess(userTier, 'pdf_export') ? (
+                        <Lock className="w-4 h-4" />
+                    ) : (
+                        <Download className="w-4 h-4" />
+                    )}
+                    <span>{isExporting ? 'Exporting...' : !canAccess(userTier, 'pdf_export') ? 'Upgrade to Export' : 'Export Report'}</span>
                 </button>
             </div>
 
@@ -178,44 +189,46 @@ export default function AnalysisTabs() {
                     )}
 
                     {activeTab === 'optimize' && (
-                        <div className="animate-fade-in space-y-8">
-                            <h3 className="text-xl font-sans font-semibold text-obsidian dark:text-darkText mb-6">Resume Surgery</h3>
+                        <GatedFeature tier={userTier} feature="resume_optimization" onUpgrade={() => setCurrentView('billing')} fallbackMessage="Resume Optimization">
+                            <div className="animate-fade-in space-y-8">
+                                <h3 className="text-xl font-sans font-semibold text-obsidian dark:text-darkText mb-6">Resume Surgery</h3>
 
-                            <div className="bg-white dark:bg-darkCard border border-obsidian/5 dark:border-darkText/5 border-l-4 border-l-champagne shadow-sm rounded-r-xl p-6">
-                                <h4 className="text-champagne font-mono text-sm uppercase tracking-widest mb-2">Strategic Advice</h4>
-                                <ul className="text-slate dark:text-darkText/70 space-y-2 list-disc list-inside">
-                                    {(analysisData?.optimization?.strategicAdvice || ['Review alignment based on analysis results.']).map((advice, idx) => (
-                                        <li key={idx}>{advice}</li>
-                                    ))}
-                                </ul>
-                            </div>
-
-                            <div>
-                                <h4 className="text-sm font-mono uppercase tracking-widest text-slate dark:text-darkText/70 mb-4">ATS Injection Keywords</h4>
-                                <div className="flex flex-wrap gap-2">
-                                    {(analysisData?.optimization?.atsKeywords || []).map((kw, idx) => (
-                                        <span key={idx} className="bg-white dark:bg-darkCard border border-obsidian/10 dark:border-darkText/10 text-obsidian dark:text-darkText shadow-sm px-4 py-2 rounded-lg text-sm font-medium">
-                                            {kw}
-                                        </span>
-                                    ))}
+                                <div className="bg-white dark:bg-darkCard border border-obsidian/5 dark:border-darkText/5 border-l-4 border-l-champagne shadow-sm rounded-r-xl p-6">
+                                    <h4 className="text-champagne font-mono text-sm uppercase tracking-widest mb-2">Strategic Advice</h4>
+                                    <ul className="text-slate dark:text-darkText/70 space-y-2 list-disc list-inside">
+                                        {(analysisData?.optimization?.strategicAdvice || ['Review alignment based on analysis results.']).map((advice, idx) => (
+                                            <li key={idx}>{advice}</li>
+                                        ))}
+                                    </ul>
                                 </div>
-                            </div>
 
-                            <div>
-                                <h4 className="text-sm font-mono uppercase tracking-widest text-slate dark:text-darkText/70 mb-4">Structural Edits</h4>
-                                <div className="space-y-4">
-                                    {(analysisData?.optimization?.structuralEdits || []).map((edit, idx) => (
-                                        <div key={idx} className="flex flex-col md:flex-row gap-4 p-4 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-xl bg-white dark:bg-darkCard">
-                                            <div className="text-[#EA4335] line-through opacity-80 w-full md:w-1/2">"{edit.before}"</div>
-                                            <div className="text-[#34A853] font-medium w-full md:w-1/2 flex items-start mt-2 md:mt-0">
-                                                <ArrowRight className="w-4 h-4 text-obsidian/30 dark:text-darkText/30 shrink-0 mr-2 mt-1" />
-                                                <span>"{edit.after}"</span>
+                                <div>
+                                    <h4 className="text-sm font-mono uppercase tracking-widest text-slate dark:text-darkText/70 mb-4">ATS Injection Keywords</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {(analysisData?.optimization?.atsKeywords || []).map((kw, idx) => (
+                                            <span key={idx} className="bg-white dark:bg-darkCard border border-obsidian/10 dark:border-darkText/10 text-obsidian dark:text-darkText shadow-sm px-4 py-2 rounded-lg text-sm font-medium">
+                                                {kw}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 className="text-sm font-mono uppercase tracking-widest text-slate dark:text-darkText/70 mb-4">Structural Edits</h4>
+                                    <div className="space-y-4">
+                                        {(analysisData?.optimization?.structuralEdits || []).map((edit, idx) => (
+                                            <div key={idx} className="flex flex-col md:flex-row gap-4 p-4 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-xl bg-white dark:bg-darkCard">
+                                                <div className="text-[#EA4335] line-through opacity-80 w-full md:w-1/2">"{edit.before}"</div>
+                                                <div className="text-[#34A853] font-medium w-full md:w-1/2 flex items-start mt-2 md:mt-0">
+                                                    <ArrowRight className="w-4 h-4 text-obsidian/30 dark:text-darkText/30 shrink-0 mr-2 mt-1" />
+                                                    <span>"{edit.after}"</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </GatedFeature>
                     )}
                 </div>
                 {/* End Export Container */}

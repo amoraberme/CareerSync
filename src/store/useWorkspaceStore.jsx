@@ -26,6 +26,9 @@ const useWorkspaceStore = create((set, get) => ({
     // Billing & Credits
     creditBalance: 1,
 
+    // Subscription tier
+    userTier: 'base',
+
     // Actions
     updateField: (field, value) => set({ [field]: value }),
 
@@ -47,16 +50,19 @@ const useWorkspaceStore = create((set, get) => ({
         try {
             const { data, error } = await supabase
                 .from('user_profiles')
-                .select('current_credit_balance')
+                .select('current_credit_balance, tier')
                 .eq('id', userId)
                 .single();
 
             if (error) throw error;
             if (data) {
-                set({ creditBalance: data.current_credit_balance });
+                set({
+                    creditBalance: data.current_credit_balance,
+                    userTier: data.tier || 'base'
+                });
             }
         } catch (error) {
-            console.error("Error fetching credit balance:", error);
+            console.error("Error fetching user profile:", error);
         }
     },
 
