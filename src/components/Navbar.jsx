@@ -69,7 +69,7 @@ export default function Navbar({ currentView, setCurrentView, onLogout }) {
                     </div>
 
                     {/* Settings Dropdown */}
-                    <div className="relative" ref={dropdownRef}>
+                    <div className="relative" ref={dropdownRef} onMouseLeave={() => setIsSettingsOpen(false)}>
                         <button
                             onClick={() => setIsSettingsOpen(!isSettingsOpen)}
                             className={`p-2 rounded-full transition-colors flex items-center justify-center transform active:scale-95 border ${isSettingsOpen ? 'bg-obsidian/10 dark:bg-darkText/10 border-obsidian/20 dark:border-darkText/20' : 'bg-obsidian/5 dark:bg-darkText/5 hover:bg-obsidian/10 dark:hover:bg-darkText/10 border-obsidian/10 dark:border-darkText/10'}`}
