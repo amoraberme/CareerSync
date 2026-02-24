@@ -11,14 +11,6 @@
     --color-champagne: 201 168 76;
   }
 
-  html.dark {
-    --color-background: 13 13 18;
-    --color-surface: 26 26 36;
-    --color-obsidian: 255 255 255;
-    --color-slate: 161 161 170;
-    --color-champagne: 201 168 76;
-  }
-
   body {
     @apply bg-background text-obsidian font-sans antialiased overflow-x-hidden selection:bg-obsidian selection:text-background;
   }

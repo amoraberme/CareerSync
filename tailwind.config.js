@@ -13,6 +13,11 @@ export default {
         obsidian: 'rgb(var(--color-obsidian) / <alpha-value>)',
         slate: 'rgb(var(--color-slate) / <alpha-value>)',
         champagne: 'rgb(var(--color-champagne) / <alpha-value>)',
+
+        // Exact original dark mode theme (pre-Snow White)
+        darkBg: '#0D0D12',     // Original 'obsidian'
+        darkCard: '#2A2A35',   // Original 'slate'
+        darkText: '#FFFFFF',   // Original 'surface'
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],

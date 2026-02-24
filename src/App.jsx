@@ -192,7 +192,7 @@ function App() {
 
   return (
     <GlobalErrorBoundary>
-      <div className="min-h-screen bg-background text-obsidian selection:bg-obsidian selection:text-background relative font-sans">
+      <div className="min-h-screen bg-background text-obsidian dark:bg-darkBg dark:text-darkText selection:bg-obsidian selection:text-background dark:selection:bg-champagne dark:selection:text-darkBg relative font-sans">
         <Navbar
           currentView={currentView}
           setCurrentView={(v) => {
@@ -211,17 +211,17 @@ function App() {
 
         {/* Global Loading Overlay for AI Analysis */}
         {isAnalyzing && (
-          <div className="fixed inset-0 z-[100] bg-white/60 backdrop-blur-md flex flex-col items-center justify-center p-4">
-            <div className="bg-surface border border-obsidian/5 rounded-3xl p-10 flex flex-col items-center shadow-2xl max-w-sm w-full animate-fade-in-up text-center">
-              <div className="w-16 h-16 border-4 border-obsidian/10 border-t-obsidian rounded-full animate-spin mb-6 shadow-sm"></div>
-              <h3 className="text-xl font-sans font-bold text-obsidian mb-2">Analyzing Profile...</h3>
-              <p className="text-slate text-sm">Our AI is comparing your resume against the target role and generating your custom strategic report.</p>
+          <div className="fixed inset-0 z-[100] bg-white/60 dark:bg-darkBg/60 backdrop-blur-md flex flex-col items-center justify-center p-4">
+            <div className="bg-surface dark:bg-darkCard border border-obsidian/5 dark:border-darkText/5 rounded-3xl p-10 flex flex-col items-center shadow-2xl max-w-sm w-full animate-fade-in-up text-center">
+              <div className="w-16 h-16 border-4 border-obsidian/10 dark:border-darkText/10 border-t-obsidian dark:border-t-darkText rounded-full animate-spin mb-6 shadow-sm"></div>
+              <h3 className="text-xl font-sans font-bold text-obsidian dark:text-darkText mb-2">Analyzing Profile...</h3>
+              <p className="text-slate dark:text-darkText/60 text-sm">Our AI is comparing your resume against the target role and generating your custom strategic report.</p>
             </div>
           </div>
         )}
 
         {/* Footer */}
-        <footer className="mt-auto py-8 text-center text-slate/50 text-xs font-mono uppercase tracking-widest border-t border-obsidian/5 bg-surface/50">
+        <footer className="mt-auto py-8 text-center text-slate/50 dark:text-darkText/30 text-xs font-mono uppercase tracking-widest border-t border-obsidian/5 dark:border-darkText/5 bg-surface/50 dark:bg-darkCard/10">
           <p>&copy; 2026 Career Sync. All rights reserved.</p>
         </footer>
       </div>
