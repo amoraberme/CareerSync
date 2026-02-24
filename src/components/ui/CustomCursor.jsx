@@ -1,33 +1,39 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 export default function CustomCursor() {
     const dotRef = useRef(null);
     const outlineRef = useRef(null);
+    const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
-        // Only apply if the device has a fine pointer (like a mouse, NOT a touchscreen)
-        if (!window.matchMedia("(pointer: fine)").matches) return;
+        // Broad mobile fallback: ignore screens < 768px Width entirely
+        if (window.innerWidth <= 768) return;
 
         const cursorDot = dotRef.current;
         const cursorOutline = outlineRef.current;
         if (!cursorDot || !cursorOutline) return;
 
-        // Force body cursor to none dynamically when we mount (active fine pointer)
+        // Force body cursor to none dynamically when we mount
         document.body.style.cursor = 'none';
+        document.documentElement.classList.add('custom-cursor-active');
+
+        let hasMoved = false;
 
         // 1. Core tracking loop
         const onMouseMove = (e) => {
+            if (!hasMoved) {
+                setIsVisible(true);
+                hasMoved = true;
+            }
             const posX = e.clientX;
             const posY = e.clientY;
 
-            // Dot translates instantly
-            cursorDot.style.left = `${posX}px`;
-            cursorDot.style.top = `${posY}px`;
+            // Dot translates instantly via hardware-accelerated transforms
+            cursorDot.style.transform = `translate3d(${posX}px, ${posY}px, 0) translate(-50%, -50%)`;
 
             // Outline animates to location with a 500ms delay for elastic trailing
             cursorOutline.animate({
-                left: `${posX}px`,
-                top: `${posY}px`
+                transform: `translate3d(${posX}px, ${posY}px, 0) translate(-50%, -50%)`
             }, { duration: 500, fill: "forwards" });
         };
 
@@ -51,13 +57,14 @@ export default function CustomCursor() {
             window.removeEventListener("mousemove", onMouseMove);
             document.documentElement.removeEventListener("mouseover", onMouseOver);
             document.body.style.cursor = 'auto'; // Restore normal cursor
+            document.documentElement.classList.remove('custom-cursor-active');
         };
     }, []);
 
     return (
-        <React.Fragment>
-            <div ref={dotRef} className="cursor-dot z-[10001] pointer-events-none mix-blend-difference hidden sm:block"></div>
-            <div ref={outlineRef} className="cursor-outline z-[10001] pointer-events-none mix-blend-difference hidden sm:block"></div>
-        </React.Fragment>
+        <div style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.3s', pointerEvents: 'none' }} className="hidden md:block">
+            <div ref={dotRef} className="cursor-dot"></div>
+            <div ref={outlineRef} className="cursor-outline"></div>
+        </div>
     );
 }
