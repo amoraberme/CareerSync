@@ -66,11 +66,13 @@ import AnalysisTabs from './components/AnalysisTabs';
 import HistoryDashboard from './components/HistoryDashboard';
 import Billing from './components/Billing';
 import Profile from './components/Profile';
+import UpdatePassword from './components/UpdatePassword';
 
 function App() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [currentView, setCurrentView] = useState('workspace'); // workspace, history, billing
+  const [currentView, setCurrentView] = useState('workspace');
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   const analysisData = useWorkspaceStore(state => state.analysisData);
   const isAnalyzing = useWorkspaceStore(state => state.isAnalyzing);
@@ -136,10 +138,16 @@ function App() {
     } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
 
+      if (event === 'PASSWORD_RECOVERY') {
+        // User clicked the password reset link from their email
+        setIsPasswordRecovery(true);
+        return;
+      }
+
       if (event === 'SIGNED_OUT' || (!session && event === 'TOKEN_REFRESHED')) {
-        // Token refresh failed or user signed out — clean up
         setSession(null);
         setCurrentView('workspace');
+        setIsPasswordRecovery(false);
         return;
       }
 
@@ -156,6 +164,18 @@ function App() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-obsidian/20 border-t-obsidian rounded-full animate-spin"></div>
       </div>
+    );
+  }
+
+  // Show password reset form when user arrives via reset link
+  if (isPasswordRecovery && session) {
+    return (
+      <UpdatePassword
+        onComplete={() => {
+          setIsPasswordRecovery(false);
+          setCurrentView('workspace');
+        }}
+      />
     );
   }
 
