@@ -14,6 +14,44 @@ export default async function handler(req, res) {
             return res.status(500).json({ error: 'No GEMINI_API_KEY configured.' });
         }
 
+        const promptPart = {
+            text: `
+      You are an expert career consultant and technical recruiter. 
+      Analyze the following candidate's resume against the provided job description.
+      
+      Job Title: ${jobTitle}
+      Industry: ${industry}
+      Job Description: ${description}
+      
+      Return a strict JSON object containing EXACTLY these keys:
+      - matchScore (number 1-100)
+      - summary (short paragraph explaining the score)
+      - matchedProfile (array of objects, each with 'skill' and 'description' strings)
+      - gapAnalysis (array of objects, each with 'missingSkill' and 'description' strings)
+      - coverLetter (generated text pivoting the candidate's background to fit the role, 3 paragraphs)
+      - optimization (an object with three arrays of strings: 'strategicAdvice', 'structuralEdits' (which is an array of objects showing 'before' and 'after'), and 'atsKeywords')
+      
+      Do not include any extra fields or text.
+    `};
+
+        const parts = [promptPart];
+
+        if (resumeData && resumeData.mimeType === 'application/pdf') {
+            parts.push({
+                inlineData: {
+                    data: resumeData.data,
+                    mimeType: resumeData.mimeType
+                }
+            });
+        } else if (resumeData && resumeData.mimeType.startsWith('text/')) {
+            const decodedText = Buffer.from(resumeData.data, 'base64').toString('utf-8');
+            parts[0].text += `\n\nResume Context (Extracted Text):\n${decodedText}`;
+        } else if (resumeData) {
+            parts[0].text += `\n\nResume Context: The user uploaded a file named ${resumeData.name}, but its contents could not be extracted. Use standard inferences based on the job requirements.`;
+        } else {
+            parts[0].text += `\n\nResume Context: ${resumeText || "Senior Frontend Developer, 5 years Experience. React, Tailwind, GSAP. No WebGL."}`;
+        }
+
         let result = null;
         let lastError = null;
 
