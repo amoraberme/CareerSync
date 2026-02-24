@@ -3,7 +3,6 @@ import { Mail, ChevronRight, Github } from 'lucide-react';
 import gsap from 'gsap';
 import { supabase } from '../supabaseClient';
 import { ReviewCard } from './ui/card-1';
-import { AnimatePresence } from 'framer-motion';
 
 const features = [
     {
@@ -134,20 +133,61 @@ export default function Auth({ onLogin }) {
 
                 <div
                     className="h-full w-full flex flex-col items-center justify-center relative overflow-hidden"
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
                 >
-                    <AnimatePresence>
-                        <ReviewCard
-                            key={`feature-${activeIndex}`}
-                            {...features[activeIndex]}
-                            initial={{ opacity: 0, y: 50, filter: "blur(10px)" }}
-                            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                            exit={{ opacity: 0, y: -50, filter: "blur(10px)" }}
-                            transition={{ duration: 0.8, ease: "easeInOut" }}
-                            className="absolute"
-                        />
-                    </AnimatePresence>
+                    {features.map((feature, idx) => {
+                        let diff = idx - (activeIndex % features.length);
+                        if (diff < 0) diff += features.length;
+
+                        const isExiting = diff === features.length - 1;
+
+                        let y = 0;
+                        let scale = 1;
+                        let opacity = 1;
+                        let zIndex = 50;
+                        let filter = "blur(0px)";
+
+                        if (diff === 0) {
+                            y = 0;
+                            scale = 1;
+                            opacity = 1;
+                            zIndex = 50;
+                        } else if (diff === 1) {
+                            y = 20;
+                            scale = 0.95;
+                            opacity = 0.8;
+                            zIndex = 40;
+                        } else if (diff === 2) {
+                            y = 40;
+                            scale = 0.9;
+                            opacity = 0.5;
+                            zIndex = 30;
+                        } else if (isExiting) {
+                            y = -100;
+                            scale = 1.05;
+                            opacity = 0;
+                            filter = "blur(10px)";
+                            zIndex = 60; // Exiting card flies over the front card
+                        } else {
+                            // hidden in back
+                            y = 60;
+                            scale = 0.85;
+                            opacity = 0;
+                            filter = "blur(4px)";
+                            zIndex = 10;
+                        }
+
+                        return (
+                            <ReviewCard
+                                key={`feature-${idx}`}
+                                {...feature}
+                                animate={{ y, scale, opacity, filter, zIndex }}
+                                transition={{ duration: 1, ease: "easeInOut" }}
+                                className="absolute"
+                                onMouseEnter={() => setIsHovered(true)}
+                                onMouseLeave={() => setIsHovered(false)}
+                            />
+                        );
+                    })}
                 </div>
 
                 <div className="absolute top-10 left-12 z-20">

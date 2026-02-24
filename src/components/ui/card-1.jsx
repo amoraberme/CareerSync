@@ -4,10 +4,12 @@ import { motion } from "framer-motion";
 import { cn } from "../../lib/utils";
 
 const ReviewCard = React.forwardRef(
-    ({ name, handle, review, rating, imageUrl, className, variants, initial, animate, exit, transition, custom }, ref) => {
+    ({ name, handle, review, rating, imageUrl, className, variants, initial, animate, exit, transition, custom, onMouseEnter, onMouseLeave }, ref) => {
         return (
             <motion.div
                 ref={ref}
+                onMouseEnter={onMouseEnter}
+                onMouseLeave={onMouseLeave}
                 className={cn(
                     "bg-white dark:bg-darkCard text-obsidian dark:text-darkText border border-obsidian/10 dark:border-darkText/10 rounded-2xl p-6 shadow-sm w-full max-w-sm mx-auto",
                     className
