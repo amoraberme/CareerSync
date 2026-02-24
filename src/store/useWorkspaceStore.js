@@ -60,13 +60,26 @@ const useWorkspaceStore = create((set, get) => ({
         }
     },
 
-    runAnalysis: async (session) => {
+    runAnalysis: async (session, navigateToBilling) => {
         set({ isAnalyzing: true, analysisData: null });
         const { jobTitle, industry, description, resumeData, creditBalance } = get();
 
         // 1. Check for sufficient credits locally first
         if (creditBalance < 1) {
-            alert("Insufficient Credits. Please top up your account to run an AI Analysis.");
+            import('../components/ui/Toast').then(({ toast }) => {
+                toast.error(
+                    <div className="flex flex-col">
+                        <strong className="font-bold text-lg mb-1">Insufficient Credits</strong>
+                        <span className="opacity-90">Please top up your account or upgrade your tier to continue analyzing.</span>
+                    </div>,
+                    {
+                        action: "Upgrade Plan",
+                        onAction: () => {
+                            if (navigateToBilling) navigateToBilling();
+                        }
+                    }
+                );
+            });
             set({ isAnalyzing: false });
             return;
         }

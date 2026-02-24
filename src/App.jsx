@@ -175,7 +175,7 @@ function App() {
         return analysisData ? (
           <AnalysisTabs session={session} />
         ) : (
-          <CoreEngine session={session} />
+          <CoreEngine session={session} setCurrentView={setCurrentView} />
         );
     }
   };

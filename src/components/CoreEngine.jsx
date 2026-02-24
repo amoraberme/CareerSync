@@ -4,7 +4,7 @@ import gsap from 'gsap';
 import { supabase } from '../supabaseClient';
 import useWorkspaceStore from '../store/useWorkspaceStore';
 
-export default function CoreEngine({ session }) {
+export default function CoreEngine({ session, setCurrentView }) {
     const [showPasteModal, setShowPasteModal] = useState(false);
     const [isParsing, setIsParsing] = useState(false);
     const {
@@ -173,7 +173,7 @@ export default function CoreEngine({ session }) {
                     </div>
 
                     <button
-                        onClick={() => runAnalysis(session)}
+                        onClick={() => runAnalysis(session, () => setCurrentView('billing'))}
                         disabled={!jobTitle || !resumeUploaded || isAnalyzing}
                         className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg ${jobTitle && resumeUploaded && !isAnalyzing
                             ? 'bg-obsidian dark:bg-darkText text-background dark:text-darkBg hover:bg-obsidian/90 dark:hover:bg-darkText/90 hover:scale-[1.02] active:scale-[0.98] btn-magnetic cursor-pointer'
