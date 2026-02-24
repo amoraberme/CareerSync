@@ -4,6 +4,19 @@
 
 @layer base {
   :root {
+    /* === Snow White Luxe Design System === */
+    --color-background: 250 249 246;
+    /* #FAF9F6 - Warm off-white */
+    --color-surface: 242 240 235;
+    /* #F2F0EB - Subtle cream */
+    --color-obsidian: 26 26 26;
+    /* #1A1A1A - Near-black */
+    --color-slate: 120 113 108;
+    /* #78716C - Warm gray */
+    --color-champagne: 196 163 100;
+    /* #C4A364 - Gold accent */
+
+    /* === shadcn/ui Variables === */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
