@@ -7,7 +7,14 @@ export default function Billing({ session }) {
 
     const handleCheckout = async (tier) => {
         if (!session?.user?.id) {
-            alert('Please log in to proceed with checkout.');
+            import('./ui/Toast').then(({ toast }) => {
+                toast.error(
+                    <div className="flex flex-col">
+                        <strong className="font-bold text-lg mb-1">Authentication Required</strong>
+                        <span className="opacity-90">Please log in to proceed with checkout.</span>
+                    </div>
+                );
+            });
             return;
         }
 
@@ -36,7 +43,14 @@ export default function Billing({ session }) {
             }
         } catch (error) {
             console.error('Checkout error:', error);
-            alert('Unable to initialize checkout. Please try again.');
+            import('./ui/Toast').then(({ toast }) => {
+                toast.error(
+                    <div className="flex flex-col">
+                        <strong className="font-bold text-lg mb-1">Checkout Failed</strong>
+                        <span className="opacity-90">Unable to initialize checkout. Please try again.</span>
+                    </div>
+                );
+            });
         } finally {
             setIsProcessing(null);
         }

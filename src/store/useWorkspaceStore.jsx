@@ -91,7 +91,14 @@ const useWorkspaceStore = create((set, get) => ({
             if (rpcError || !rpcSuccess) {
                 console.error("RPC Deduction Error:", rpcError || "Function returned false (Insufficient balance natively)");
                 const errorMsg = rpcError?.message || "Insufficient balance or missing database function. Please ensure the Phase 16 SQL script completed fully.";
-                alert(`Transaction failed: ${errorMsg}`);
+                import('../components/ui/Toast').then(({ toast }) => {
+                    toast.error(
+                        <div className="flex flex-col">
+                            <strong className="font-bold text-lg mb-1">Transaction Failed</strong>
+                            <span className="opacity-90">{errorMsg}</span>
+                        </div>
+                    );
+                });
                 set({ isAnalyzing: false });
                 return;
             }
