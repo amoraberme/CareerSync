@@ -7,11 +7,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#FAF8F5',
-        surface: '#FFFFFF',
-        obsidian: '#0D0D12',
-        slate: '#2A2A35',
-        champagne: '#C9A84C', // Elegant accent
+        background: '#FFFFFF',     // Pure White
+        surface: '#F8F9FA',      // Icy Off-White for subtle sectioning
+        obsidian: '#111111',     // Near Black for heavy high-contrast headings
+        slate: '#666666',        // Medium Gray for elegant readable paragraphs
+        champagne: '#C9A84C',    // Elegant gold accent remains
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],

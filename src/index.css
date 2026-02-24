@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-background text-obsidian font-sans antialiased overflow-x-hidden;
+    @apply bg-background text-obsidian font-sans antialiased overflow-x-hidden selection:bg-obsidian selection:text-white;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -19,7 +19,7 @@
   }
 }
 
-/* Global Noise Overlay */
+/* Global Noise Overlay - Inverted opacity and composite for light backgrounds */
 .noise-overlay {
   position: fixed;
   top: 0;
@@ -28,5 +28,6 @@
   height: 100vh;
   pointer-events: none;
   z-index: 9999;
-  opacity: 0.05;
+  opacity: 0.03;
+  mix-blend-mode: multiply;
 }

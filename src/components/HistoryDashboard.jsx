@@ -100,19 +100,19 @@ export default function HistoryDashboard({ session, setCurrentView }) {
         <div ref={containerRef} className="max-w-6xl mx-auto py-12 px-6">
             <div className="flex justify-between items-end mb-12">
                 <div>
-                    <h2 className="text-4xl font-sans tracking-tight text-surface mb-2 font-semibold">
+                    <h2 className="text-4xl font-sans tracking-tight text-obsidian mb-2 font-semibold">
                         Application <span className="font-drama italic text-champagne font-normal">History</span>
                     </h2>
-                    <p className="text-surface/60 text-lg">Your candidate management dashboard.</p>
+                    <p className="text-slate text-lg">Your candidate management dashboard.</p>
                 </div>
                 <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-                    <select value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="bg-slate/40 border border-surface/10 rounded-full px-4 py-2 text-surface text-sm focus:outline-none focus:border-champagne/50 outline-none appearance-none cursor-pointer">
+                    <select value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="bg-white shadow-sm border border-obsidian/10 rounded-full px-4 py-2 text-obsidian text-sm focus:outline-none focus:border-champagne/50 outline-none appearance-none cursor-pointer">
                         <option value="all">All Dates</option>
                         <option value="7">Last 7 Days</option>
                         <option value="30">Last 30 Days</option>
                     </select>
 
-                    <select value={scoreFilter} onChange={(e) => setScoreFilter(e.target.value)} className="bg-slate/40 border border-surface/10 rounded-full px-4 py-2 text-surface text-sm focus:outline-none focus:border-champagne/50 outline-none appearance-none cursor-pointer">
+                    <select value={scoreFilter} onChange={(e) => setScoreFilter(e.target.value)} className="bg-white shadow-sm border border-obsidian/10 rounded-full px-4 py-2 text-obsidian text-sm focus:outline-none focus:border-champagne/50 outline-none appearance-none cursor-pointer">
                         <option value="all">All Scores</option>
                         <option value="high">High (71-100%)</option>
                         <option value="medium">Medium (61-70%)</option>
@@ -121,8 +121,8 @@ export default function HistoryDashboard({ session, setCurrentView }) {
                 </div>
             </div>
 
-            <div className="bg-slate/20 border border-surface/10 rounded-[2rem] overflow-hidden">
-                <div className="grid grid-cols-6 gap-4 p-6 border-b border-surface/10 text-xs font-mono uppercase tracking-widest text-surface/50">
+            <div className="bg-white border border-obsidian/10 shadow-sm rounded-[2rem] overflow-hidden">
+                <div className="grid grid-cols-6 gap-4 p-6 border-b border-obsidian/5 text-xs font-mono uppercase tracking-widest text-slate">
                     <div className="col-span-2">Target Role & Company</div>
                     <div>Date</div>
                     <div>Match Score</div>
@@ -130,19 +130,19 @@ export default function HistoryDashboard({ session, setCurrentView }) {
                     <div className="text-right">Actions</div>
                 </div>
 
-                <div className="divide-y divide-surface/5">
+                <div className="divide-y divide-obsidian/5">
                     {loading ? (
-                        <div className="p-12 text-center text-surface/50 font-mono text-sm">Loading history...</div>
+                        <div className="p-12 text-center text-slate font-mono text-sm">Loading history...</div>
                     ) : filteredApplications.length === 0 ? (
-                        <div className="p-12 text-center text-surface/50 font-mono text-sm">No analysis history found matching these filters.</div>
+                        <div className="p-12 text-center text-slate font-mono text-sm">No analysis history found matching these filters.</div>
                     ) : (
                         filteredApplications.map((app) => (
-                            <div key={app.id} onClick={() => handleRowClick(app)} className="history-row grid grid-cols-6 gap-4 p-6 items-center hover:bg-surface/5 transition-colors group cursor-pointer relative">
+                            <div key={app.id} onClick={() => handleRowClick(app)} className="history-row grid grid-cols-6 gap-4 p-6 items-center hover:bg-background transition-colors group cursor-pointer relative">
                                 <div className="col-span-2">
-                                    <h4 className="font-medium text-surface mb-1 group-hover:text-champagne transition-colors">{app.role}</h4>
-                                    <p className="text-sm text-surface/50">{app.company}</p>
+                                    <h4 className="font-medium text-obsidian mb-1 group-hover:text-champagne transition-colors">{app.role}</h4>
+                                    <p className="text-sm text-slate">{app.company}</p>
                                 </div>
-                                <div className="text-surface/70 flex items-center text-sm">
+                                <div className="text-obsidian/70 flex items-center text-sm">
                                     <Calendar className="w-4 h-4 mr-2 opacity-50" />
                                     {app.date}
                                 </div>
@@ -151,19 +151,19 @@ export default function HistoryDashboard({ session, setCurrentView }) {
                                         <div className={`w-8 h-8 rounded-full border flex items-center justify-center font-bold text-sm ${app.score >= 71 ? 'border-[#34A853]/30 text-[#34A853] bg-[#34A853]/10' : app.score >= 61 ? 'border-champagne/30 text-champagne bg-champagne/10' : 'border-[#EA4335]/30 text-[#EA4335] bg-[#EA4335]/10'}`}>
                                             {app.score}
                                         </div>
-                                        <span className="text-xs text-surface/40">/100</span>
+                                        <span className="text-xs text-slate">/100</span>
                                     </div>
                                 </div>
                                 <div>
                                     <span className={`px-3 py-1 text-xs rounded-full border ${app.status === 'Interviewing' ? 'bg-[#34A853]/10 border-[#34A853]/30 text-[#34A853]' :
                                         app.status === 'Applied' ? 'bg-[#0B66C2]/10 border-[#0B66C2]/30 text-[#0B66C2]' :
-                                            'bg-surface/10 border-surface/20 text-surface/70'
+                                            'bg-obsidian/5 border-obsidian/10 text-obsidian/70'
                                         }`}>
                                         {app.status}
                                     </span>
                                 </div>
                                 <div className="flex justify-end space-x-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button onClick={(e) => handleDelete(e, app.id)} className="p-2 text-surface/50 hover:text-[#EA4335] hover:bg-[#EA4335]/10 rounded-full transition-colors" title="Delete Analysis">
+                                    <button onClick={(e) => handleDelete(e, app.id)} className="p-2 text-slate hover:text-[#EA4335] hover:bg-[#EA4335]/10 rounded-full transition-colors" title="Delete Analysis">
                                         <Trash2 className="w-4 h-4" />
                                     </button>
                                 </div>
