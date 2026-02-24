@@ -74,13 +74,24 @@ function App() {
   const analysisData = useWorkspaceStore(state => state.analysisData);
   const isAnalyzing = useWorkspaceStore(state => state.isAnalyzing);
   const resetWorkspace = useWorkspaceStore(state => state.resetWorkspace);
+  const isDark = useWorkspaceStore(state => state.isDark);
 
+  // Theme Enforcement Effect
   useEffect(() => {
-    // Initialize Theme
-    if (useWorkspaceStore.getState().isDark) {
-      document.documentElement.classList.add('dark');
+    if (loading) {
+      // During initial load, respect the saved preference to prevent light flashes
+      if (isDark) document.documentElement.classList.add('dark');
+      return;
     }
 
+    if (session && isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [session, isDark, loading]);
+
+  useEffect(() => {
     // Initialize Lenis Smooth Scrolling
     const lenis = new Lenis({
       duration: 1.5,
