@@ -50,7 +50,11 @@ export default function Auth({ onLogin }) {
                 }
             }
         } catch (error) {
-            setError(error.message);
+            if (error.message.includes('rate limit') || error.message.includes('Email rate limit exceeded')) {
+                setError('Rate limit exceeded. For development, please disable "Enable Email Confirmations" in your Supabase Auth Providers settings, or wait a few minutes.');
+            } else {
+                setError(error.message);
+            }
         }
     };
 
