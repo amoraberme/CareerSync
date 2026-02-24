@@ -15,6 +15,8 @@ export default function HistoryDashboard({ session, setCurrentView }) {
 
     const { setAnalysisData } = useWorkspaceStore();
 
+    const hasAnimated = useRef(false);
+
     useEffect(() => {
         async function fetchHistory() {
             if (!session?.user) return;
@@ -39,20 +41,24 @@ export default function HistoryDashboard({ session, setCurrentView }) {
         }
 
         fetchHistory();
+    }, [session]);
+
+    // GSAP entrance animation — runs once after first data load
+    useEffect(() => {
+        if (loading || applications.length === 0 || hasAnimated.current) return;
+        hasAnimated.current = true;
 
         let ctx = gsap.context(() => {
-            if (!loading && applications.length > 0) {
-                gsap.from('.history-row', {
-                    y: 20,
-                    opacity: 0,
-                    stagger: 0.1,
-                    duration: 0.8,
-                    ease: 'power3.out'
-                });
-            }
+            gsap.from('.history-row', {
+                y: 20,
+                opacity: 0,
+                stagger: 0.1,
+                duration: 0.8,
+                ease: 'power3.out'
+            });
         }, containerRef);
         return () => ctx.revert();
-    }, [session, loading, applications.length]);
+    }, [loading, applications.length]);
 
     const handleDelete = async (e, id) => {
         e.stopPropagation(); // Prevent row click

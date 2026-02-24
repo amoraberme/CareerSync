@@ -77,20 +77,14 @@ function App() {
   const resetWorkspace = useWorkspaceStore(state => state.resetWorkspace);
   const isDark = useWorkspaceStore(state => state.isDark);
 
-  // Theme Enforcement Effect
+  // Theme Enforcement Effect — applies regardless of session so Auth page respects saved preference
   useEffect(() => {
-    if (loading) {
-      // During initial load, respect the saved preference to prevent light flashes
-      if (isDark) document.documentElement.classList.add('dark');
-      return;
-    }
-
-    if (session && isDark) {
+    if (isDark) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, [session, isDark, loading]);
+  }, [isDark]);
 
   useEffect(() => {
     // Initialize Lenis Smooth Scrolling
@@ -122,7 +116,6 @@ function App() {
       supabase.auth.getSession().then(({ data: { session }, error }) => {
         if (error) {
           console.error("Session fetch error:", error);
-          // If session is totally busted (corrupt localstorage), wipe it
           localStorage.removeItem('supabase.auth.token');
         }
         setSession(session);
@@ -140,8 +133,16 @@ function App() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
+
+      if (event === 'SIGNED_OUT' || (!session && event === 'TOKEN_REFRESHED')) {
+        // Token refresh failed or user signed out — clean up
+        setSession(null);
+        setCurrentView('workspace');
+        return;
+      }
+
       if (session?.user?.id) {
         useWorkspaceStore.getState().fetchCreditBalance(session.user.id);
       }

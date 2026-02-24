@@ -158,8 +158,7 @@ const useWorkspaceStore = create((set, get) => ({
         resumeFileName: '',
         resumeFileSize: '',
         analysisData: null,
-        isAnalyzing: false,
-        creditBalance: 1
+        isAnalyzing: false
     })
 }));
 
