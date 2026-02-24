@@ -65,6 +65,7 @@ import CoreEngine from './components/CoreEngine';
 import AnalysisTabs from './components/AnalysisTabs';
 import HistoryDashboard from './components/HistoryDashboard';
 import Billing from './components/Billing';
+import Profile from './components/Profile';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -168,18 +169,7 @@ function App() {
       case 'billing':
         return <Billing session={session} />;
       case 'profile':
-        return (
-          <div className="max-w-4xl mx-auto py-24 px-6 text-center animate-fade-in-up">
-            <div className="w-24 h-24 bg-obsidian/5 border border-obsidian/10 rounded-full mx-auto mb-6 flex items-center justify-center">
-              <span className="text-4xl">👤</span>
-            </div>
-            <h2 className="text-4xl font-sans tracking-tight text-obsidian mb-4 font-semibold">User Profile</h2>
-            <p className="text-slate">Profile management features are currently under construction.</p>
-            <button onClick={() => setCurrentView('workspace')} className="mt-8 bg-obsidian text-background px-6 py-3 rounded-full font-medium shadow-md transition-transform hover:scale-105">
-              Return to Workspace
-            </button>
-          </div>
-        );
+        return <Profile session={session} setCurrentView={setCurrentView} />;
       case 'workspace':
       default:
         return analysisData ? (
