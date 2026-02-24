@@ -69,7 +69,7 @@ create trigger on_auth_user_created
 
 -- 1. Alter existing user_profiles (acting as 'users' table) to hold credits
 alter table user_profiles 
-add column current_credit_balance integer default 0 not null;
+add column current_credit_balance integer default 1 not null;
 
 -- 2. Create the 'plans' table
 create table plans (

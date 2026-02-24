@@ -30,13 +30,13 @@ export default function Profile({ session, setCurrentView }) {
 
                 if (error && error.code !== 'PGRST116') throw error; // Ignore 'No rows' error
 
-                const credits = data?.current_credit_balance || 0;
+                const credits = data?.current_credit_balance ?? 1;
                 const tier = data?.plans?.plan_name || 'Basic';
 
                 setProfileData({ email, uid, tier, credits });
             } catch (error) {
                 console.error('Error fetching profile:', error);
-                setProfileData({ email: session?.user?.email, uid: session?.user?.id, tier: 'Basic', credits: 0 });
+                setProfileData({ email: session?.user?.email, uid: session?.user?.id, tier: 'Basic', credits: 1 });
             } finally {
                 setLoading(false);
             }

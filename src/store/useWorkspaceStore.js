@@ -24,7 +24,7 @@ const useWorkspaceStore = create((set, get) => ({
     isDark: JSON.parse(localStorage.getItem('theme_isDark')) || false,
 
     // Billing & Credits
-    creditBalance: 0,
+    creditBalance: 1,
 
     // Actions
     updateField: (field, value) => set({ [field]: value }),
@@ -135,7 +135,7 @@ const useWorkspaceStore = create((set, get) => ({
         resumeFileSize: '',
         analysisData: null,
         isAnalyzing: false,
-        creditBalance: 0
+        creditBalance: 1
     })
 }));
 
