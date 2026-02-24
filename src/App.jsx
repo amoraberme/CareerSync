@@ -66,6 +66,7 @@ import AnalysisTabs from './components/AnalysisTabs';
 import HistoryDashboard from './components/HistoryDashboard';
 import Billing from './components/Billing';
 import Profile from './components/Profile';
+import CustomCursor from './components/ui/CustomCursor';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -182,6 +183,7 @@ function App() {
 
   return (
     <GlobalErrorBoundary>
+      <CustomCursor />
       <div className="min-h-screen bg-background text-obsidian dark:bg-darkBg dark:text-darkText selection:bg-obsidian selection:text-background dark:selection:bg-champagne dark:selection:text-darkBg relative font-sans">
         <Navbar
           currentView={currentView}

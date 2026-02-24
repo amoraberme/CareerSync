@@ -181,7 +181,7 @@ export default function Auth({ onLogin }) {
                                 key={`feature-${idx}`}
                                 {...feature}
                                 animate={{ y, scale, opacity, filter, zIndex }}
-                                transition={{ duration: 1, ease: "easeInOut" }}
+                                transition={{ duration: 0.8, ease: "easeInOut" }}
                                 className="absolute"
                                 onMouseEnter={() => setIsHovered(true)}
                                 onMouseLeave={() => setIsHovered(false)}
