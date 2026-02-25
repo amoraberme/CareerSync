@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { Check, CreditCard, ShieldCheck, AlertCircle, Download, X, QrCode, Smartphone, ExternalLink, Loader2, CheckCircle2, RefreshCw, Clock } from 'lucide-react';
+import { Check, CreditCard, ShieldCheck, AlertCircle, Download, X, QrCode, Smartphone, ExternalLink, Loader2, CheckCircle2, RefreshCw, Clock, Receipt, FileText, ChevronRight } from 'lucide-react';
 import gsap from 'gsap';
 import { supabase } from '../supabaseClient';
 import useWorkspaceStore from '../store/useWorkspaceStore';
@@ -21,6 +21,12 @@ export default function Billing({ session }) {
     // Dynamic checkout QR modal state (Standard/Premium)
     const [qrModal, setQrModal] = useState(null);
     const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+
+    // ═══ Invoice / Payment History Modal State ═══
+    const [showInvoice, setShowInvoice] = useState(false);
+    const [invoiceHistory, setInvoiceHistory] = useState([]);
+    const [invoiceLoading, setInvoiceLoading] = useState(false);
+    const [invoiceError, setInvoiceError] = useState('');
 
     const fetchCreditBalance = useWorkspaceStore(state => state.fetchCreditBalance);
 
@@ -358,6 +364,29 @@ export default function Billing({ session }) {
         return () => ctx.revert();
     }, []);
 
+    // ─── Fetch invoice history from backend ───
+    const fetchInvoiceHistory = async () => {
+        setShowInvoice(true);
+        setInvoiceLoading(true);
+        setInvoiceError('');
+        try {
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+            const response = await fetch('/api/payment-history', {
+                method: 'GET',
+                headers: {
+                    ...(currentSession?.access_token && { 'Authorization': `Bearer ${currentSession.access_token}` })
+                }
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Failed to load history.');
+            setInvoiceHistory(data.history || []);
+        } catch (err) {
+            setInvoiceError(err.message);
+        } finally {
+            setInvoiceLoading(false);
+        }
+    };
+
     return (
         <div ref={containerRef} className="max-w-7xl mx-auto py-12 px-6">
 
@@ -400,9 +429,18 @@ export default function Billing({ session }) {
             )}
 
             <div className="text-center mb-16">
-                <h2 className="text-4xl font-sans tracking-tight text-obsidian dark:text-darkText mb-4 font-semibold">
-                    Strategic <span className="font-drama italic text-champagne font-normal">Advantage</span>
-                </h2>
+                <div className="flex items-center justify-center gap-4 mb-4">
+                    <h2 className="text-4xl font-sans tracking-tight text-obsidian dark:text-darkText font-semibold">
+                        Strategic <span className="font-drama italic text-champagne font-normal">Advantage</span>
+                    </h2>
+                    <button
+                        onClick={fetchInvoiceHistory}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl border border-obsidian/10 dark:border-darkText/10 text-sm font-semibold text-slate dark:text-darkText/70 hover:bg-obsidian/5 dark:hover:bg-darkText/5 hover:text-champagne dark:hover:text-champagne transition-all"
+                    >
+                        <Receipt className="w-4 h-4" />
+                        Invoice History
+                    </button>
+                </div>
                 <p className="text-slate dark:text-darkText/70 max-w-2xl mx-auto text-lg leading-relaxed">
                     Choose the intelligence capacity that matches your professional throughput. Lock in your precision toolkit today.
                 </p>
@@ -726,6 +764,114 @@ export default function Billing({ session }) {
                                     Credits are granted automatically after payment is confirmed.
                                 </p>
                             </>
+                        )}
+                    </div>
+                </div>
+            )}\r
+            {/* ════════════════════════════════════════════════════
+                Invoice / Payment History Modal
+               ════════════════════════════════════════════════════ */}
+            {showInvoice && (
+                <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-white/70 dark:bg-darkBg/70 backdrop-blur-md" onClick={() => setShowInvoice(false)} />
+
+                    <div className="relative bg-white dark:bg-darkBg border border-obsidian/10 dark:border-darkText/10 rounded-[2rem] w-full max-w-2xl shadow-2xl flex flex-col max-h-[85vh]">
+
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-8 pt-7 pb-4 border-b border-obsidian/8 dark:border-darkText/8 shrink-0">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl bg-champagne/10 flex items-center justify-center">
+                                    <Receipt className="w-5 h-5 text-champagne" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-obsidian dark:text-darkText">Invoice History</h3>
+                                    <p className="text-xs text-slate dark:text-darkText/50">All your past credit purchases</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowInvoice(false)} className="text-slate/50 hover:text-obsidian dark:hover:text-darkText transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="overflow-y-auto flex-1 px-8 py-6">
+                            {invoiceLoading && (
+                                <div className="flex flex-col items-center justify-center py-16">
+                                    <Loader2 className="w-8 h-8 text-champagne animate-spin mb-3" />
+                                    <p className="text-sm text-slate dark:text-darkText/50">Loading your history...</p>
+                                </div>
+                            )}
+                            {invoiceError && !invoiceLoading && (
+                                <div className="flex flex-col items-center justify-center py-16">
+                                    <AlertCircle className="w-8 h-8 text-[#EA4335] mb-3" />
+                                    <p className="text-sm text-slate dark:text-darkText/50">{invoiceError}</p>
+                                </div>
+                            )}
+                            {!invoiceLoading && !invoiceError && invoiceHistory.length === 0 && (
+                                <div className="flex flex-col items-center justify-center py-16">
+                                    <FileText className="w-10 h-10 text-obsidian/15 dark:text-darkText/15 mb-4" />
+                                    <p className="text-sm font-semibold text-obsidian dark:text-darkText mb-1">No payments yet</p>
+                                    <p className="text-xs text-slate dark:text-darkText/50">Your payment history will appear here after your first purchase.</p>
+                                </div>
+                            )}
+                            {!invoiceLoading && !invoiceError && invoiceHistory.length > 0 && (
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="border-b border-obsidian/8 dark:border-darkText/8">
+                                            <th className="text-left text-xs font-semibold text-slate dark:text-darkText/50 uppercase tracking-wider pb-3">Date & Time</th>
+                                            <th className="text-left text-xs font-semibold text-slate dark:text-darkText/50 uppercase tracking-wider pb-3">Tier</th>
+                                            <th className="text-right text-xs font-semibold text-slate dark:text-darkText/50 uppercase tracking-wider pb-3">Amount</th>
+                                            <th className="text-right text-xs font-semibold text-slate dark:text-darkText/50 uppercase tracking-wider pb-3">Credits</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {invoiceHistory.map((row, i) => {
+                                            const date = new Date(row.date);
+                                            const tierColors = {
+                                                base: 'bg-slate/10 text-slate dark:bg-darkText/10 dark:text-darkText/70',
+                                                standard: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+                                                premium: 'bg-champagne/15 text-champagne',
+                                            };
+                                            return (
+                                                <tr key={row.id} className="border-b border-obsidian/5 dark:border-darkText/5 hover:bg-obsidian/2 dark:hover:bg-darkText/2 transition-colors">
+                                                    <td className="py-4">
+                                                        <div className="font-medium text-obsidian dark:text-darkText">
+                                                            {date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                        </div>
+                                                        <div className="text-xs text-slate dark:text-darkText/40">
+                                                            {date.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' })}
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-4">
+                                                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${tierColors[row.tier] || tierColors.base}`}>
+                                                            {row.tier}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-4 text-right font-mono font-semibold text-obsidian dark:text-darkText">
+                                                        {row.amount_display}
+                                                    </td>
+                                                    <td className="py-4 text-right">
+                                                        <span className="font-bold text-champagne">+{row.credits_gained.toLocaleString()}</span>
+                                                        <span className="text-xs text-slate dark:text-darkText/40 ml-1">cr</span>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+
+                        {/* Footer summary */}
+                        {!invoiceLoading && invoiceHistory.length > 0 && (
+                            <div className="px-8 py-5 border-t border-obsidian/8 dark:border-darkText/8 flex items-center justify-between shrink-0">
+                                <p className="text-xs text-slate dark:text-darkText/40">
+                                    {invoiceHistory.length} transaction{invoiceHistory.length !== 1 ? 's' : ''}
+                                </p>
+                                <p className="text-xs font-semibold text-champagne">
+                                    {invoiceHistory.reduce((sum, r) => sum + r.credits_gained, 0).toLocaleString()} total credits purchased
+                                </p>
+                            </div>
                         )}
                     </div>
                 </div>
