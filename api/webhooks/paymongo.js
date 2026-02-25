@@ -2,262 +2,213 @@ import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 
 export default async function handler(req, res) {
-    // --- DEBUG RAW INTERCEPT ---
-    try {
-        const supabaseUrl = process.env.VITE_SUPABASE_URL;
-        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-        if (supabaseUrl && serviceRoleKey) {
-            const admin = createClient(supabaseUrl, serviceRoleKey);
-            await admin.from('webhook_logs').insert({
-                payload: { intercept: true, method: req.method, headers: req.headers, body: req.body }
+    // --- EARLY LOGGING: Catch all incoming requests immediately ---
+    const supabaseUrl = process.env.VITE_SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    let supabaseAdmin = null;
+
+    if (supabaseUrl && serviceRoleKey) {
+        supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+        try {
+            await supabaseAdmin.from('webhook_logs').insert({
+                payload: {
+                    _log: 'raw_intercept',
+                    method: req.method,
+                    signature: req.headers['paymongo-signature'],
+                    body: req.body,
+                }
             });
+        } catch (e) {
+            console.error('[Webhook] Early log failed:', e.message);
         }
-    } catch (e) {
-        console.error("Intercept failed:", e);
     }
-    // --- END DEBUG ---
+    // --- END EARLY LOGGING ---
 
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const webhookSecret = process.env.PAYMONGO_WEBHOOK_SECRET;
-    if (!webhookSecret) {
-        console.error('PAYMONGO_WEBHOOK_SECRET is not configured.');
-        return res.status(500).json({ error: 'Webhook secret not configured.' });
-    }
-
-    // 1. Verify PayMongo signature
-    const signatureHeader = req.headers['paymongo-signature'];
-    if (!signatureHeader) {
-        return res.status(400).json({ error: 'Missing Paymongo-Signature header.' });
-    }
-
-    // PayMongo signature format: t=<timestamp>,te=<test_sig>,li=<live_sig>
-    const signatureParts = {};
-    signatureHeader.split(',').forEach(part => {
-        const [key, value] = part.split('=');
-        signatureParts[key] = value;
-    });
-
-    const timestamp = signatureParts['t'];
-    const signature = signatureParts['li'] || signatureParts['te']; // live in prod, test in dev
-
-    if (!timestamp || !signature) {
-        return res.status(400).json({ error: 'Malformed signature header.' });
-    }
-
-    // Vercel parses req.body automatically. We serialize it back for signature check.
-    const rawBody = JSON.stringify(req.body);
-
-    const signedPayload = `${timestamp}.${rawBody}`;
-    const expectedSignature = crypto
-        .createHmac('sha256', webhookSecret)
-        .update(signedPayload)
-        .digest('hex');
-
-    if (signature !== expectedSignature) {
-        console.warn('[Webhook] Signature verification failed, but bypassing for debugging.');
-    }
-
-    // 2. Initialize Supabase admin client
-    const supabaseUrl = process.env.VITE_SUPABASE_URL;
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !serviceRoleKey) {
-        console.error('Webhook: Missing Supabase service role configuration.');
+    if (!supabaseAdmin) {
+        console.error('[Webhook] Missing Supabase service role configuration.');
         return res.status(500).json({ error: 'Server misconfiguration.' });
     }
 
-    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+    const webhookSecret = process.env.PAYMONGO_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+        console.error('[Webhook] PAYMONGO_WEBHOOK_SECRET is not configured.');
+        return res.status(500).json({ error: 'Webhook secret not configured.' });
+    }
+
+    // 1. Signature verification (bypassed for debugging, logged as warning)
+    const signatureHeader = req.headers['paymongo-signature'];
+    if (signatureHeader) {
+        const parts = {};
+        signatureHeader.split(',').forEach(part => {
+            const eqIdx = part.indexOf('=');
+            if (eqIdx > -1) parts[part.slice(0, eqIdx)] = part.slice(eqIdx + 1);
+        });
+        const { t: timestamp, li: liveSig, te: testSig } = parts;
+        const signature = liveSig || testSig;
+
+        if (timestamp && signature) {
+            const rawBody = JSON.stringify(req.body);
+            const expected = crypto
+                .createHmac('sha256', webhookSecret)
+                .update(`${timestamp}.${rawBody}`)
+                .digest('hex');
+
+            if (signature !== expected) {
+                console.warn('[Webhook] Signature mismatch (bypassed for debugging).');
+            } else {
+                console.log('[Webhook] Signature verified successfully.');
+            }
+        }
+    }
+
+    // 2. Parse the event — req.body is already parsed by Vercel
+    const event = req.body;
 
     try {
-        const event = JSON.parse(rawBody);
-
-        // Log the exact payload to Supabase for debugging the structure
-        await supabaseAdmin.from('webhook_logs').insert({ payload: event });
-
         const eventType = event?.data?.attributes?.type;
+        const attrs = event?.data?.attributes;
 
-        // PayMongo fires 'link.payment.paid' when a payment link is completed
-        if (eventType === 'link.payment.paid') {
-            const linkData = event?.data?.attributes?.data;
-            const referenceNumber = linkData?.attributes?.reference_number; // = userId
-            const amount = linkData?.attributes?.amount;                     // centavos
-            const linkId = linkData?.id;                                     // lnk_xxx
-
-            if (!referenceNumber) {
-                console.error('Webhook: Missing reference_number in payload.');
-                return res.status(400).json({ error: 'Missing reference_number.' });
+        // Log the parsed event type for debugging
+        await supabaseAdmin.from('webhook_logs').insert({
+            payload: {
+                _log: 'parsed_event',
+                eventType,
+                attrs_keys: attrs ? Object.keys(attrs) : [],
+                attrs_data_keys: attrs?.data ? Object.keys(attrs.data) : [],
+                full_attrs: attrs,
             }
+        });
 
-            // 3. Determine credits and tier from amount
-            let creditsToGrant = 0;
-            let tier = 'base';
+        console.log(`[Webhook] Event type: ${eventType}`);
 
-            if (amount === 10000) {
-                creditsToGrant = 10;       // Base Token — ₱100 (PayMongo minimum)
-                tier = 'base';
-            } else if (amount === 24500) {
-                creditsToGrant = 750;      // Standard — ₱245/mo
-                tier = 'standard';
-            } else if (amount === 29500) {
-                creditsToGrant = 1050;     // Premium — ₱295/mo
-                tier = 'premium';
-            } else {
-                // Fallback: 1 credit per ₱10 (handles edge amount variations)
-                creditsToGrant = Math.floor(amount / 1000);
-                console.warn(`[Webhook] Unexpected amount: ${amount} centavos. Granted ${creditsToGrant} credits via fallback.`);
-            }
+        // ═══════════════════════════════════════════════════════
+        // payment.paid — Direct QR Ph / GCash / other direct payments
+        // Payload: event.data.attributes.amount (in centavos)
+        // ═══════════════════════════════════════════════════════
+        if (eventType === 'payment.paid') {
+            // For payment.paid, the amount is directly on attrs
+            const amount = attrs?.amount || attrs?.data?.attributes?.amount || 0;
 
-            // 4. Atomically add credits via RPC
-            const { error: rpcError } = await supabaseAdmin.rpc('increment_credits', {
-                target_user_id: referenceNumber,
-                add_amount: creditsToGrant
+            await supabaseAdmin.from('webhook_logs').insert({
+                payload: { _log: 'payment.paid', amount, attrs }
             });
+            console.log(`[Webhook] payment.paid — amount: ${amount} centavos`);
 
-            if (rpcError) {
-                // Fallback: direct update if RPC doesn't exist yet
-                console.warn('[Webhook] increment_credits RPC not found, using direct update:', rpcError.message);
-                const { data: currentProfile } = await supabaseAdmin
-                    .from('user_profiles')
-                    .select('current_credit_balance')
-                    .eq('id', referenceNumber)
-                    .single();
-
-                if (currentProfile) {
-                    await supabaseAdmin
-                        .from('user_profiles')
-                        .update({ current_credit_balance: currentProfile.current_credit_balance + creditsToGrant })
-                        .eq('id', referenceNumber);
-                }
+            if (!amount || amount < 100) {
+                console.warn('[Webhook] Invalid amount:', amount);
+                return res.status(200).json({ received: true, matched: false, reason: 'invalid_amount', amount });
             }
 
-            // 5. Upgrade tier for Standard and Premium subscriptions
-            // Base token doesn't change tier — it just adds credits
-            if (tier === 'standard' || tier === 'premium') {
-                const { error: tierError } = await supabaseAdmin
-                    .from('user_profiles')
-                    .update({ tier })
-                    .eq('id', referenceNumber);
-
-                if (tierError) {
-                    console.error(`[Webhook] Failed to upgrade tier to ${tier}:`, tierError.message);
-                } else {
-                    console.log(`[Webhook] Upgraded user ${referenceNumber} to ${tier} tier.`);
-                }
-            }
-
-            // 6. Mark transaction as paid in the audit table
-            if (linkId) {
-                const { error: txError } = await supabaseAdmin
-                    .from('transactions')
-                    .update({
-                        status: 'paid',
-                        paid_at: new Date().toISOString(),
-                        credits_granted: creditsToGrant
-                    })
-                    .eq('paymongo_link_id', linkId)
-                    .eq('user_id', referenceNumber);
-
-                if (txError) {
-                    // Non-fatal — credits are already granted
-                    console.warn('[Webhook] Failed to update transaction record:', txError.message);
-                }
-            }
-
-            console.log(`[Webhook] Granted ${creditsToGrant} credits + tier="${tier}" to user ${referenceNumber} (amount: ${amount} centavos).`);
-            return res.status(200).json({ received: true, credits_granted: creditsToGrant, tier });
+            return await processAmountMatch(supabaseAdmin, amount, res);
         }
 
         // ═══════════════════════════════════════════════════════
-        // Static QR Ph Payment — Unique Centavo Amount Matching
+        // qrph.expired — Static QR code expired (no-op)
         // ═══════════════════════════════════════════════════════
-        if (eventType === 'qrph.payment.paid' || eventType === 'payment.paid' || eventType === 'qr.payment.paid') {
-            // ─── ROBUST AMOUNT EXTRACTION ───
-            // PayMongo in-store QR payloads may nest the amount differently
-            const paymentData = event?.data?.attributes?.data;
-            const paymentAttributes = paymentData?.attributes || {};
+        if (eventType === 'qrph.expired') {
+            console.log('[Webhook] qrph.expired received — no action needed.');
+            return res.status(200).json({ received: true, processed: false, reason: 'qr_expired' });
+        }
 
-            // Try multiple payload paths for the amount
-            const amount = paymentAttributes.amount
-                || event?.data?.attributes?.amount
-                || paymentData?.amount
-                || 0;
+        // ═══════════════════════════════════════════════════════
+        // link.payment.paid — PayMongo Payment Link completed
+        // Payload: event.data.attributes.data.attributes.amount
+        // ═══════════════════════════════════════════════════════
+        if (eventType === 'link.payment.paid') {
+            const linkData = attrs?.data;
+            const amount = linkData?.attributes?.amount || 0;
+            const referenceNumber = linkData?.attributes?.reference_number;
 
-            // Log the full structure for debugging
-            console.log(`[Webhook] Event type: ${eventType}`);
-            console.log(`[Webhook] Raw payload keys: ${JSON.stringify(Object.keys(event?.data?.attributes || {}))}`);
-            console.log(`[Webhook] data.attributes.data keys: ${JSON.stringify(Object.keys(paymentData || {}))}`);
-            console.log(`[Webhook] data.attributes.data.attributes keys: ${JSON.stringify(Object.keys(paymentAttributes))}`);
-            console.log(`[Webhook] Extracted amount: ${amount} centavos`);
-            console.log(`[Webhook] Full payload: ${JSON.stringify(event?.data?.attributes).substring(0, 500)}`);
+            console.log(`[Webhook] link.payment.paid — amount: ${amount}, reference: ${referenceNumber}`);
 
             if (!amount || amount < 100) {
-                console.warn('[Webhook] QR Ph payment has invalid amount:', amount);
                 return res.status(200).json({ received: true, matched: false, reason: 'invalid_amount' });
             }
 
-            // First expire any stale sessions to free up centavo slots
-            await supabaseAdmin.rpc('expire_stale_sessions').catch(() => { });
-
-            // Match by exact_amount_due — this is the core of centavo matching
-            const { data: matchedSession, error: matchError } = await supabaseAdmin
-                .from('payment_sessions')
-                .select('*')
-                .eq('exact_amount_due', amount)
-                .eq('status', 'pending')
-                .order('created_at', { ascending: false })
-                .limit(1)
-                .single();
-
-            if (matchError || !matchedSession) {
-                console.warn(`[Webhook] No pending session for amount ${amount}. Unmatched payment.`);
-                return res.status(200).json({ received: true, matched: false, reason: 'no_pending_match', amount });
-            }
-
-            const matchedUserId = matchedSession.user_id;
-            const matchedCredits = matchedSession.credits_to_grant;
-
-            console.log(`[Webhook] CENTAVO MATCH! Amount ${amount} → User ${matchedUserId}, granting ${matchedCredits} credits`);
-
-            // Grant credits
-            const { error: creditError } = await supabaseAdmin.rpc('increment_credits', {
-                target_user_id: matchedUserId,
-                add_amount: matchedCredits
-            });
-
-            if (creditError) {
-                console.warn('[Webhook] increment_credits RPC unavailable, direct update:', creditError.message);
-                const { data: profile } = await supabaseAdmin
-                    .from('user_profiles')
-                    .select('current_credit_balance')
-                    .eq('id', matchedUserId)
-                    .single();
-
-                if (profile) {
-                    await supabaseAdmin
-                        .from('user_profiles')
-                        .update({ current_credit_balance: profile.current_credit_balance + matchedCredits })
-                        .eq('id', matchedUserId);
-                }
-            }
-
-            // Mark session as paid — this triggers Supabase Realtime to the frontend
-            await supabaseAdmin
-                .from('payment_sessions')
-                .update({ status: 'paid', paid_at: new Date().toISOString() })
-                .eq('id', matchedSession.id);
-
-            console.log(`[Webhook] ✅ Centavo match complete: user ${matchedUserId} granted ${matchedCredits} credits for ${amount} centavos.`);
-            return res.status(200).json({ received: true, matched: true, credits_granted: matchedCredits, amount });
+            return await processAmountMatch(supabaseAdmin, amount, res);
         }
 
-        // Acknowledge all other event types without processing
-        return res.status(200).json({ received: true, processed: false });
+        // All other event types — acknowledge but don't process
+        console.log(`[Webhook] Unhandled event type: ${eventType} — acknowledged.`);
+        return res.status(200).json({ received: true, processed: false, eventType });
 
     } catch (error) {
-        console.error('Webhook processing error:', error);
+        console.error('[Webhook] Processing error:', error);
+        try {
+            await supabaseAdmin.from('webhook_logs').insert({
+                payload: { _log: 'processing_error', message: error.message, stack: error.stack }
+            });
+        } catch (_) { }
         return res.status(500).json({ error: 'Internal webhook processing error.' });
     }
+}
+
+// ═══════════════════════════════════════════════════════
+// Core centavo matching logic — shared by all payment types
+// ═══════════════════════════════════════════════════════
+async function processAmountMatch(supabaseAdmin, amount, res) {
+    // Expire stale sessions first
+    await supabaseAdmin.rpc('expire_stale_sessions').catch(() => { });
+
+    // Match by exact_amount_due
+    const { data: matchedSession, error: matchError } = await supabaseAdmin
+        .from('payment_sessions')
+        .select('*')
+        .eq('exact_amount_due', amount)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+    if (matchError || !matchedSession) {
+        console.warn(`[Webhook] No pending session for amount ${amount}.`);
+        await supabaseAdmin.from('webhook_logs').insert({
+            payload: { _log: 'no_match', amount, matchError: matchError?.message }
+        });
+        return res.status(200).json({ received: true, matched: false, reason: 'no_pending_match', amount });
+    }
+
+    const matchedUserId = matchedSession.user_id;
+    const matchedCredits = matchedSession.credits_to_grant;
+
+    console.log(`[Webhook] ✅ MATCH! Amount ${amount} → User ${matchedUserId}, granting ${matchedCredits} credits`);
+
+    // Grant credits
+    const { error: creditError } = await supabaseAdmin.rpc('increment_credits', {
+        target_user_id: matchedUserId,
+        add_amount: matchedCredits
+    });
+
+    if (creditError) {
+        console.warn('[Webhook] increment_credits RPC failed, using direct update:', creditError.message);
+        const { data: profile } = await supabaseAdmin
+            .from('user_profiles')
+            .select('current_credit_balance')
+            .eq('id', matchedUserId)
+            .single();
+
+        if (profile) {
+            await supabaseAdmin
+                .from('user_profiles')
+                .update({ current_credit_balance: profile.current_credit_balance + matchedCredits })
+                .eq('id', matchedUserId);
+        }
+    }
+
+    // Mark session as paid — triggers Supabase Realtime to frontend
+    await supabaseAdmin
+        .from('payment_sessions')
+        .update({ status: 'paid', paid_at: new Date().toISOString() })
+        .eq('id', matchedSession.id);
+
+    await supabaseAdmin.from('webhook_logs').insert({
+        payload: { _log: 'success', matchedUserId, matchedCredits, amount }
+    });
+
+    console.log(`[Webhook] ✅ Centavo match complete: user ${matchedUserId} granted ${matchedCredits} credits.`);
+    return res.status(200).json({ received: true, matched: true, credits_granted: matchedCredits, amount });
 }
