@@ -638,66 +638,45 @@ export default function Billing({ session }) {
                                     <h3 className="text-xl font-bold text-obsidian dark:text-darkText">Scan & Pay</h3>
                                 </div>
 
-                                {/* ── Desktop: QR code for scanning | Mobile: GCash deep link ── */}
-                                {isMobile ? (
-                                    <div className="mb-4 w-full">
-                                        {(() => {
-                                            // Use the gateway-provided URL from PayMongo's next_action.redirect.url.
-                                            // This URL routes directly into GCash app's payment confirmation screen.
-                                            // Wrap in Android intent targeting com.globe.gcash.android for reliability.
-                                            const gatewayUrl = paymentSession.gcash_redirect_url;
-                                            const isAndroid = /Android/i.test(navigator.userAgent);
-
-                                            let deepLink;
-                                            if (gatewayUrl) {
-                                                // Extract host + path from the gateway URL for Android intent
-                                                try {
-                                                    const parsed = new URL(gatewayUrl);
-                                                    deepLink = isAndroid
-                                                        ? `intent://${parsed.host}${parsed.pathname}${parsed.search}#Intent;scheme=${parsed.protocol.replace(':', '')};package=com.globe.gcash.android;end`
-                                                        : gatewayUrl; // iOS: open URL directly, GCash handles the app switch
-                                                } catch {
-                                                    deepLink = gatewayUrl; // fallback: open as-is
-                                                }
-                                            } else {
-                                                // Fallback: no gateway URL (intent creation failed) — open amount-only link
-                                                const amount = (paymentSession.exact_amount_due / 100).toFixed(2);
-                                                deepLink = isAndroid
-                                                    ? `intent://pay?amount=${amount}#Intent;scheme=gcash;package=com.globe.gcash.android;end`
-                                                    : `gcash://pay?amount=${amount}`;
-                                            }
-
-                                            return (
-                                                <a
-                                                    href={deepLink}
-                                                    className="flex flex-col items-center justify-center w-full py-5 rounded-2xl bg-[#0070BA] text-white font-bold text-lg shadow-xl active:scale-95 transition-transform mb-3"
-                                                >
-                                                    <div className="flex items-center space-x-2 mb-1">
-                                                        <Smartphone className="w-5 h-5" />
-                                                        <span>Open GCash &amp; Pay</span>
-                                                    </div>
-                                                    <span className="text-xs font-normal opacity-80">
-                                                        {gatewayUrl
-                                                            ? 'Opens GCash payment confirmation screen directly'
-                                                            : 'GCash will open — enter the exact amount shown below'}
-                                                    </span>
-                                                </a>
-                                            );
-                                        })()}
-                                        <p className="text-[11px] text-slate/50 dark:text-darkText/30">
-                                            Confirm <strong className="text-champagne">{paymentSession.display_amount}</strong> in GCash.
-                                            Credits are granted automatically once payment is detected.
-                                        </p>
+                                {/* ── QR Code (shown on all devices) ── */}
+                                <div className="bg-white rounded-2xl border border-obsidian/10 dark:border-darkText/10 p-4 mb-3 inline-block shadow-sm">
+                                    <img src="/static-qr.png" alt="CareerSync Payment QR Code" className="w-44 h-44 mx-auto"
+                                        onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                                    <div className="w-44 h-44 rounded-xl border-2 border-dashed border-obsidian/20 dark:border-darkText/20 items-center justify-center hidden">
+                                        <QrCode className="w-12 h-12 text-obsidian/30 dark:text-darkText/30" />
                                     </div>
-                                ) : (
-                                    <div className="bg-white rounded-2xl border border-obsidian/10 dark:border-darkText/10 p-4 mb-4 inline-block shadow-sm">
-                                        <img src="/static-qr.png" alt="CareerSync Payment QR Code" className="w-44 h-44 mx-auto"
-                                            onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
-                                        <div className="w-44 h-44 rounded-xl border-2 border-dashed border-obsidian/20 dark:border-darkText/20 items-center justify-center hidden">
-                                            <QrCode className="w-12 h-12 text-obsidian/30 dark:text-darkText/30" />
+                                </div>
+
+                                {/* ── Mobile only: small "Open GCash" button below the QR ── */}
+                                {isMobile && (() => {
+                                    const gatewayUrl = paymentSession.gcash_redirect_url;
+                                    const isAndroid = /Android/i.test(navigator.userAgent);
+                                    let deepLink;
+                                    if (gatewayUrl) {
+                                        try {
+                                            const parsed = new URL(gatewayUrl);
+                                            deepLink = isAndroid
+                                                ? `intent://${parsed.host}${parsed.pathname}${parsed.search}#Intent;scheme=${parsed.protocol.replace(':', '')};package=com.globe.gcash.android;end`
+                                                : gatewayUrl;
+                                        } catch { deepLink = gatewayUrl; }
+                                    } else {
+                                        const amount = (paymentSession.exact_amount_due / 100).toFixed(2);
+                                        deepLink = isAndroid
+                                            ? `intent://pay?amount=${amount}#Intent;scheme=gcash;package=com.globe.gcash.android;end`
+                                            : `gcash://pay?amount=${amount}`;
+                                    }
+                                    return (
+                                        <div className="mb-1">
+                                            <a href={deepLink}
+                                                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0070BA] text-white text-sm font-semibold shadow-md active:scale-95 transition-transform">
+                                                <Smartphone className="w-4 h-4" />
+                                                Open GCash
+                                            </a>
+                                            <p className="text-[10px] text-slate/40 dark:text-darkText/30 mt-1">or scan the code above</p>
                                         </div>
-                                    </div>
-                                )}
+                                    );
+                                })()}
+
 
                                 {/* ═══ THE EXACT AMOUNT — this is the key UX element ═══ */}
                                 <div className="bg-champagne/10 border-2 border-champagne/30 rounded-2xl p-4 mb-4">
