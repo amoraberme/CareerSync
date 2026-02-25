@@ -289,7 +289,7 @@ export default function Billing({ session }) {
                                 </p>
                                 <p className="text-xs font-semibold text-obsidian dark:text-darkText mb-6">
                                     Amount: <span className="text-champagne">
-                                        ₱{qrModal.tier === 'base' ? '50' : qrModal.tier === 'standard' ? '245' : '295'}
+                                        ₱{qrModal.tier === 'base' ? '100' : qrModal.tier === 'standard' ? '245' : '295'}
                                     </span>
                                 </p>
 
