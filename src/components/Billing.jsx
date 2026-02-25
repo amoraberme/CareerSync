@@ -9,6 +9,7 @@ const isMobileDevice = () => /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDes
 export default function Billing({ session }) {
     const containerRef = useRef(null);
     const [isProcessing, setIsProcessing] = useState(null);
+    const [isMobile, setIsMobile] = useState(false);
 
     // ═══ CENTAVO MATCHING — Static QR Modal State ═══
     const [showQrModal, setShowQrModal] = useState(false);
@@ -345,6 +346,10 @@ export default function Billing({ session }) {
     };
 
     useEffect(() => {
+        setIsMobile(isMobileDevice());
+    }, []);
+
+    useEffect(() => {
         let ctx = gsap.context(() => {
             gsap.from('.pricing-card', {
                 scale: 0.9, y: 40, opacity: 0, duration: 0.8, stagger: 0.15, ease: 'power3.out'
@@ -595,14 +600,32 @@ export default function Billing({ session }) {
                                     <h3 className="text-xl font-bold text-obsidian dark:text-darkText">Scan & Pay</h3>
                                 </div>
 
-                                {/* Static QR Image */}
-                                <div className="bg-white rounded-2xl border border-obsidian/10 dark:border-darkText/10 p-4 mb-4 inline-block shadow-sm">
-                                    <img src="/static-qr.png" alt="CareerSync Payment QR Code" className="w-44 h-44 mx-auto"
-                                        onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
-                                    <div className="w-44 h-44 rounded-xl border-2 border-dashed border-obsidian/20 dark:border-darkText/20 items-center justify-center hidden">
-                                        <QrCode className="w-12 h-12 text-obsidian/30 dark:text-darkText/30" />
+                                {/* ── Desktop: QR code for scanning | Mobile: GCash deep link ── */}
+                                {isMobile ? (
+                                    <div className="mb-4 w-full">
+                                        <a
+                                            href={`gcash://pay?amount=${(paymentSession.exact_amount_due / 100).toFixed(2)}`}
+                                            className="flex flex-col items-center justify-center w-full py-5 rounded-2xl bg-[#0070BA] text-white font-bold text-lg shadow-xl active:scale-95 transition-transform mb-3"
+                                        >
+                                            <div className="flex items-center space-x-2 mb-1">
+                                                <Smartphone className="w-5 h-5" />
+                                                <span>Open GCash</span>
+                                            </div>
+                                            <span className="text-xs font-normal opacity-80">Tap to open the GCash app directly</span>
+                                        </a>
+                                        <p className="text-[11px] text-slate/50 dark:text-darkText/30">
+                                            Enter <strong className="text-champagne">{paymentSession.display_amount}</strong> as the exact amount in GCash — do NOT round.
+                                        </p>
                                     </div>
-                                </div>
+                                ) : (
+                                    <div className="bg-white rounded-2xl border border-obsidian/10 dark:border-darkText/10 p-4 mb-4 inline-block shadow-sm">
+                                        <img src="/static-qr.png" alt="CareerSync Payment QR Code" className="w-44 h-44 mx-auto"
+                                            onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                                        <div className="w-44 h-44 rounded-xl border-2 border-dashed border-obsidian/20 dark:border-darkText/20 items-center justify-center hidden">
+                                            <QrCode className="w-12 h-12 text-obsidian/30 dark:text-darkText/30" />
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* ═══ THE EXACT AMOUNT — this is the key UX element ═══ */}
                                 <div className="bg-champagne/10 border-2 border-champagne/30 rounded-2xl p-4 mb-4">

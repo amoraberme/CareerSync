@@ -200,10 +200,11 @@ async function processAmountMatch(supabaseAdmin, amount, res) {
 
     const matchedUserId = matchedSession.user_id;
     const matchedCredits = matchedSession.credits_to_grant;
+    const matchedTier = matchedSession.tier; // 'base', 'standard', or 'premium'
 
-    console.log(`[Webhook] ✅ MATCH! Amount ${amount} → User ${matchedUserId}, granting ${matchedCredits} credits`);
+    console.log(`[Webhook] ✅ MATCH! Amount ${amount} → User ${matchedUserId}, tier: ${matchedTier}, granting ${matchedCredits} credits`);
 
-    // Grant credits
+    // ─── Step 1: Grant credits ───
     const { error: creditError } = await supabaseAdmin.rpc('increment_credits', {
         target_user_id: matchedUserId,
         add_amount: matchedCredits
@@ -225,16 +226,33 @@ async function processAmountMatch(supabaseAdmin, amount, res) {
         }
     }
 
-    // Mark session as paid — triggers Supabase Realtime to frontend
+    // ─── Step 2: Upgrade tier if Standard or Premium ───
+    if (matchedTier === 'standard' || matchedTier === 'premium') {
+        const { error: tierError } = await supabaseAdmin
+            .from('user_profiles')
+            .update({
+                tier: matchedTier,
+                credits_reset_date: new Date().toISOString().split('T')[0] // YYYY-MM-DD
+            })
+            .eq('id', matchedUserId);
+
+        if (tierError) {
+            console.warn(`[Webhook] Tier upgrade to '${matchedTier}' failed:`, tierError.message);
+        } else {
+            console.log(`[Webhook] ⬆️ Tier upgraded to '${matchedTier}' for user ${matchedUserId}`);
+        }
+    }
+
+    // ─── Step 3: Mark session as paid — triggers Supabase Realtime to frontend ───
     await supabaseAdmin
         .from('payment_sessions')
         .update({ status: 'paid', paid_at: new Date().toISOString() })
         .eq('id', matchedSession.id);
 
     await supabaseAdmin.from('webhook_logs').insert({
-        payload: { _log: 'success', matchedUserId, matchedCredits, amount }
+        payload: { _log: 'success', matchedUserId, matchedCredits, matchedTier, amount }
     });
 
-    console.log(`[Webhook] ✅ Centavo match complete: user ${matchedUserId} granted ${matchedCredits} credits.`);
-    return res.status(200).json({ received: true, matched: true, credits_granted: matchedCredits, amount });
+    console.log(`[Webhook] ✅ Done: user ${matchedUserId} granted ${matchedCredits} credits, tier = ${matchedTier}.`);
+    return res.status(200).json({ received: true, matched: true, credits_granted: matchedCredits, tier: matchedTier, amount });
 }
