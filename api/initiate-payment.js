@@ -14,15 +14,17 @@ export default async function handler(req, res) {
         const { tier } = req.body;
         const userId = user.id;
 
-        // Tier configuration — only 'base' uses static QR + centavo matching
+        // Tier configuration — all tiers use static QR + centavo matching
         const tierConfig = {
-            base: { base_amount: 100, credits: 10 }   // ₱1.00 base (reduced for testing)
+            base: { base_amount: 100, credits: 10, label: 'Base Token' },     // ₱1.00
+            standard: { base_amount: 200, credits: 750, label: 'Standard' },        // ₱2.00
+            premium: { base_amount: 300, credits: 1050, label: 'Premium' }           // ₱3.00
         };
 
         const config = tierConfig[(tier || 'base').toLowerCase()];
         if (!config) {
             return res.status(400).json({
-                error: 'Centavo matching is only available for Base Token tier.'
+                error: `Invalid tier. Must be one of: ${Object.keys(tierConfig).join(', ')}.`
             });
         }
 

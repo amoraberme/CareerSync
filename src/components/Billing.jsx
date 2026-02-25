@@ -30,7 +30,8 @@ export default function Billing({ session }) {
     const paymentHandledRef = useRef(false); // Guard against double-success
 
     // ─── Initiate Payment: calls /api/initiate-payment to get unique centavo amount ───
-    const handleBaseCheckout = async () => {
+    // Used by ALL tiers — base, standard, and premium all use centavo matching
+    const handleBaseCheckout = async (tierName = 'base') => {
         if (!session?.user?.id) {
             import('./ui/Toast').then(({ toast }) => {
                 toast.error(
@@ -56,7 +57,7 @@ export default function Billing({ session }) {
                     'Content-Type': 'application/json',
                     ...(currentSession?.access_token && { 'Authorization': `Bearer ${currentSession.access_token}` })
                 },
-                body: JSON.stringify({ tier: 'base' })
+                body: JSON.stringify({ tier: tierName })
             });
 
             const data = await response.json();
@@ -407,7 +408,7 @@ export default function Billing({ session }) {
                 <div className="pricing-card bg-white dark:bg-darkCard/40 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-[2rem] p-6 md:p-8 flex flex-col items-center text-center order-2 lg:order-1 lg:translate-y-4">
                     <h3 className="text-2xl font-bold text-obsidian dark:text-darkText mb-2">Base Token</h3>
                     <div className="text-slate dark:text-darkText/70 font-mono text-xs uppercase tracking-widest mb-6">Pay-As-You-Go</div>
-                    <div className="text-4xl md:text-5xl font-sans font-bold text-obsidian dark:text-darkText mb-8">₱5<span className="text-base md:text-lg text-slate dark:text-darkText/70 font-normal"> / Top-up</span></div>
+                    <div className="text-4xl md:text-5xl font-sans font-bold text-obsidian dark:text-darkText mb-8">₱1<span className="text-base md:text-lg text-slate dark:text-darkText/70 font-normal"> / Top-up</span></div>
 
                     <div className="text-sm text-obsidian/80 dark:text-darkText/80 bg-background dark:bg-darkCard p-4 rounded-xl border border-obsidian/5 dark:border-darkText/5 mb-8 w-full mt-2 lg:min-h-[100px] flex items-center justify-center">
                         Perfect for quick, one-off tasks. Every top-up grants 10 credits. Scan QR and pay instantly via GCash or Maya.
@@ -450,7 +451,7 @@ export default function Billing({ session }) {
                     <div className="absolute -top-5 bg-champagne text-obsidian px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest shadow-md">Most Popular</div>
                     <h3 className="text-3xl font-bold text-champagne mb-2">Premium</h3>
                     <div className="text-champagne/80 font-mono text-xs uppercase tracking-widest mb-6">The Professional Upgrade</div>
-                    <div className="text-5xl md:text-6xl font-sans font-bold text-obsidian dark:text-darkText mb-2">₱295<span className="text-lg md:text-xl text-slate dark:text-darkText/70 font-normal"> / mo</span></div>
+                    <div className="text-5xl md:text-6xl font-sans font-bold text-obsidian dark:text-darkText mb-2">₱3<span className="text-lg md:text-xl text-slate dark:text-darkText/70 font-normal"> / mo</span></div>
 
                     <div className="text-sm text-obsidian/80 dark:text-darkText/80 bg-champagne/10 dark:bg-champagne/5 p-4 rounded-xl border border-champagne/20 dark:border-champagne/10 mb-8 w-full mt-2 lg:min-h-[100px] flex items-center justify-center">
                         For a mathematically insignificant upgrade over the 245 tier, unlock complete workflow freedom and powerful resume optimization.
@@ -459,7 +460,7 @@ export default function Billing({ session }) {
                     <div className="space-y-4 mb-8 w-full text-left">
                         <div className="flex items-start text-obsidian dark:text-darkText">
                             <Check className="w-5 h-5 text-champagne mr-3 mt-0.5 shrink-0" />
-                            <span><strong className="text-champagne">35 credits</strong> per day</span>
+                            <span><strong className="text-champagne">1,050 credits</strong> per day</span>
                         </div>
                         <div className="flex items-start text-obsidian dark:text-darkText">
                             <Download className="w-5 h-5 text-champagne mr-3 mt-0.5 shrink-0" />
@@ -476,11 +477,11 @@ export default function Billing({ session }) {
                     </div>
 
                     <button
-                        onClick={() => handleDynamicCheckout('premium')}
-                        disabled={isProcessing !== null}
+                        onClick={() => handleBaseCheckout('premium')}
+                        disabled={sessionStatus === 'loading'}
                         className="mt-auto w-full py-5 rounded-2xl bg-champagne text-obsidian font-bold text-lg hover:scale-[1.02] transition-transform shadow-xl block text-center disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {isProcessing === 'premium' ? 'Securing Premium Access...' : 'Secure Premium Access'}
+                        {sessionStatus === 'loading' ? 'Generating...' : 'Secure Premium Access'}
                     </button>
                 </div>
 
@@ -488,7 +489,7 @@ export default function Billing({ session }) {
                 <div className="pricing-card bg-white dark:bg-darkCard/40 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-[2rem] p-6 md:p-8 flex flex-col items-center text-center order-3 lg:order-3 lg:translate-y-4 relative z-0">
                     <h3 className="text-2xl font-bold text-obsidian dark:text-darkText mb-2">Standard</h3>
                     <div className="text-slate dark:text-darkText/70 font-mono text-xs uppercase tracking-widest mb-6">Monthly Retainer</div>
-                    <div className="text-4xl md:text-5xl font-sans font-bold text-obsidian dark:text-darkText mb-8">₱245<span className="text-base md:text-lg text-slate dark:text-darkText/70 font-normal"> / mo</span></div>
+                    <div className="text-4xl md:text-5xl font-sans font-bold text-obsidian dark:text-darkText mb-8">₱2<span className="text-base md:text-lg text-slate dark:text-darkText/70 font-normal"> / mo</span></div>
 
                     <div className="text-sm text-obsidian/80 dark:text-darkText/80 bg-background dark:bg-darkCard p-4 rounded-xl border border-obsidian/5 dark:border-darkText/5 mb-8 w-full mt-2 lg:min-h-[100px] flex items-center justify-center">
                         Consistent daily access with full export rights, but limited to standard outputs.
@@ -497,7 +498,7 @@ export default function Billing({ session }) {
                     <div className="space-y-4 mb-8 w-full text-left text-sm">
                         <div className="flex items-start text-obsidian/90 dark:text-darkText/90">
                             <Check className="w-4 h-4 text-slate dark:text-darkText/70 mr-3 mt-1 shrink-0" />
-                            <span>25 credits per day</span>
+                            <span>750 credits per day</span>
                         </div>
                         <div className="flex items-start text-obsidian/90 dark:text-darkText/90">
                             <Check className="w-4 h-4 text-slate dark:text-darkText/70 mr-3 mt-1 shrink-0" />
@@ -514,11 +515,11 @@ export default function Billing({ session }) {
                     </div>
 
                     <button
-                        onClick={() => handleDynamicCheckout('standard')}
-                        disabled={isProcessing !== null}
+                        onClick={() => handleBaseCheckout('standard')}
+                        disabled={sessionStatus === 'loading'}
                         className="mt-auto w-full py-4 rounded-2xl bg-obsidian/5 dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 text-obsidian dark:text-darkText hover:bg-obsidian/10 dark:hover:bg-darkText/10 font-bold transition-colors block text-center disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {isProcessing === 'standard' ? 'Initializing Checkout...' : 'Subscribe to Standard'}
+                        {sessionStatus === 'loading' ? 'Generating...' : 'Subscribe to Standard'}
                     </button>
                 </div>
             </div>

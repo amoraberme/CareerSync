@@ -23,11 +23,11 @@ export default async function handler(req, res) {
         }
 
         // Map tiers to amounts (in centavos) and descriptions
-        // ₱50 = 5000 centavos, ₱245 = 24500, ₱295 = 29500
+        // ₱1 = 100 centavos, ₱2 = 200, ₱3 = 300
         const tierMapping = {
-            base: { amount: 10000, credits: 10, description: 'CareerSync Base Token (10 Credits)' },
-            standard: { amount: 24500, credits: 750, description: 'CareerSync Standard (Monthly Retainer)' },
-            premium: { amount: 29500, credits: 1050, description: 'CareerSync Premium (The Professional Upgrade)' }
+            base: { amount: 100, credits: 10, description: 'CareerSync Base Token (10 Credits)' },
+            standard: { amount: 200, credits: 750, description: 'CareerSync Standard (Monthly Retainer)' },
+            premium: { amount: 300, credits: 1050, description: 'CareerSync Premium (The Professional Upgrade)' }
         };
 
         const config = tierMapping[tier.toLowerCase()];
