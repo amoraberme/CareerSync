@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import useWorkspaceStore from '../store/useWorkspaceStore';
-import { User, Lock, Mail, Fingerprint, Award, Coins, Key, ShieldCheck, AlertTriangle, Trash2, ArrowUpRight } from 'lucide-react';
-import { getTierLabel } from '../lib/tierPermissions';
+import { User, Lock, Mail, Fingerprint, Award, Coins, Key, ShieldCheck, AlertTriangle, Trash2 } from 'lucide-react';
 
 export default function Profile({ session, setCurrentView }) {
     const [profileData, setProfileData] = useState(null);
@@ -33,14 +32,13 @@ export default function Profile({ session, setCurrentView }) {
 
                 if (error && error.code !== 'PGRST116') throw error;
 
-                const credits = data?.current_credit_balance ?? 50;
-                // Use the dedicated `tier` column added in Phase 31
-                const tierKey = data?.tier || 'base';
+                const credits = data?.current_credit_balance ?? 1;
+                const tier = data?.tier || 'base';
 
-                setProfileData({ email, uid, tierKey, credits });
+                setProfileData({ email, uid, tier, credits });
             } catch (error) {
                 console.error('Error fetching profile:', error);
-                setProfileData({ email: session?.user?.email, uid: session?.user?.id, tierKey: 'base', credits: 50 });
+                setProfileData({ email: session?.user?.email, uid: session?.user?.id, tier: 'base', credits: 1 });
             } finally {
                 setLoading(false);
             }
@@ -174,22 +172,18 @@ export default function Profile({ session, setCurrentView }) {
                             <div className="bg-background dark:bg-darkCard p-4 rounded-2xl border border-obsidian/5 dark:border-darkText/5 flex flex-col items-center justify-center text-center">
                                 <Award className="w-6 h-6 text-champagne mb-2" />
                                 <span className="text-xs font-mono uppercase tracking-widest text-slate dark:text-darkText/50 mb-2">Current Tier</span>
-                                <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider ${profileData?.tierKey === 'premium'
-                                        ? 'bg-champagne/15 text-champagne border border-champagne/30'
-                                        : profileData?.tierKey === 'standard'
-                                            ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20'
-                                            : 'bg-obsidian/5 dark:bg-darkText/10 text-slate dark:text-darkText/60 border border-obsidian/10 dark:border-darkText/10'
-                                    }`}>
-                                    {getTierLabel(profileData?.tierKey || 'base')}
-                                </span>
-                                {profileData?.tierKey !== 'premium' && (
-                                    <button
-                                        onClick={() => setCurrentView('billing')}
-                                        className="mt-3 flex items-center space-x-1 text-[10px] font-bold text-champagne hover:text-champagne/80 transition-colors"
-                                    >
-                                        <ArrowUpRight className="w-3 h-3" />
-                                        <span>Upgrade</span>
-                                    </button>
+                                {profileData?.tier === 'premium' ? (
+                                    <span className="px-3 py-1 rounded-full text-sm font-bold bg-gradient-to-r from-champagne to-amber-400 text-obsidian shadow-sm">
+                                        Premium ✦
+                                    </span>
+                                ) : profileData?.tier === 'standard' ? (
+                                    <span className="px-3 py-1 rounded-full text-sm font-bold bg-champagne/15 text-champagne border border-champagne/30">
+                                        Standard
+                                    </span>
+                                ) : (
+                                    <span className="px-3 py-1 rounded-full text-sm font-bold bg-obsidian/8 dark:bg-darkText/10 text-obsidian dark:text-darkText border border-obsidian/10 dark:border-darkText/15">
+                                        Base Token
+                                    </span>
                                 )}
                             </div>
 

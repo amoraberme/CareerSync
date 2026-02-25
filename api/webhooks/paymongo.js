@@ -75,7 +75,7 @@ export default async function handler(req, res) {
 
             // Determine credits to grant based on the amount paid
             let creditsToGrant = 0;
-            if (amount === 10000) creditsToGrant = 10;       // Base Token (₱100)
+            if (amount === 5000) creditsToGrant = 10;       // Base Token (₱50)
             else if (amount === 24500) creditsToGrant = 750;  // Standard (₱245/mo)
             else if (amount === 29500) creditsToGrant = 1050; // Premium (₱295/mo)
             else creditsToGrant = Math.floor(amount / 1000);  // Fallback: 1 credit per ₱10
