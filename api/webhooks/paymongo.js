@@ -173,7 +173,7 @@ export default async function handler(req, res) {
         // ═══════════════════════════════════════════════════════
         // Static QR Ph Payment — Unique Centavo Amount Matching
         // ═══════════════════════════════════════════════════════
-        if (eventType === 'qrph.payment.paid' || eventType === 'payment.paid') {
+        if (eventType === 'qrph.payment.paid' || eventType === 'payment.paid' || eventType === 'qr.payment.paid') {
             // ─── ROBUST AMOUNT EXTRACTION ───
             // PayMongo in-store QR payloads may nest the amount differently
             const paymentData = event?.data?.attributes?.data;

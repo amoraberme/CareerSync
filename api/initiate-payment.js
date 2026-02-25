@@ -16,7 +16,7 @@ export default async function handler(req, res) {
 
         // Tier configuration — only 'base' uses static QR + centavo matching
         const tierConfig = {
-            base: { base_amount: 500, credits: 10 }   // ₱5.00 base
+            base: { base_amount: 100, credits: 10 }   // ₱1.00 base (reduced for testing)
         };
 
         const config = tierConfig[(tier || 'base').toLowerCase()];
