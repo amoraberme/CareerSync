@@ -84,7 +84,7 @@ const useWorkspaceStore = create((set, get) => ({
         const isBaseUser = userTier === 'base';
 
         if (isBaseUser && creditBalance < 1) {
-            import('./ui/Toast').then(({ toast }) => {
+            import('../components/ui/Toast').then(({ toast }) => {
                 toast.error(
                     <div className="flex flex-col">
                         <strong className="font-bold text-lg mb-1">Insufficient Credits</strong>
