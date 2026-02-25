@@ -63,7 +63,7 @@ export default function Billing({ session }) {
                 body: JSON.stringify({
                     reference_number: referenceNumber.trim(),
                     tier: 'base',
-                    amount: 5000
+                    amount: 500
                 })
             });
 
@@ -209,7 +209,7 @@ export default function Billing({ session }) {
                 <div className="pricing-card bg-white dark:bg-darkCard/40 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-[2rem] p-6 md:p-8 flex flex-col items-center text-center order-2 lg:order-1 lg:translate-y-4">
                     <h3 className="text-2xl font-bold text-obsidian dark:text-darkText mb-2">Base Token</h3>
                     <div className="text-slate dark:text-darkText/70 font-mono text-xs uppercase tracking-widest mb-6">Pay-As-You-Go</div>
-                    <div className="text-4xl md:text-5xl font-sans font-bold text-obsidian dark:text-darkText mb-8">₱50<span className="text-base md:text-lg text-slate dark:text-darkText/70 font-normal"> / Top-up</span></div>
+                    <div className="text-4xl md:text-5xl font-sans font-bold text-obsidian dark:text-darkText mb-8">₱5<span className="text-base md:text-lg text-slate dark:text-darkText/70 font-normal"> / Top-up</span></div>
 
                     <div className="text-sm text-obsidian/80 dark:text-darkText/80 bg-background dark:bg-darkCard p-4 rounded-xl border border-obsidian/5 dark:border-darkText/5 mb-8 w-full mt-2 lg:min-h-[100px] flex items-center justify-center">
                         Perfect for quick, one-off tasks. Every top-up grants 10 credits. Scan QR and pay instantly via GCash or Maya.
@@ -327,7 +327,7 @@ export default function Billing({ session }) {
             </div>
 
             {/* ════════════════════════════════════════════════════
-                Static QR Modal — Base Token (₱50 micro-transaction)
+                Static QR Modal — Base Token (₱5 micro-transaction)
                ════════════════════════════════════════════════════ */}
             {showQrModal && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
@@ -397,7 +397,7 @@ export default function Billing({ session }) {
                                     Scan with <strong>GCash</strong>, <strong>Maya</strong>, or any QR Ph app
                                 </p>
                                 <p className="text-sm font-semibold text-obsidian dark:text-darkText mb-5">
-                                    Amount: <span className="text-champagne">₱50</span>
+                                    Amount: <span className="text-champagne">₱5</span>
                                 </p>
 
                                 {/* Reference Number Form */}

@@ -32,7 +32,7 @@ export default async function handler(req, res) {
 
         // Determine credits and amount from tier
         const tierConfig = {
-            base: { amount_centavos: 5000, credits: 10 }  // ₱50 micro-transaction via static QR
+            base: { amount_centavos: 500, credits: 10 }  // ₱5 micro-transaction via static QR
         };
 
         const config = tierConfig[(tier || 'base').toLowerCase()];
