@@ -75,8 +75,8 @@ export default async function handler(req, res) {
             let creditsToGrant = 0;
             let tier = 'base';
 
-            if (amount === 5000) {
-                creditsToGrant = 10;       // Base Token — ₱50
+            if (amount === 10000) {
+                creditsToGrant = 10;       // Base Token — ₱100 (PayMongo minimum)
                 tier = 'base';
             } else if (amount === 24500) {
                 creditsToGrant = 750;      // Standard — ₱245/mo
