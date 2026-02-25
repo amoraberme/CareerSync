@@ -150,6 +150,107 @@ export default async function handler(req, res) {
             return res.status(200).json({ received: true, credits_granted: creditsToGrant, tier });
         }
 
+        // ═══════════════════════════════════════════════════════
+        // Static QR Ph Payment — Reference Number Matching
+        // ═══════════════════════════════════════════════════════
+        if (eventType === 'qrph.payment.paid' || eventType === 'payment.paid') {
+            const paymentData = event?.data?.attributes?.data;
+            const paymentAttributes = paymentData?.attributes || {};
+
+            // Extract reference number from webhook
+            const webhookRef = paymentAttributes.reference_number
+                || paymentAttributes.bank_reference
+                || paymentAttributes.statement_descriptor
+                || '';
+
+            const amount = paymentAttributes.amount || 0;
+            const remarks = paymentAttributes.remarks || '';
+
+            // Clean for matching (alphanumeric only)
+            const cleanWebhookRef = webhookRef.replace(/[^a-zA-Z0-9]/g, '');
+
+            console.log(`[Webhook] QR Ph payment — ref: "${webhookRef}", clean: "${cleanWebhookRef}", amount: ${amount}, remarks: "${remarks}"`);
+
+            if (!cleanWebhookRef) {
+                console.warn('[Webhook] QR Ph payment has no reference — cannot auto-match.');
+                return res.status(200).json({ received: true, matched: false, reason: 'no_reference' });
+            }
+
+            // Try exact match first
+            let matchedVerification = null;
+
+            const { data: exactMatch } = await supabaseAdmin
+                .from('payment_verifications')
+                .select('*')
+                .eq('reference_number', cleanWebhookRef)
+                .eq('status', 'pending')
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (exactMatch && exactMatch.length > 0) {
+                matchedVerification = exactMatch[0];
+            } else {
+                // Partial match fallback
+                const { data: allPending } = await supabaseAdmin
+                    .from('payment_verifications')
+                    .select('*')
+                    .eq('status', 'pending')
+                    .order('created_at', { ascending: false })
+                    .limit(50);
+
+                if (allPending) {
+                    matchedVerification = allPending.find(v => {
+                        const userRef = v.reference_number;
+                        return cleanWebhookRef.includes(userRef)
+                            || userRef.includes(cleanWebhookRef)
+                            || cleanWebhookRef.endsWith(userRef)
+                            || userRef.endsWith(cleanWebhookRef);
+                    });
+                }
+            }
+
+            if (!matchedVerification) {
+                console.warn(`[Webhook] No match for QR Ph ref: "${cleanWebhookRef}". Logged for manual review.`);
+                return res.status(200).json({ received: true, matched: false, reason: 'no_pending_match' });
+            }
+
+            const qrUserId = matchedVerification.user_id;
+            const qrCredits = matchedVerification.credits_to_grant;
+
+            console.log(`[Webhook] Matched! User ${qrUserId}, granting ${qrCredits} credits for ref ${cleanWebhookRef}`);
+
+            // Grant credits
+            const { error: qrRpcError } = await supabaseAdmin.rpc('increment_credits', {
+                target_user_id: qrUserId,
+                add_amount: qrCredits
+            });
+
+            if (qrRpcError) {
+                console.warn('[Webhook] RPC unavailable, direct update:', qrRpcError.message);
+                const { data: profile } = await supabaseAdmin
+                    .from('user_profiles')
+                    .select('current_credit_balance')
+                    .eq('id', qrUserId)
+                    .single();
+
+                if (profile) {
+                    await supabaseAdmin
+                        .from('user_profiles')
+                        .update({ current_credit_balance: profile.current_credit_balance + qrCredits })
+                        .eq('id', qrUserId);
+                }
+            }
+
+            // Mark verification as verified
+            await supabaseAdmin
+                .from('payment_verifications')
+                .update({ status: 'verified', verified_at: new Date().toISOString() })
+                .eq('id', matchedVerification.id);
+
+            console.log(`[Webhook] QR Ph auto-matched: user ${qrUserId} granted ${qrCredits} credits.`);
+            return res.status(200).json({ received: true, matched: true, credits_granted: qrCredits });
+        }
+
         // Acknowledge all other event types without processing
         return res.status(200).json({ received: true, processed: false });
 
