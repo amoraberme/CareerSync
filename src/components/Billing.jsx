@@ -64,7 +64,7 @@ export default function Billing({ session }) {
                     'Content-Type': 'application/json',
                     ...(currentSession?.access_token && { 'Authorization': `Bearer ${currentSession.access_token}` })
                 },
-                body: JSON.stringify({ tier: tierName })
+                body: JSON.stringify({ tier: tierName, mobile: isMobile })
             });
 
             const data = await response.json();
@@ -642,27 +642,30 @@ export default function Billing({ session }) {
                                 {isMobile ? (
                                     <div className="mb-4 w-full">
                                         {(() => {
-                                            // Build the best available deep link:
-                                            // If qrph_payload is present (STATIC_QRPH_DATA env var is configured),
-                                            // use the actual EMVCo QRPh string with the exact amount baked in.
-                                            // GCash reads the payload and pre-fills merchant + amount for the user.
-                                            // Falls back to gcash://pay?amount=X if no payload available.
-                                            const encoded = paymentSession.qrph_payload
-                                                ? encodeURIComponent(paymentSession.qrph_payload)
-                                                : null;
-                                            const amountParam = (paymentSession.exact_amount_due / 100).toFixed(2);
-
-                                            // Android: use explicit intent with package name for reliability
-                                            // iOS: use gcash:// scheme (universal link fallback via HTTPS)
+                                            // Use the gateway-provided URL from PayMongo's next_action.redirect.url.
+                                            // This URL routes directly into GCash app's payment confirmation screen.
+                                            // Wrap in Android intent targeting com.globe.gcash.android for reliability.
+                                            const gatewayUrl = paymentSession.gcash_redirect_url;
                                             const isAndroid = /Android/i.test(navigator.userAgent);
 
-                                            const deepLink = encoded
-                                                ? isAndroid
-                                                    ? `intent://payqr?qrData=${encoded}#Intent;scheme=gcash;package=com.globe.gcash.android;end`
-                                                    : `https://link.gcash.com/payqr?qrData=${encoded}`
-                                                : isAndroid
-                                                    ? `intent://pay?amount=${amountParam}#Intent;scheme=gcash;package=com.globe.gcash.android;end`
-                                                    : `gcash://pay?amount=${amountParam}`;
+                                            let deepLink;
+                                            if (gatewayUrl) {
+                                                // Extract host + path from the gateway URL for Android intent
+                                                try {
+                                                    const parsed = new URL(gatewayUrl);
+                                                    deepLink = isAndroid
+                                                        ? `intent://${parsed.host}${parsed.pathname}${parsed.search}#Intent;scheme=${parsed.protocol.replace(':', '')};package=com.globe.gcash.android;end`
+                                                        : gatewayUrl; // iOS: open URL directly, GCash handles the app switch
+                                                } catch {
+                                                    deepLink = gatewayUrl; // fallback: open as-is
+                                                }
+                                            } else {
+                                                // Fallback: no gateway URL (intent creation failed) — open amount-only link
+                                                const amount = (paymentSession.exact_amount_due / 100).toFixed(2);
+                                                deepLink = isAndroid
+                                                    ? `intent://pay?amount=${amount}#Intent;scheme=gcash;package=com.globe.gcash.android;end`
+                                                    : `gcash://pay?amount=${amount}`;
+                                            }
 
                                             return (
                                                 <a
@@ -674,17 +677,16 @@ export default function Billing({ session }) {
                                                         <span>Open GCash &amp; Pay</span>
                                                     </div>
                                                     <span className="text-xs font-normal opacity-80">
-                                                        {paymentSession.qrph_payload
-                                                            ? 'Amount & merchant pre-filled from QRPh data'
+                                                        {gatewayUrl
+                                                            ? 'Opens GCash payment confirmation screen directly'
                                                             : 'GCash will open — enter the exact amount shown below'}
                                                     </span>
                                                 </a>
                                             );
                                         })()}
                                         <p className="text-[11px] text-slate/50 dark:text-darkText/30">
-                                            Tap the button above. Confirm the payment of{' '}
-                                            <strong className="text-champagne">{paymentSession.display_amount}</strong>{' '}
-                                            in GCash — do NOT change the amount.
+                                            Confirm <strong className="text-champagne">{paymentSession.display_amount}</strong> in GCash.
+                                            Credits are granted automatically once payment is detected.
                                         </p>
                                     </div>
                                 ) : (
