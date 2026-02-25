@@ -175,8 +175,10 @@ export default async function handler(req, res) {
 // Core centavo matching logic — shared by all payment types
 // ═══════════════════════════════════════════════════════
 async function processAmountMatch(supabaseAdmin, amount, res) {
-    // Expire stale sessions first
-    await supabaseAdmin.rpc('expire_stale_sessions').catch(() => { });
+    // Expire stale sessions first (silently — errors here are non-fatal)
+    try {
+        await supabaseAdmin.rpc('expire_stale_sessions');
+    } catch (_) { }
 
     // Match by exact_amount_due
     const { data: matchedSession, error: matchError } = await supabaseAdmin
