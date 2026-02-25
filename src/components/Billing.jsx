@@ -655,8 +655,8 @@ export default function Billing({ session }) {
                 Static QR Modal — Centavo Matching
                ════════════════════════════════════════════════════ */}
             {showQrModal && (
-                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-white/70 dark:bg-darkBg/70 backdrop-blur-md" onClick={handleCloseModal} />
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-background dark:bg-darkBg" onClick={handleCloseModal} />
 
                     <div className="relative bg-white dark:bg-darkBg border border-obsidian/10 dark:border-darkText/10 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl text-center"
                         style={{ animation: 'fadeInUp 0.3s ease-out' }}>
