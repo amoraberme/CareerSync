@@ -1,10 +1,9 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { Check, CreditCard, ShieldCheck, AlertCircle, Download, X, QrCode, Smartphone, ExternalLink, Loader2, CheckCircle2 } from 'lucide-react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { Check, CreditCard, ShieldCheck, AlertCircle, Download, X, QrCode, Smartphone, ExternalLink, Loader2, CheckCircle2, RefreshCw } from 'lucide-react';
 import gsap from 'gsap';
 import { supabase } from '../supabaseClient';
 import useWorkspaceStore from '../store/useWorkspaceStore';
 
-// Detect mobile/tablet devices for adaptive checkout behavior
 const isMobileDevice = () => /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
 
 export default function Billing({ session }) {
@@ -14,15 +13,136 @@ export default function Billing({ session }) {
     // Static QR modal state (Base Token)
     const [showQrModal, setShowQrModal] = useState(false);
     const [referenceNumber, setReferenceNumber] = useState('');
-    const [submitState, setSubmitState] = useState('idle'); // 'idle' | 'submitting' | 'success' | 'error'
+    const [submitState, setSubmitState] = useState('idle');
     const [submitMessage, setSubmitMessage] = useState('');
-    const [isPolling, setIsPolling] = useState(false);
 
     // Dynamic checkout QR modal state (Standard/Premium)
     const [qrModal, setQrModal] = useState(null);
     const [paymentConfirmed, setPaymentConfirmed] = useState(false);
 
+    // ═══ PERSISTENT PAYMENT STATUS (survives modal close & page refresh) ═══
+    const [pendingPayment, setPendingPayment] = useState(null);    // { id, reference_number, status, tier, created_at }
+    const [isCheckingStatus, setIsCheckingStatus] = useState(false);
+    const [statusMessage, setStatusMessage] = useState('');
+
     const fetchCreditBalance = useWorkspaceStore(state => state.fetchCreditBalance);
+
+    // ─── Check for pending payments on page load ───
+    const checkPendingPayments = useCallback(async () => {
+        if (!session?.user?.id) return null;
+
+        try {
+            const { data, error } = await supabase
+                .from('payment_verifications')
+                .select('id, reference_number, status, tier, credits_to_grant, created_at')
+                .eq('user_id', session.user.id)
+                .in('status', ['pending'])
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (!error && data && data.length > 0) {
+                setPendingPayment(data[0]);
+                return data[0];
+            } else {
+                setPendingPayment(null);
+                return null;
+            }
+        } catch (err) {
+            console.error('Error checking pending payments:', err);
+            return null;
+        }
+    }, [session?.user?.id]);
+
+    // Run on mount + when session changes — recovers state after refresh
+    useEffect(() => {
+        checkPendingPayments();
+    }, [checkPendingPayments]);
+
+    // ─── Polling: runs OUTSIDE the modal too, tied to pendingPayment state ───
+    const pollingRef = useRef(null);
+    const pollingCountRef = useRef(0);
+
+    useEffect(() => {
+        // Start polling whenever there's a pending payment
+        if (pendingPayment && pendingPayment.status === 'pending') {
+            pollingCountRef.current = 0;
+
+            pollingRef.current = setInterval(async () => {
+                pollingCountRef.current++;
+
+                // Re-check payment status from DB
+                const { data } = await supabase
+                    .from('payment_verifications')
+                    .select('id, status, credits_to_grant')
+                    .eq('id', pendingPayment.id)
+                    .single();
+
+                if (data?.status === 'verified') {
+                    // Payment confirmed! Update everything
+                    clearInterval(pollingRef.current);
+                    setPendingPayment(prev => ({ ...prev, status: 'verified' }));
+                    setStatusMessage(`✅ Payment verified! ${data.credits_to_grant} credits added.`);
+
+                    // Refresh credit balance
+                    if (session?.user?.id) {
+                        await fetchCreditBalance(session.user.id);
+                    }
+
+                    // Auto-clear the success banner after 8 seconds
+                    setTimeout(() => {
+                        setPendingPayment(null);
+                        setStatusMessage('');
+                    }, 8000);
+                }
+
+                // Stop polling after 5 minutes (60 attempts × 5s)
+                if (pollingCountRef.current >= 60) {
+                    clearInterval(pollingRef.current);
+                }
+            }, 5000);
+        }
+
+        return () => {
+            if (pollingRef.current) clearInterval(pollingRef.current);
+        };
+    }, [pendingPayment?.id, pendingPayment?.status, session?.user?.id, fetchCreditBalance]);
+
+    // ─── Manual "Check Payment Status" button ───
+    const handleCheckStatus = async () => {
+        setIsCheckingStatus(true);
+        setStatusMessage('');
+
+        try {
+            // Check the specific pending payment
+            if (pendingPayment) {
+                const { data } = await supabase
+                    .from('payment_verifications')
+                    .select('id, status, credits_to_grant')
+                    .eq('id', pendingPayment.id)
+                    .single();
+
+                if (data?.status === 'verified') {
+                    setPendingPayment(prev => ({ ...prev, status: 'verified' }));
+                    setStatusMessage(`✅ Payment verified! ${data.credits_to_grant} credits added.`);
+                    if (session?.user?.id) await fetchCreditBalance(session.user.id);
+                    setTimeout(() => { setPendingPayment(null); setStatusMessage(''); }, 8000);
+                } else {
+                    setStatusMessage('⏳ Payment not yet confirmed. It can take a few minutes — we\'ll update automatically.');
+                    setTimeout(() => setStatusMessage(''), 5000);
+                }
+            } else {
+                // No pending payment — just refresh credits in case webhook already ran
+                if (session?.user?.id) await fetchCreditBalance(session.user.id);
+                setStatusMessage('Your credit balance has been refreshed.');
+                setTimeout(() => setStatusMessage(''), 3000);
+            }
+        } catch (err) {
+            setStatusMessage('Unable to check status. Please try again.');
+            setTimeout(() => setStatusMessage(''), 3000);
+        } finally {
+            setIsCheckingStatus(false);
+        }
+    };
 
     // ─── Base Token: Static QR + Reference Matching ───
     const handleBaseCheckout = () => {
@@ -76,8 +196,9 @@ export default function Billing({ session }) {
             setSubmitState('success');
             setSubmitMessage(data.message || 'Reference submitted! Credits will be granted once confirmed.');
 
-            // Start polling for credit balance updates
-            startPolling();
+            // Set the pending payment state — this triggers persistent polling
+            // even if the modal is closed
+            await checkPendingPayments();
 
         } catch (error) {
             console.error('Reference submit error:', error);
@@ -85,31 +206,6 @@ export default function Billing({ session }) {
             setSubmitMessage(error.message || 'Failed to submit. Please try again.');
         }
     };
-
-    // Poll credit balance every 5 seconds for up to 2 minutes
-    const pollingRef = useRef(null);
-    const startPolling = () => {
-        setIsPolling(true);
-        let attempts = 0;
-        const maxAttempts = 24; // 24 × 5s = 2 min
-
-        pollingRef.current = setInterval(async () => {
-            attempts++;
-            if (session?.user?.id) {
-                await fetchCreditBalance(session.user.id);
-            }
-            if (attempts >= maxAttempts) {
-                clearInterval(pollingRef.current);
-                setIsPolling(false);
-            }
-        }, 5000);
-    };
-
-    useEffect(() => {
-        return () => {
-            if (pollingRef.current) clearInterval(pollingRef.current);
-        };
-    }, []);
 
     // ─── Standard/Premium: Dynamic Checkout Links ───
     const handleDynamicCheckout = async (tier) => {
@@ -146,11 +242,7 @@ export default function Billing({ session }) {
             if (isMobileDevice()) {
                 window.location.href = data.checkout_url;
             } else {
-                setQrModal({
-                    qr_image: data.qr_image,
-                    checkout_url: data.checkout_url,
-                    tier
-                });
+                setQrModal({ qr_image: data.qr_image, checkout_url: data.checkout_url, tier });
                 setPaymentConfirmed(false);
             }
         } catch (error) {
@@ -170,24 +262,14 @@ export default function Billing({ session }) {
 
     const handlePaymentDone = async () => {
         setPaymentConfirmed(true);
-        if (session?.user?.id) {
-            await fetchCreditBalance(session.user.id);
-        }
-        setTimeout(() => {
-            setQrModal(null);
-            setPaymentConfirmed(false);
-        }, 2000);
+        if (session?.user?.id) await fetchCreditBalance(session.user.id);
+        setTimeout(() => { setQrModal(null); setPaymentConfirmed(false); }, 2000);
     };
 
     useEffect(() => {
         let ctx = gsap.context(() => {
             gsap.from('.pricing-card', {
-                scale: 0.9,
-                y: 40,
-                opacity: 0,
-                duration: 0.8,
-                stagger: 0.15,
-                ease: 'power3.out'
+                scale: 0.9, y: 40, opacity: 0, duration: 0.8, stagger: 0.15, ease: 'power3.out'
             });
         }, containerRef);
         return () => ctx.revert();
@@ -195,6 +277,71 @@ export default function Billing({ session }) {
 
     return (
         <div ref={containerRef} className="max-w-7xl mx-auto py-12 px-6">
+
+            {/* ═══ PERSISTENT PAYMENT STATUS BANNER ═══
+                Shows OUTSIDE the modal — survives modal close and page refresh */}
+            {pendingPayment && (
+                <div className={`max-w-2xl mx-auto mb-8 rounded-2xl border p-5 transition-all duration-500 ${pendingPayment.status === 'verified'
+                        ? 'bg-[#34A853]/5 border-[#34A853]/20'
+                        : 'bg-champagne/5 border-champagne/20'
+                    }`}>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                            {pendingPayment.status === 'verified' ? (
+                                <CheckCircle2 className="w-5 h-5 text-[#34A853] shrink-0" />
+                            ) : (
+                                <Loader2 className="w-5 h-5 text-champagne animate-spin shrink-0" />
+                            )}
+                            <div>
+                                <p className="text-sm font-semibold text-obsidian dark:text-darkText">
+                                    {pendingPayment.status === 'verified'
+                                        ? 'Payment Verified!'
+                                        : 'Payment Pending Verification'
+                                    }
+                                </p>
+                                <p className="text-xs text-slate dark:text-darkText/60">
+                                    {pendingPayment.status === 'verified'
+                                        ? `${pendingPayment.credits_to_grant} credits have been added to your account.`
+                                        : `Ref: ${pendingPayment.reference_number} · Submitted ${new Date(pendingPayment.created_at).toLocaleTimeString()}`
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                        {pendingPayment.status === 'pending' && (
+                            <button
+                                onClick={handleCheckStatus}
+                                disabled={isCheckingStatus}
+                                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-champagne/10 text-champagne hover:bg-champagne/20 transition-colors disabled:opacity-50"
+                            >
+                                <RefreshCw className={`w-3.5 h-3.5 ${isCheckingStatus ? 'animate-spin' : ''}`} />
+                                <span>{isCheckingStatus ? 'Checking...' : 'Check Status'}</span>
+                            </button>
+                        )}
+                    </div>
+                    {statusMessage && (
+                        <p className="text-xs mt-2 text-slate dark:text-darkText/60">{statusMessage}</p>
+                    )}
+                </div>
+            )}
+
+            {/* ═══ "CHECK PAYMENT STATUS" FALLBACK BUTTON ═══
+                Shown when there's NO pending payment but user might have closed modal */}
+            {!pendingPayment && (
+                <div className="max-w-2xl mx-auto mb-8 flex justify-end">
+                    <button
+                        onClick={handleCheckStatus}
+                        disabled={isCheckingStatus}
+                        className="flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-mono uppercase tracking-wider text-slate/60 dark:text-darkText/40 hover:text-obsidian dark:hover:text-darkText hover:bg-obsidian/5 dark:hover:bg-darkText/5 transition-colors disabled:opacity-50"
+                    >
+                        <RefreshCw className={`w-3.5 h-3.5 ${isCheckingStatus ? 'animate-spin' : ''}`} />
+                        <span>{isCheckingStatus ? 'Checking...' : 'Check Payment Status'}</span>
+                    </button>
+                    {statusMessage && !pendingPayment && (
+                        <span className="ml-3 text-xs text-slate dark:text-darkText/60 self-center">{statusMessage}</span>
+                    )}
+                </div>
+            )}
+
             <div className="text-center mb-16">
                 <h2 className="text-4xl font-sans tracking-tight text-obsidian dark:text-darkText mb-4 font-semibold">
                     Strategic <span className="font-drama italic text-champagne font-normal">Advantage</span>
@@ -338,7 +485,6 @@ export default function Billing({ session }) {
 
                     <div className="relative bg-white dark:bg-darkBg border border-obsidian/10 dark:border-darkText/10 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl text-center"
                         style={{ animation: 'fadeInUp 0.3s ease-out' }}>
-                        {/* Close button */}
                         {submitState !== 'submitting' && (
                             <button
                                 onClick={() => setShowQrModal(false)}
@@ -349,35 +495,33 @@ export default function Billing({ session }) {
                         )}
 
                         {submitState === 'success' ? (
-                            /* ── Success State ── */
                             <div>
                                 <div className="w-16 h-16 bg-[#34A853]/10 border border-[#34A853]/20 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <CheckCircle2 className="w-8 h-8 text-[#34A853]" />
                                 </div>
                                 <h3 className="text-xl font-bold text-obsidian dark:text-darkText mb-2">Reference Submitted!</h3>
                                 <p className="text-sm text-slate dark:text-darkText/60 mb-4">{submitMessage}</p>
-                                {isPolling && (
-                                    <div className="flex items-center justify-center space-x-2 text-xs text-champagne">
-                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                        <span>Checking for payment confirmation...</span>
-                                    </div>
-                                )}
+                                <div className="flex items-center justify-center space-x-2 text-xs text-champagne mb-4">
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    <span>Checking for payment confirmation...</span>
+                                </div>
+                                <p className="text-[11px] text-slate/50 dark:text-darkText/30 mb-4">
+                                    You can safely close this window. A status banner will appear above the pricing cards once your payment is confirmed.
+                                </p>
                                 <button
                                     onClick={() => setShowQrModal(false)}
-                                    className="mt-6 w-full py-3 rounded-2xl bg-obsidian/5 dark:bg-darkText/5 text-obsidian dark:text-darkText font-semibold hover:bg-obsidian/10 dark:hover:bg-darkText/10 transition-colors"
+                                    className="w-full py-3 rounded-2xl bg-obsidian/5 dark:bg-darkText/5 text-obsidian dark:text-darkText font-semibold hover:bg-obsidian/10 dark:hover:bg-darkText/10 transition-colors"
                                 >
-                                    Close
+                                    Close — I'll wait for confirmation
                                 </button>
                             </div>
                         ) : (
-                            /* ── QR + Form State ── */
                             <>
                                 <div className="flex items-center justify-center space-x-2 mb-5">
                                     <QrCode className="w-5 h-5 text-champagne" />
                                     <h3 className="text-xl font-bold text-obsidian dark:text-darkText">Scan to Pay</h3>
                                 </div>
 
-                                {/* Static QR Image */}
                                 <div className="bg-white rounded-2xl border border-obsidian/10 dark:border-darkText/10 p-4 mb-4 inline-block shadow-sm">
                                     <img
                                         src="/static-qr.png"
@@ -400,7 +544,6 @@ export default function Billing({ session }) {
                                     Amount: <span className="text-champagne">₱5</span>
                                 </p>
 
-                                {/* Reference Number Form */}
                                 <form onSubmit={handleReferenceSubmit} className="w-full">
                                     <div className="text-left mb-2">
                                         <label className="text-xs font-mono uppercase tracking-wider text-slate dark:text-darkText/50">
@@ -489,11 +632,7 @@ export default function Billing({ session }) {
                                 </div>
 
                                 {qrModal.qr_image ? (
-                                    <img
-                                        src={qrModal.qr_image}
-                                        alt="PayMongo QR Code"
-                                        className="w-52 h-52 mx-auto rounded-2xl border border-obsidian/10 dark:border-darkText/10 shadow-sm mb-4"
-                                    />
+                                    <img src={qrModal.qr_image} alt="PayMongo QR Code" className="w-52 h-52 mx-auto rounded-2xl border border-obsidian/10 dark:border-darkText/10 shadow-sm mb-4" />
                                 ) : (
                                     <div className="w-52 h-52 mx-auto rounded-2xl border-2 border-dashed border-obsidian/20 dark:border-darkText/20 flex items-center justify-center mb-4">
                                         <QrCode className="w-12 h-12 text-obsidian/30 dark:text-darkText/30" />
@@ -504,26 +643,18 @@ export default function Billing({ session }) {
                                     Use <strong>GCash</strong>, <strong>Maya</strong>, or any QR Ph app
                                 </p>
                                 <p className="text-xs font-semibold text-obsidian dark:text-darkText mb-6">
-                                    Amount: <span className="text-champagne">
-                                        ₱{qrModal.tier === 'standard' ? '245' : '295'}
-                                    </span>
+                                    Amount: <span className="text-champagne">₱{qrModal.tier === 'standard' ? '245' : '295'}</span>
                                 </p>
 
-                                <a
-                                    href={qrModal.checkout_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center justify-center space-x-1 text-xs text-champagne hover:text-champagne/80 transition-colors mb-6"
-                                >
+                                <a href={qrModal.checkout_url} target="_blank" rel="noopener noreferrer"
+                                    className="flex items-center justify-center space-x-1 text-xs text-champagne hover:text-champagne/80 transition-colors mb-6">
                                     <Smartphone className="w-3.5 h-3.5" />
                                     <span>Open payment page instead</span>
                                     <ExternalLink className="w-3 h-3" />
                                 </a>
 
-                                <button
-                                    onClick={handlePaymentDone}
-                                    className="w-full py-4 rounded-2xl bg-obsidian dark:bg-darkText text-background dark:text-darkBg font-bold hover:scale-[1.02] transition-transform shadow-md"
-                                >
+                                <button onClick={handlePaymentDone}
+                                    className="w-full py-4 rounded-2xl bg-obsidian dark:bg-darkText text-background dark:text-darkBg font-bold hover:scale-[1.02] transition-transform shadow-md">
                                     I've Completed Payment
                                 </button>
                                 <p className="text-[11px] text-slate/50 dark:text-darkText/30 mt-3">
