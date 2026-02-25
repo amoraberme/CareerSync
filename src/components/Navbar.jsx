@@ -101,6 +101,9 @@ export default function Navbar({ currentView, setCurrentView, onLogout, onOpenIn
                             <button
                                 onClick={() => setIsSettingsOpen(!isSettingsOpen)}
                                 className={`p-2.5 rounded-full transition-colors flex items-center justify-center transform active:scale-95 border ${isSettingsOpen ? 'bg-obsidian/10 dark:bg-darkText/10 border-obsidian/20 dark:border-darkText/20' : 'bg-obsidian/5 dark:bg-darkText/5 hover:bg-obsidian/10 dark:hover:bg-darkText/10 border-obsidian/10 dark:border-darkText/10'}`}
+                                aria-expanded={isSettingsOpen}
+                                aria-haspopup="menu"
+                                aria-label="Account Settings"
                                 title="Settings"
                             >
                                 <Settings className="w-5 h-5 text-obsidian dark:text-darkText" />
@@ -128,7 +131,7 @@ export default function Navbar({ currentView, setCurrentView, onLogout, onOpenIn
                                             </button>
                                             <div className="border-t border-obsidian/5 dark:border-darkText/5 my-1 w-full"></div>
                                             <button
-                                                onClick={() => { onLogout(); setIsSettingsOpen(false); }}
+                                                onClick={() => { setIsSettingsOpen(false); setTimeout(onLogout, 50); }}
                                                 className="w-full text-left px-5 py-3 text-sm font-medium text-[#EA4335] hover:bg-[#EA4335]/10 dark:hover:bg-[#EA4335]/20 flex items-center transition-colors"
                                             >
                                                 <LogOut className="w-4 h-4 mr-3 opacity-70" /> Sign out
@@ -155,9 +158,9 @@ export default function Navbar({ currentView, setCurrentView, onLogout, onOpenIn
                 </nav>
             </div>
 
-            {/* Mobile Full-Screen Overlay Menu */}
+            {/* Mobile Full-Screen Overlay Menu (z-[60] to stay above nav but below modal z-200) */}
             {isMobileMenuOpen && (
-                <div className="fixed inset-0 z-[45] md:hidden">
+                <div className="fixed inset-0 z-[60] md:hidden">
                     {/* Backdrop */}
                     <div
                         className="absolute inset-0 bg-background/95 dark:bg-darkBg/95 backdrop-blur-xl"
@@ -213,7 +216,7 @@ export default function Navbar({ currentView, setCurrentView, onLogout, onOpenIn
                                 {isDark ? 'Light Mode' : 'Dark Mode'}
                             </button>
                             <button
-                                onClick={() => { onLogout(); setIsMobileMenuOpen(false); }}
+                                onClick={() => { setIsMobileMenuOpen(false); setTimeout(onLogout, 50); }}
                                 className="w-full flex items-center px-6 py-4 rounded-2xl text-base font-medium text-[#EA4335] hover:bg-[#EA4335]/10 transition-colors"
                             >
                                 <LogOut className="w-5 h-5 mr-4 opacity-70" /> Sign Out

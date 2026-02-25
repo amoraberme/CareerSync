@@ -6,7 +6,7 @@ import { exportElementToPDF } from '../utils/exportPdf';
 import { canAccess } from '../lib/tierPermissions';
 import GatedFeature from './ui/GatedFeature';
 
-export default function AnalysisTabs({ setCurrentView }) {
+export default function AnalysisTabs({ session, setCurrentView }) {
     const [activeTab, setActiveTab] = useState('analysis');
     const [isExporting, setIsExporting] = useState(false);
     const { analysisData, resetWorkspace } = useWorkspaceStore();
@@ -65,10 +65,11 @@ export default function AnalysisTabs({ setCurrentView }) {
                 <button
                     onClick={handleExport}
                     disabled={isExporting || !canAccess(userTier, 'pdf_export')}
+                    aria-label={!canAccess(userTier, 'pdf_export') ? 'Upgrade to Standard or Premium to export' : 'Export Report as PDF'}
                     title={!canAccess(userTier, 'pdf_export') ? 'Upgrade to Standard or Premium to export' : ''}
                     className={`flex items-center justify-center space-x-2 text-xs font-mono uppercase tracking-widest transition-colors border border-obsidian/10 dark:border-darkText/10 shadow-sm px-4 py-3 md:py-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed ${canAccess(userTier, 'pdf_export')
-                            ? 'text-obsidian dark:text-darkText hover:bg-obsidian dark:hover:bg-darkText hover:text-white dark:hover:text-darkBg bg-white dark:bg-darkCard'
-                            : 'text-obsidian/40 dark:text-darkText/40 bg-obsidian/5 dark:bg-darkCard/20'
+                        ? 'text-obsidian dark:text-darkText hover:bg-obsidian dark:hover:bg-darkText hover:text-white dark:hover:text-darkBg bg-white dark:bg-darkCard'
+                        : 'text-obsidian/40 dark:text-darkText/40 bg-obsidian/5 dark:bg-darkCard/20'
                         }`}
                 >
                     {!canAccess(userTier, 'pdf_export') ? (
@@ -189,7 +190,7 @@ export default function AnalysisTabs({ setCurrentView }) {
                     )}
 
                     {activeTab === 'optimize' && (
-                        <GatedFeature tier={userTier} feature="resume_optimization" onUpgrade={() => setCurrentView('billing')} fallbackMessage="Resume Optimization">
+                        <GatedFeature tier={userTier} feature="resume_optimization" onUpgrade={() => setCurrentView('plans')} fallbackMessage="Resume Optimization">
                             <div className="animate-fade-in space-y-8">
                                 <h3 className="text-xl font-sans font-semibold text-obsidian dark:text-darkText mb-6">Resume Surgery</h3>
 
