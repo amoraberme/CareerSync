@@ -245,11 +245,6 @@ function App() {
           />
         )}
 
-        {/* Dim overlay when payment modal is open (blurs the main content behind) */}
-        {paymentModalOpen && (
-          <div className="fixed inset-0 z-[150] bg-white/80 dark:bg-darkBg/80 backdrop-blur-sm" />
-        )}
-
         {/* Main Content Area */}
         <main className="pt-32 pb-24 relative z-10">
           {renderView()}

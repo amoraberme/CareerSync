@@ -661,9 +661,12 @@ export default function Billing({ session, onPaymentModalChange }) {
                ════════════════════════════════════════════════════ */}
             {showQrModal && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-                    <div className="absolute inset-0" onClick={handleCloseModal} />
+                    {/* Solid opaque backdrop — hides the page completely */}
+                    <div className="absolute inset-0 bg-background dark:bg-darkBg" />
+                    {/* Transparent click-to-close area (above backdrop, below card) */}
+                    <div className="absolute inset-0 z-[1] cursor-pointer" onClick={handleCloseModal} />
 
-                    <div className="relative bg-white dark:bg-darkBg border border-obsidian/10 dark:border-darkText/10 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl text-center"
+                    <div className="relative z-[2] bg-white dark:bg-darkCard border border-obsidian/10 dark:border-darkText/15 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl text-center"
                         style={{ animation: 'fadeInUp 0.3s ease-out' }}>
 
                         <button onClick={handleCloseModal} className="absolute top-5 right-5 text-slate/50 hover:text-obsidian dark:hover:text-darkText transition-colors">
