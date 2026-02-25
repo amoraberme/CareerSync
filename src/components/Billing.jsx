@@ -23,7 +23,11 @@ export default function Billing({ session, onPaymentModalChange }) {
     const [paymentConfirmed, setPaymentConfirmed] = useState(false);
 
 
-    // N-4 FIX: Invoice state removed — managed in App.jsx via onPaymentModalChange prop.
+    // Invoice / Payment History state
+    const [showInvoice, setShowInvoice] = useState(false);
+    const [invoiceLoading, setInvoiceLoading] = useState(false);
+    const [invoiceError, setInvoiceError] = useState('');
+    const [invoiceHistory, setInvoiceHistory] = useState([]);
 
 
     const fetchCreditBalance = useWorkspaceStore(state => state.fetchCreditBalance);
