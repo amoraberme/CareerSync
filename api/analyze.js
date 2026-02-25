@@ -1,29 +1,31 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { verifyAuth } from './_lib/authMiddleware.js';
 import { createClient } from '@supabase/supabase-js';
+import { applyCors } from './_lib/corsHelper.js';
 
 export default async function handler(req, res) {
+    // W-8: CORS headers on every response including preflight
+    if (applyCors(req, res)) return;
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
     // 1. Verify Authentication
     const user = await verifyAuth(req, res);
-    if (!user) return; // 401 already sent by middleware
+    if (!user) return;
 
     try {
         const { jobTitle, industry, description, resumeText, resumeData } = req.body;
 
         // ═══ Daily Credit Gate ═══
-        // Base: unlimited — skip check entirely.
-        // Standard: 40 analyses/day | Premium: 50 analyses/day.
-        // On-the-fly 24h reset via the `consume_daily_credit` Postgres function.
+        // Base: governed by credit balance (decrement_credits in store) — skip daily cap.
+        // Standard: 40 analyses/day | Premium: 50 analyses/day — enforced here.
         const supabaseUrl = process.env.VITE_SUPABASE_URL;
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
         if (supabaseUrl && serviceKey) {
             const supabaseAdmin = createClient(supabaseUrl, serviceKey);
 
-            // Fetch the user's tier first
             const { data: profile } = await supabaseAdmin
                 .from('user_profiles')
                 .select('tier, daily_credits_used, daily_credits_reset_at')
@@ -33,14 +35,17 @@ export default async function handler(req, res) {
             const tier = profile?.tier || 'base';
 
             if (tier !== 'base') {
-                // Call consume_daily_credit — handles reset + cap check atomically
+                // C-2 FIX: consume_daily_credit is now FATAL — if it fails, block the analysis.
+                // This prevents premium users from getting unlimited free analyses on RPC error.
                 const { data: allowed, error: rpcError } = await supabaseAdmin
                     .rpc('consume_daily_credit', { p_user_id: user.id });
 
                 if (rpcError) {
-                    console.warn('[Analyze] consume_daily_credit RPC error:', rpcError.message);
-                    // Non-fatal: allow analysis to proceed if RPC fails
-                } else if (allowed === false) {
+                    console.error('[Analyze] consume_daily_credit RPC error:', rpcError.message);
+                    return res.status(500).json({ error: 'Credit system error. Please try again.' });
+                }
+
+                if (allowed === false) {
                     const cap = tier === 'premium' ? 50 : 40;
                     const resetAt = profile?.daily_credits_reset_at
                         ? new Date(new Date(profile.daily_credits_reset_at).getTime() + 24 * 60 * 60 * 1000)
@@ -92,17 +97,19 @@ Do not include any extra fields or text.`;
             userContent += `\n\nResume Context (Extracted Text):\n${decodedText}`;
             parts[0].text = userContent;
         } else if (resumeData) {
-            userContent += `\n\nResume Context: The user uploaded a file named ${resumeData.name}, but its contents could not be extracted. Use standard inferences based on the job requirements.`;
+            // N-1 FIX: generic instruction instead of leaking dev test string
+            userContent += `\n\nResume Context: The user uploaded a file named ${resumeData.name}, but its contents could not be extracted. Provide a general analysis based on the job requirements only.`;
             parts[0].text = userContent;
         } else {
-            userContent += `\n\nResume Context: ${resumeText || "Senior Frontend Developer, 5 years Experience. React, Tailwind, GSAP. No WebGL."}`;
+            // N-1 FIX: neutral fallback — no more internal test string
+            userContent += `\n\nResume Context: ${resumeText || 'No resume provided. Provide a general-purpose analysis based on the job description only.'}`;
             parts[0].text = userContent;
         }
 
         // 4. Call Gemini with separated roles
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-2.0-flash',  // N-7 FIX: valid model name
             systemInstruction: systemPrompt
         });
 

@@ -20,11 +20,17 @@ const useWorkspaceStore = create((set, get) => ({
     analysisData: null,
     isAnalyzing: false,
 
-    // Theme state
-    isDark: JSON.parse(localStorage.getItem('theme_isDark')) || false,
+    // Theme state — W-1 FIX: wrap localStorage access in try/catch to prevent SSR crash
+    isDark: (() => {
+        try {
+            return JSON.parse(localStorage.getItem('theme_isDark')) || false;
+        } catch {
+            return false;
+        }
+    })(),
 
-    // Billing & Credits
-    creditBalance: 1,
+    // Billing & Credits — N-2 FIX: initial value is 0, not 1
+    creditBalance: 0,
 
     // Subscription tier
     userTier: 'base',
@@ -36,7 +42,9 @@ const useWorkspaceStore = create((set, get) => ({
 
     toggleTheme: () => set((state) => {
         const newIsDark = !state.isDark;
-        localStorage.setItem('theme_isDark', JSON.stringify(newIsDark));
+        try {
+            localStorage.setItem('theme_isDark', JSON.stringify(newIsDark));
+        } catch { /* ignore */ }
         if (newIsDark) {
             document.documentElement.classList.add('dark');
         } else {
@@ -68,11 +76,15 @@ const useWorkspaceStore = create((set, get) => ({
 
     runAnalysis: async (session, navigateToBilling) => {
         set({ isAnalyzing: true, analysisData: null });
-        const { jobTitle, industry, description, resumeData, creditBalance } = get();
+        const { jobTitle, industry, description, resumeData, creditBalance, userTier } = get();
 
-        // 1. Check for sufficient credits locally first
-        if (creditBalance < 1) {
-            import('../components/ui/Toast').then(({ toast }) => {
+        // ─── C-3 / TASK-03 FIX: Credit system reworked ───
+        // Base tier: governed by balance — gate here.
+        // Standard/Premium: governed by daily cap in analyze.js — skip balance gate.
+        const isBaseUser = userTier === 'base';
+
+        if (isBaseUser && creditBalance < 1) {
+            import('./ui/Toast').then(({ toast }) => {
                 toast.error(
                     <div className="flex flex-col">
                         <strong className="font-bold text-lg mb-1">Insufficient Credits</strong>
@@ -80,9 +92,7 @@ const useWorkspaceStore = create((set, get) => ({
                     </div>,
                     {
                         action: "Upgrade Plan",
-                        onAction: () => {
-                            if (navigateToBilling) navigateToBilling();
-                        }
+                        onAction: () => { if (navigateToBilling) navigateToBilling(); }
                     }
                 );
             });
@@ -91,28 +101,7 @@ const useWorkspaceStore = create((set, get) => ({
         }
 
         try {
-            // 2. Fire the secure Postgres RPC to officially deduct 1 credit server-side
-            const { data: rpcSuccess, error: rpcError } = await supabase.rpc('decrement_credits', { deduct_amount: 1 });
-
-            if (rpcError || !rpcSuccess) {
-                console.error("RPC Deduction Error:", rpcError || "Function returned false (Insufficient balance natively)");
-                const errorMsg = rpcError?.message || "Insufficient balance or missing database function. Please ensure the Phase 16 SQL script completed fully.";
-                import('../components/ui/Toast').then(({ toast }) => {
-                    toast.error(
-                        <div className="flex flex-col">
-                            <strong className="font-bold text-lg mb-1">Transaction Failed</strong>
-                            <span className="opacity-90">{errorMsg}</span>
-                        </div>
-                    );
-                });
-                set({ isAnalyzing: false });
-                return;
-            }
-
-            // 3. Immediately reflect the deduction in the frontend UI
-            set({ creditBalance: creditBalance - 1 });
-
-            // 4. Proceed with the heavy Gemini AI serverless function
+            // C-3 FIX: Fire the AI call FIRST — credits only deducted on success.
             const accessToken = session?.access_token;
             const response = await fetch('/api/analyze', {
                 method: 'POST',
@@ -122,8 +111,31 @@ const useWorkspaceStore = create((set, get) => ({
                 },
                 body: JSON.stringify({ jobTitle, industry, description, resumeData })
             });
+
             const data = await response.json();
 
+            // C-3 FIX: Check HTTP status BEFORE deducting credits or saving history.
+            if (!response.ok) {
+                const msg = data?.error || 'Analysis failed. Please try again.';
+                import('../components/ui/Toast').then(({ toast }) => toast.error(msg));
+                set({ isAnalyzing: false });
+                return; // Credits untouched, history not written
+            }
+
+            // C-2 / TASK-03 FIX: Only deduct base credit AFTER confirmed success.
+            // Standard/Premium are gated by daily cap in analyze.js — no balance deduction.
+            if (isBaseUser) {
+                const { data: rpcSuccess, error: rpcError } = await supabase.rpc('decrement_credits', { deduct_amount: 1 });
+
+                if (rpcError || !rpcSuccess) {
+                    // Log but don't block — analysis already succeeded. Balance will re-sync on next fetch.
+                    console.error("Credit deduction RPC error (analysis already completed):", rpcError?.message);
+                } else {
+                    set({ creditBalance: creditBalance - 1 });
+                }
+            }
+
+            // Build enriched result
             const enrichedData = {
                 ...data,
                 jobTitle,
@@ -131,6 +143,7 @@ const useWorkspaceStore = create((set, get) => ({
                 date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
             };
 
+            // W-7 FIX: Only save to history on successful analysis (guaranteed by !response.ok guard above)
             if (session?.user) {
                 const { error: dbError } = await supabase
                     .from('candidates_history')
@@ -146,7 +159,10 @@ const useWorkspaceStore = create((set, get) => ({
 
             set({ analysisData: enrichedData });
         } catch (error) {
-            console.error("Failed to run analysis", error);
+            console.error("Failed to run analysis:", error);
+            import('../components/ui/Toast').then(({ toast }) => {
+                toast.error('Network error. Please check your connection and try again.');
+            });
         } finally {
             set({ isAnalyzing: false });
         }

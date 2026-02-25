@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+// C-5 FIX: Use service role key — anon key must never be used server-side.
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 /**
  * Verifies the Supabase JWT from the Authorization header.
@@ -17,9 +18,15 @@ export async function verifyAuth(req, res) {
 
     const token = authHeader.replace('Bearer ', '');
 
+    if (!supabaseUrl || !supabaseServiceKey) {
+        console.error('[Auth] Missing Supabase service role configuration.');
+        res.status(500).json({ error: 'Server misconfiguration.' });
+        return null;
+    }
+
     try {
-        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-            global: { headers: { Authorization: `Bearer ${token}` } }
+        const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+            auth: { persistSession: false }
         });
 
         const { data: { user }, error } = await supabase.auth.getUser(token);
@@ -31,7 +38,7 @@ export async function verifyAuth(req, res) {
 
         return user;
     } catch (err) {
-        console.error('Auth middleware error:', err);
+        console.error('[Auth] Token verification failed:', err.message);
         res.status(401).json({ error: 'Unauthorized: Token verification failed.' });
         return null;
     }

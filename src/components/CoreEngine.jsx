@@ -68,6 +68,14 @@ export default function CoreEngine({ session, setCurrentView }) {
         const file = e.target.files[0];
         if (!file) return;
 
+        // W-3 FIX: Cap file size at 5MB — Vercel serverless body limit is ~4.5MB
+        const MAX_SIZE_MB = 5;
+        if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+            alert(`File too large. Maximum resume size is ${MAX_SIZE_MB}MB. Please compress or copy-paste your resume text instead.`);
+            e.target.value = '';
+            return;
+        }
+
         updateField('resumeFileName', file.name);
         updateField('resumeFileSize', (file.size / 1024 / 1024).toFixed(2) + 'MB');
         updateField('resumeUploaded', true);

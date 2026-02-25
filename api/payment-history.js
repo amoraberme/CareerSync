@@ -1,12 +1,14 @@
 import { verifyAuth } from './_lib/authMiddleware.js';
 import { createClient } from '@supabase/supabase-js';
+import { applyCors } from './_lib/corsHelper.js';
 
 export default async function handler(req, res) {
+    if (applyCors(req, res)) return;
+
     if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    // 1. Verify authentication
     const user = await verifyAuth(req, res);
     if (!user) return;
 
@@ -20,7 +22,7 @@ export default async function handler(req, res) {
     try {
         const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
-        // 2. Fetch all paid sessions for this user, newest first
+        // Fetch all paid sessions for this user, newest first
         const { data, error } = await supabaseAdmin
             .from('payment_sessions')
             .select('id, tier, exact_amount_due, credits_to_grant, paid_at, created_at')
@@ -33,7 +35,6 @@ export default async function handler(req, res) {
             return res.status(500).json({ error: 'Failed to fetch payment history.' });
         }
 
-        // 3. Format the response
         const history = (data || []).map(row => ({
             id: row.id,
             date: row.paid_at || row.created_at,

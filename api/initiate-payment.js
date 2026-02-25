@@ -1,7 +1,12 @@
 import { verifyAuth } from './_lib/authMiddleware.js';
 import { createClient } from '@supabase/supabase-js';
+import { TIER_CONFIG } from './_lib/tierConfig.js';
+import { applyCors } from './_lib/corsHelper.js';
 
 export default async function handler(req, res) {
+    // W-8: CORS
+    if (applyCors(req, res)) return;
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
@@ -11,20 +16,14 @@ export default async function handler(req, res) {
     if (!user) return;
 
     try {
-        const { tier, mobile } = req.body;  // `mobile: true` triggers GCash payment intent creation
+        const { tier, mobile } = req.body;
         const userId = user.id;
 
-        // Tier configuration — all tiers use static QR + centavo matching
-        const tierConfig = {
-            base: { base_amount: 100, credits: 10, label: 'Base Token' },     // ₱1.00
-            standard: { base_amount: 200, credits: 750, label: 'Standard' },        // ₱2.00
-            premium: { base_amount: 300, credits: 1050, label: 'Premium' }           // ₱3.00
-        };
-
-        const config = tierConfig[(tier || 'base').toLowerCase()];
+        // W-9: Use centralized TIER_CONFIG — single source of truth
+        const config = TIER_CONFIG[(tier || 'base').toLowerCase()];
         if (!config) {
             return res.status(400).json({
-                error: `Invalid tier. Must be one of: ${Object.keys(tierConfig).join(', ')}.`
+                error: `Invalid tier. Must be one of: ${Object.keys(TIER_CONFIG).join(', ')}.`
             });
         }
 
@@ -39,19 +38,17 @@ export default async function handler(req, res) {
 
         const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
-        // 3. Call the PostgreSQL RPC to assign a unique centavo amount
-        // This function uses row locking to prevent race conditions
+        // 3. Assign a unique centavo amount via atomic row-locking RPC
         const { data, error } = await supabaseAdmin.rpc('assign_unique_centavo', {
             p_user_id: userId,
             p_base_amount: config.base_amount,
-            p_credits: config.credits,
+            p_credits: config.credits_on_purchase,  // W-4: nominal 1 credit for subscriptions
             p_tier: (tier || 'base').toLowerCase()
         });
 
         if (error) {
             console.error('[InitiatePayment] RPC error:', error.message);
 
-            // Handle pool exhaustion
             if (error.message && error.message.includes('POOL_EXHAUSTED')) {
                 return res.status(503).json({
                     error: 'Our payment gateway is currently busy. Please try again in 1 minute.',
@@ -72,14 +69,17 @@ export default async function handler(req, res) {
         const centavos = exactAmount % 100;
         const displayAmount = `₱${pesos}.${centavos.toString().padStart(2, '0')}`;
 
-        console.log(`[InitiatePayment] User ${userId} assigned ${displayAmount} (${exactAmount} centavos), session: ${session.session_id}`);
+        console.log(`[InitiatePayment] User ${userId} assigned ${displayAmount} (${exactAmount} centavos), tier: ${tier}`);
 
-        // ─── Mobile: Create a GCash Payment Intent via PayMongo to get the proper redirect URL ───
-        // PayMongo generates next_action.redirect.url specifically for opening the GCash app.
-        // This is the correct gateway-provided URL that launches GCash to the payment screen.
+        // ─── Mobile: Create GCash Payment Intent via PayMongo ───
         let gcashRedirectUrl = null;
 
         if (mobile && process.env.PAYMONGO_SECRET_KEY) {
+            // W-2: Warn if VITE_APP_URL is not set (staging/local will break silently otherwise)
+            if (!process.env.VITE_APP_URL) {
+                console.warn('[InitiatePayment] VITE_APP_URL is not set — GCash return URL will use fallback production URL.');
+            }
+
             try {
                 const encodedKey = Buffer.from(`${process.env.PAYMONGO_SECRET_KEY}:`).toString('base64');
                 const headers = {
@@ -88,7 +88,7 @@ export default async function handler(req, res) {
                     'authorization': `Basic ${encodedKey}`
                 };
 
-                // Step 1: Create Payment Intent for the exact centavo amount
+                // Step 1: Create Payment Intent
                 const intentResp = await fetch('https://api.paymongo.com/v1/payment_intents', {
                     method: 'POST',
                     headers,
@@ -108,7 +108,7 @@ export default async function handler(req, res) {
                 const intentId = intentData?.data?.id;
 
                 if (intentId) {
-                    // Step 2: Create a GCash payment method
+                    // Step 2: Create GCash payment method
                     const methodResp = await fetch('https://api.paymongo.com/v1/payment_methods', {
                         method: 'POST',
                         headers,
@@ -120,8 +120,8 @@ export default async function handler(req, res) {
                     const methodId = methodData?.data?.id;
 
                     if (methodId) {
-                        // Step 3: Attach the GCash method to the intent — this generates next_action.redirect.url
-                        const returnUrl = `${process.env.VITE_APP_URL || 'https://career-sync-blush.vercel.app'}/billing`;
+                        // W-2 FIX: /plans (not the old /billing path)
+                        const returnUrl = `${process.env.VITE_APP_URL || 'https://career-sync-blush.vercel.app'}/plans`;
                         const attachResp = await fetch(`https://api.paymongo.com/v1/payment_intents/${intentId}/attach`, {
                             method: 'POST',
                             headers,
@@ -136,11 +136,9 @@ export default async function handler(req, res) {
                         });
                         const attachData = await attachResp.json();
                         gcashRedirectUrl = attachData?.data?.attributes?.next_action?.redirect?.url || null;
-                        console.log(`[InitiatePayment] GCash redirect URL: ${gcashRedirectUrl ? 'obtained' : 'unavailable'}`);
                     }
                 }
             } catch (pmErr) {
-                // Non-fatal: log and continue — user still has desktop QR as fallback
                 console.warn('[InitiatePayment] GCash payment intent creation failed:', pmErr.message);
             }
         }
@@ -149,10 +147,10 @@ export default async function handler(req, res) {
             session_id: session.session_id,
             exact_amount_due: exactAmount,
             display_amount: displayAmount,
-            credits: config.credits,
+            credits: config.credits_on_purchase,
             tier: (tier || 'base').toLowerCase(),
             ttl_seconds: 600,
-            gcash_redirect_url: gcashRedirectUrl   // gateway-provided mobile URL (or null on desktop)
+            gcash_redirect_url: gcashRedirectUrl
         });
 
     } catch (error) {

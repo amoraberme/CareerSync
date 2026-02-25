@@ -22,11 +22,9 @@ export default function Billing({ session, onPaymentModalChange }) {
     const [qrModal, setQrModal] = useState(null);
     const [paymentConfirmed, setPaymentConfirmed] = useState(false);
 
-    // ═══ Invoice / Payment History Modal State ═══
-    const [showInvoice, setShowInvoice] = useState(false);
-    const [invoiceHistory, setInvoiceHistory] = useState([]);
-    const [invoiceLoading, setInvoiceLoading] = useState(false);
-    const [invoiceError, setInvoiceError] = useState('');
+
+    // N-4 FIX: Invoice state removed — managed in App.jsx via onPaymentModalChange prop.
+
 
     const fetchCreditBalance = useWorkspaceStore(state => state.fetchCreditBalance);
 
@@ -134,9 +132,24 @@ export default function Billing({ session, onPaymentModalChange }) {
         realtimeChannelRef.current = channel;
     };
 
+    // W-6 FIX: Cleanup Realtime channel + timers on component unmount (e.g. navigate away)
+    useEffect(() => {
+        return () => {
+            if (realtimeChannelRef.current) {
+                supabase.removeChannel(realtimeChannelRef.current);
+                realtimeChannelRef.current = null;
+            }
+            if (countdownRef.current) clearInterval(countdownRef.current);
+            if (pollingRef.current) clearInterval(pollingRef.current);
+        };
+    }, []);
+
     // ─── Fallback Polling (in case Realtime drops) ───
     const startPolling = (sessionId) => {
         stopPolling();
+        // N-6 FIX: Add jitter to polling interval to avoid thundering herd when many
+        // users are on the payment page simultaneously.
+        const jitter = Math.floor(Math.random() * 1500);
         pollingRef.current = setInterval(async () => {
             try {
                 const { data, error } = await supabase
@@ -157,7 +170,7 @@ export default function Billing({ session, onPaymentModalChange }) {
             } catch (err) {
                 console.error('[Polling] Error:', err);
             }
-        }, 3000); // Poll every 3 seconds
+        }, 3000 + jitter); // Poll every 3-4.5s with jitter
     };
 
     const stopPolling = () => {
@@ -669,7 +682,7 @@ export default function Billing({ session, onPaymentModalChange }) {
                     <div className="relative z-[2] bg-white dark:bg-darkCard border border-obsidian/10 dark:border-darkText/15 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl text-center"
                         style={{ animation: 'fadeInUp 0.3s ease-out' }}>
 
-                        <button onClick={handleCloseModal} className="absolute top-5 right-5 text-slate/50 hover:text-obsidian dark:hover:text-darkText transition-colors">
+                        <button onClick={handleCloseModal} aria-label="Close payment modal" className="absolute top-5 right-5 text-slate/50 hover:text-obsidian dark:hover:text-darkText transition-colors">
                             <X className="w-5 h-5" />
                         </button>
 

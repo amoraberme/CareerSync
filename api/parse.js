@@ -1,20 +1,28 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { verifyAuth } from './_lib/authMiddleware.js';
+import { applyCors } from './_lib/corsHelper.js';
 
 export default async function handler(req, res) {
+    if (applyCors(req, res)) return;
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
     // 1. Verify Authentication
     const user = await verifyAuth(req, res);
-    if (!user) return; // 401 already sent by middleware
+    if (!user) return;
 
     try {
         const { text } = req.body;
 
         if (!text || text.trim() === '') {
             return res.status(400).json({ error: 'No text provided for parsing.' });
+        }
+
+        // W-3: Enforce input size limit (prevent massive payloads crashing the serverless fn)
+        if (text.length > 20000) {
+            return res.status(400).json({ error: 'Input too large. Please paste a shorter job listing (max 20,000 characters).' });
         }
 
         const apiKey = process.env.GEMINI_API_KEY;
@@ -39,10 +47,10 @@ You MUST respond ONLY with a raw JSON object matching this exact schema:
         // 3. User content — strictly separated
         const userContent = `Parse the following job listing text:\n\n${text}`;
 
-        // 4. Call Gemini with separated roles
+        // 4. Call Gemini
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-2.0-flash',  // N-7 FIX: valid model name
             systemInstruction: systemPrompt
         });
 
