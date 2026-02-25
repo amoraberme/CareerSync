@@ -1,6 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 
+// Disable default Vercel body parser to get raw body for signature validation
+export const config = {
+    api: {
+        bodyParser: false,
+    },
+};
+
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
@@ -32,7 +39,12 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Malformed signature header.' });
     }
 
-    const rawBody = JSON.stringify(req.body);
+    // Read the raw body stream
+    let rawBody = '';
+    for await (const chunk of req) {
+        rawBody += chunk;
+    }
+
     const signedPayload = `${timestamp}.${rawBody}`;
     const expectedSignature = crypto
         .createHmac('sha256', webhookSecret)
@@ -56,7 +68,7 @@ export default async function handler(req, res) {
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
     try {
-        const event = req.body;
+        const event = JSON.parse(rawBody);
         const eventType = event?.data?.attributes?.type;
 
         // PayMongo fires 'link.payment.paid' when a payment link is completed
