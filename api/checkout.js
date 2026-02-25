@@ -1,3 +1,4 @@
+import { createClient } from '@supabase/supabase-js';
 import { verifyAuth } from './_lib/authMiddleware.js';
 
 export default async function handler(req, res) {
@@ -23,10 +24,11 @@ export default async function handler(req, res) {
         }
 
         // Map tiers to amounts (in centavos) and descriptions
+        // ₱50 = 5000 centavos, ₱245 = 24500, ₱295 = 29500
         const tierMapping = {
-            base: { amount: 10000, description: 'CareerSync Base Token (10 Credits)' },
-            standard: { amount: 24500, description: 'CareerSync Standard (Monthly Retainer)' },
-            premium: { amount: 29500, description: 'CareerSync Premium (The Professional Upgrade)' }
+            base: { amount: 5000, credits: 10, description: 'CareerSync Base Token (10 Credits)' },
+            standard: { amount: 24500, credits: 750, description: 'CareerSync Standard (Monthly Retainer)' },
+            premium: { amount: 29500, credits: 1050, description: 'CareerSync Premium (The Professional Upgrade)' }
         };
 
         const config = tierMapping[tier.toLowerCase()];
@@ -35,8 +37,10 @@ export default async function handler(req, res) {
         }
 
         // Base64 encode the secret key for basic auth
-        const encodedKey = Buffer.from(secretKey).toString('base64');
+        const encodedKey = Buffer.from(secretKey + ':').toString('base64');
 
+        // 2. Create the dynamic PayMongo payment link
+        // reference_number permanently ties this payment to the user
         const paymongoResponse = await fetch('https://api.paymongo.com/v1/links', {
             method: 'POST',
             headers: {
@@ -49,7 +53,7 @@ export default async function handler(req, res) {
                     attributes: {
                         amount: config.amount,
                         description: config.description,
-                        reference_number: userId
+                        reference_number: userId  // User ID embedded — webhook uses this
                     }
                 }
             })
@@ -62,9 +66,37 @@ export default async function handler(req, res) {
         }
 
         const data = await paymongoResponse.json();
+        const linkAttributes = data.data.attributes;
+        const linkId = data.data.id;
 
-        // Return the generated checkout URL to the frontend
-        return res.status(200).json({ checkout_url: data.data.attributes.checkout_url });
+        // 3. Record the pending transaction in Supabase for audit trail
+        const supabaseAdmin = createClient(
+            process.env.VITE_SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
+
+        const { error: dbError } = await supabaseAdmin
+            .from('transactions')
+            .insert({
+                user_id: userId,
+                paymongo_link_id: linkId,
+                tier: tier.toLowerCase(),
+                amount_centavos: config.amount,
+                credits_granted: 0,           // updated to actual value when webhook fires
+                status: 'pending'
+            });
+
+        if (dbError) {
+            // Non-fatal: log but don't block the checkout
+            console.warn('[Checkout] Failed to record pending transaction:', dbError.message);
+        }
+
+        // 4. Return checkout URL + QR image for device-aware frontend handling
+        return res.status(200).json({
+            checkout_url: linkAttributes.checkout_url,
+            qr_image: linkAttributes.qr_image ?? null,   // URL to QR PNG — show on desktop
+            link_id: linkId
+        });
 
     } catch (error) {
         console.error("Checkout Request Error:", error);

@@ -1,11 +1,21 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Check, CreditCard, ShieldCheck, AlertCircle, Download } from 'lucide-react';
+import { Check, CreditCard, ShieldCheck, AlertCircle, Download, X, QrCode, Smartphone, ExternalLink } from 'lucide-react';
 import gsap from 'gsap';
 import { supabase } from '../supabaseClient';
+import useWorkspaceStore from '../store/useWorkspaceStore';
+
+// Detect mobile/tablet devices for adaptive checkout behavior
+const isMobileDevice = () => /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
 
 export default function Billing({ session }) {
     const containerRef = useRef(null);
     const [isProcessing, setIsProcessing] = useState(null);
+
+    // QR modal state for desktop checkout
+    const [qrModal, setQrModal] = useState(null); // { qr_image, checkout_url, tier }
+    const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+
+    const fetchCreditBalance = useWorkspaceStore(state => state.fetchCreditBalance);
 
     const handleCheckout = async (tier) => {
         if (!session?.user?.id) {
@@ -38,9 +48,17 @@ export default function Billing({ session }) {
                 throw new Error(data.error || 'Failed to generate checkout link');
             }
 
-            if (data.checkout_url) {
-                // Open the secure PayMongo link in a new tab
-                window.open(data.checkout_url, '_blank', 'noopener,noreferrer');
+            if (isMobileDevice()) {
+                // Mobile: redirect directly — PayMongo handles GCash/Maya deep-link automatically
+                window.location.href = data.checkout_url;
+            } else {
+                // Desktop: show QR modal so user can scan with their phone
+                setQrModal({
+                    qr_image: data.qr_image,
+                    checkout_url: data.checkout_url,
+                    tier
+                });
+                setPaymentConfirmed(false);
             }
         } catch (error) {
             console.error('Checkout error:', error);
@@ -55,6 +73,18 @@ export default function Billing({ session }) {
         } finally {
             setIsProcessing(null);
         }
+    };
+
+    // Called when user confirms payment is done — refreshes their credit balance
+    const handlePaymentDone = async () => {
+        setPaymentConfirmed(true);
+        if (session?.user?.id) {
+            await fetchCreditBalance(session.user.id);
+        }
+        setTimeout(() => {
+            setQrModal(null);
+            setPaymentConfirmed(false);
+        }, 2000);
     };
 
     useEffect(() => {
@@ -83,11 +113,11 @@ export default function Billing({ session }) {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-center">
-                {/* Tier 1: Pay-As-You-Go */}
+                {/* Tier 1: Base Token — Pay-As-You-Go */}
                 <div className="pricing-card bg-white dark:bg-darkCard/40 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-[2rem] p-6 md:p-8 flex flex-col items-center text-center order-2 lg:order-1 lg:translate-y-4">
                     <h3 className="text-2xl font-bold text-obsidian dark:text-darkText mb-2">Base Token</h3>
                     <div className="text-slate dark:text-darkText/70 font-mono text-xs uppercase tracking-widest mb-6">Pay-As-You-Go</div>
-                    <div className="text-4xl md:text-5xl font-sans font-bold text-obsidian dark:text-darkText mb-8">50<span className="text-base md:text-lg text-slate dark:text-darkText/70 font-normal"> / Top-up</span></div>
+                    <div className="text-4xl md:text-5xl font-sans font-bold text-obsidian dark:text-darkText mb-8">₱50<span className="text-base md:text-lg text-slate dark:text-darkText/70 font-normal"> / Top-up</span></div>
 
                     <div className="text-sm text-obsidian/80 dark:text-darkText/80 bg-background dark:bg-darkCard p-4 rounded-xl border border-obsidian/5 dark:border-darkText/5 mb-8 w-full mt-2 lg:min-h-[100px] flex items-center justify-center">
                         Perfect for quick, one-off tasks. Every top-up grants 10 credits.
@@ -125,14 +155,14 @@ export default function Billing({ session }) {
                     </button>
                 </div>
 
-                {/* Tier 3: Premium (Target - Middle, first on mobile) */}
+                {/* Tier 3: Premium (center spotlight) */}
                 <div className="pricing-card relative bg-white/70 dark:bg-darkCard/60 backdrop-blur-md border-[3px] border-champagne rounded-[2rem] p-8 md:p-10 flex flex-col items-center text-center shadow-xl order-1 lg:order-2 z-10">
                     <div className="absolute -top-5 bg-champagne text-obsidian px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest shadow-md">
                         Most Popular
                     </div>
                     <h3 className="text-3xl font-bold text-champagne mb-2">Premium</h3>
                     <div className="text-champagne/80 font-mono text-xs uppercase tracking-widest mb-6">The Professional Upgrade</div>
-                    <div className="text-5xl md:text-6xl font-sans font-bold text-obsidian dark:text-darkText mb-2">295<span className="text-lg md:text-xl text-slate dark:text-darkText/70 font-normal"> / mo</span></div>
+                    <div className="text-5xl md:text-6xl font-sans font-bold text-obsidian dark:text-darkText mb-2">₱295<span className="text-lg md:text-xl text-slate dark:text-darkText/70 font-normal"> / mo</span></div>
 
                     <div className="text-sm text-obsidian/80 dark:text-darkText/80 bg-champagne/10 dark:bg-champagne/5 p-4 rounded-xl border border-champagne/20 dark:border-champagne/10 mb-8 w-full mt-2 lg:min-h-[100px] flex items-center justify-center">
                         For a mathematically insignificant upgrade over the 245 tier, unlock complete workflow freedom and powerful resume optimization.
@@ -166,11 +196,11 @@ export default function Billing({ session }) {
                     </button>
                 </div>
 
-                {/* Tier 2: Standard (Decoy) */}
+                {/* Tier 2: Standard */}
                 <div className="pricing-card bg-white dark:bg-darkCard/40 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-[2rem] p-6 md:p-8 flex flex-col items-center text-center order-3 lg:order-3 lg:translate-y-4 relative z-0">
                     <h3 className="text-2xl font-bold text-obsidian dark:text-darkText mb-2">Standard</h3>
                     <div className="text-slate dark:text-darkText/70 font-mono text-xs uppercase tracking-widest mb-6">Monthly Retainer</div>
-                    <div className="text-4xl md:text-5xl font-sans font-bold text-obsidian dark:text-darkText mb-8">245<span className="text-base md:text-lg text-slate dark:text-darkText/70 font-normal"> / mo</span></div>
+                    <div className="text-4xl md:text-5xl font-sans font-bold text-obsidian dark:text-darkText mb-8">₱245<span className="text-base md:text-lg text-slate dark:text-darkText/70 font-normal"> / mo</span></div>
 
                     <div className="text-sm text-obsidian/80 dark:text-darkText/80 bg-background dark:bg-darkCard p-4 rounded-xl border border-obsidian/5 dark:border-darkText/5 mb-8 w-full mt-2 lg:min-h-[100px] flex items-center justify-center">
                         Consistent daily access with full export rights, but limited to standard outputs.
@@ -204,6 +234,91 @@ export default function Billing({ session }) {
                     </button>
                 </div>
             </div>
+
+            {/* ── Desktop QR Modal ── */}
+            {qrModal && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-white/70 dark:bg-darkBg/70 backdrop-blur-md"
+                        onClick={() => !paymentConfirmed && setQrModal(null)}
+                    />
+
+                    <div className="relative bg-white dark:bg-darkBg border border-obsidian/10 dark:border-darkText/10 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl animate-fade-in-up text-center">
+                        {/* Close */}
+                        {!paymentConfirmed && (
+                            <button
+                                onClick={() => setQrModal(null)}
+                                className="absolute top-5 right-5 text-slate/50 hover:text-obsidian dark:hover:text-darkText transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        )}
+
+                        {paymentConfirmed ? (
+                            /* Success state */
+                            <div className="animate-fade-in">
+                                <div className="w-16 h-16 bg-[#34A853]/10 border border-[#34A853]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <ShieldCheck className="w-8 h-8 text-[#34A853]" />
+                                </div>
+                                <h3 className="text-xl font-bold text-obsidian dark:text-darkText mb-2">Payment Confirmed</h3>
+                                <p className="text-sm text-slate dark:text-darkText/60">Your credits are being updated...</p>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="flex items-center justify-center space-x-2 mb-6">
+                                    <QrCode className="w-5 h-5 text-champagne" />
+                                    <h3 className="text-xl font-bold text-obsidian dark:text-darkText">Scan to Pay</h3>
+                                </div>
+
+                                {/* QR Code */}
+                                {qrModal.qr_image ? (
+                                    <img
+                                        src={qrModal.qr_image}
+                                        alt="PayMongo QR Code"
+                                        className="w-52 h-52 mx-auto rounded-2xl border border-obsidian/10 dark:border-darkText/10 shadow-sm mb-4"
+                                    />
+                                ) : (
+                                    <div className="w-52 h-52 mx-auto rounded-2xl border-2 border-dashed border-obsidian/20 dark:border-darkText/20 flex items-center justify-center mb-4">
+                                        <QrCode className="w-12 h-12 text-obsidian/30 dark:text-darkText/30" />
+                                    </div>
+                                )}
+
+                                <p className="text-xs text-slate dark:text-darkText/60 mb-2">
+                                    Use <strong>GCash</strong>, <strong>Maya</strong>, or any QR Ph app
+                                </p>
+                                <p className="text-xs font-semibold text-obsidian dark:text-darkText mb-6">
+                                    Amount: <span className="text-champagne">
+                                        ₱{qrModal.tier === 'base' ? '50' : qrModal.tier === 'standard' ? '245' : '295'}
+                                    </span>
+                                </p>
+
+                                {/* Mobile fallback link */}
+                                <a
+                                    href={qrModal.checkout_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center justify-center space-x-1 text-xs text-champagne hover:text-champagne/80 transition-colors mb-6"
+                                >
+                                    <Smartphone className="w-3.5 h-3.5" />
+                                    <span>Open payment page instead</span>
+                                    <ExternalLink className="w-3 h-3" />
+                                </a>
+
+                                <button
+                                    onClick={handlePaymentDone}
+                                    className="w-full py-4 rounded-2xl bg-obsidian dark:bg-darkText text-background dark:text-darkBg font-bold hover:scale-[1.02] transition-transform shadow-md"
+                                >
+                                    I've Completed Payment
+                                </button>
+                                <p className="text-[11px] text-slate/50 dark:text-darkText/30 mt-3">
+                                    Credits are granted automatically after payment is confirmed.
+                                </p>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

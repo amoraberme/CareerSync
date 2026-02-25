@@ -18,7 +18,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing Paymongo-Signature header.' });
     }
 
-    // PayMongo signature format: t=<timestamp>,te=<test_signature>,li=<live_signature>
+    // PayMongo signature format: t=<timestamp>,te=<test_sig>,li=<live_sig>
     const signatureParts = {};
     signatureHeader.split(',').forEach(part => {
         const [key, value] = part.split('=');
@@ -26,14 +26,12 @@ export default async function handler(req, res) {
     });
 
     const timestamp = signatureParts['t'];
-    // Use live signature in production, test signature in development
-    const signature = signatureParts['li'] || signatureParts['te'];
+    const signature = signatureParts['li'] || signatureParts['te']; // live in prod, test in dev
 
     if (!timestamp || !signature) {
         return res.status(400).json({ error: 'Malformed signature header.' });
     }
 
-    // Reconstruct the signed payload
     const rawBody = JSON.stringify(req.body);
     const signedPayload = `${timestamp}.${rawBody}`;
     const expectedSignature = crypto
@@ -46,7 +44,17 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'Invalid webhook signature.' });
     }
 
-    // 2. Process the event
+    // 2. Initialize Supabase admin client
+    const supabaseUrl = process.env.VITE_SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !serviceRoleKey) {
+        console.error('Webhook: Missing Supabase service role configuration.');
+        return res.status(500).json({ error: 'Server misconfiguration.' });
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+
     try {
         const event = req.body;
         const eventType = event?.data?.attributes?.type;
@@ -54,49 +62,43 @@ export default async function handler(req, res) {
         // PayMongo fires 'link.payment.paid' when a payment link is completed
         if (eventType === 'link.payment.paid') {
             const linkData = event?.data?.attributes?.data;
-            const referenceNumber = linkData?.attributes?.reference_number; // Our userId
-            const amount = linkData?.attributes?.amount; // Amount in centavos
+            const referenceNumber = linkData?.attributes?.reference_number; // = userId
+            const amount = linkData?.attributes?.amount;                     // centavos
+            const linkId = linkData?.id;                                     // lnk_xxx
 
             if (!referenceNumber) {
                 console.error('Webhook: Missing reference_number in payload.');
                 return res.status(400).json({ error: 'Missing reference_number.' });
             }
 
-            // 3. Use service role key to bypass RLS and update credits
-            const supabaseUrl = process.env.VITE_SUPABASE_URL;
-            const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            // 3. Determine credits and tier from amount
+            let creditsToGrant = 0;
+            let tier = 'base';
 
-            if (!supabaseUrl || !serviceRoleKey) {
-                console.error('Webhook: Missing Supabase service role configuration.');
-                return res.status(500).json({ error: 'Server misconfiguration.' });
+            if (amount === 5000) {
+                creditsToGrant = 10;       // Base Token — ₱50
+                tier = 'base';
+            } else if (amount === 24500) {
+                creditsToGrant = 750;      // Standard — ₱245/mo
+                tier = 'standard';
+            } else if (amount === 29500) {
+                creditsToGrant = 1050;     // Premium — ₱295/mo
+                tier = 'premium';
+            } else {
+                // Fallback: 1 credit per ₱10 (handles edge amount variations)
+                creditsToGrant = Math.floor(amount / 1000);
+                console.warn(`[Webhook] Unexpected amount: ${amount} centavos. Granted ${creditsToGrant} credits via fallback.`);
             }
 
-            const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
-
-            // Determine credits to grant based on the amount paid
-            let creditsToGrant = 0;
-            if (amount === 5000) creditsToGrant = 10;       // Base Token (₱50)
-            else if (amount === 24500) creditsToGrant = 750;  // Standard (₱245/mo)
-            else if (amount === 29500) creditsToGrant = 1050; // Premium (₱295/mo)
-            else creditsToGrant = Math.floor(amount / 1000);  // Fallback: 1 credit per ₱10
-
-            // Update the user's credit balance directly
-            const { error: updateError } = await supabaseAdmin
-                .from('user_profiles')
-                .update({
-                    current_credit_balance: supabaseAdmin.rpc ? undefined : undefined // Will use raw SQL below
-                })
-                .eq('id', referenceNumber);
-
-            // Use RPC for atomic increment instead
+            // 4. Atomically add credits via RPC
             const { error: rpcError } = await supabaseAdmin.rpc('increment_credits', {
                 target_user_id: referenceNumber,
                 add_amount: creditsToGrant
             });
 
             if (rpcError) {
-                // Fallback: Direct update if RPC doesn't exist yet
-                console.warn('increment_credits RPC not found, using direct update:', rpcError.message);
+                // Fallback: direct update if RPC doesn't exist yet
+                console.warn('[Webhook] increment_credits RPC not found, using direct update:', rpcError.message);
                 const { data: currentProfile } = await supabaseAdmin
                     .from('user_profiles')
                     .select('current_credit_balance')
@@ -111,8 +113,41 @@ export default async function handler(req, res) {
                 }
             }
 
-            console.log(`[Webhook] Granted ${creditsToGrant} credits to user ${referenceNumber} for payment of ${amount} centavos.`);
-            return res.status(200).json({ received: true, credits_granted: creditsToGrant });
+            // 5. Upgrade tier for Standard and Premium subscriptions
+            // Base token doesn't change tier — it just adds credits
+            if (tier === 'standard' || tier === 'premium') {
+                const { error: tierError } = await supabaseAdmin
+                    .from('user_profiles')
+                    .update({ tier })
+                    .eq('id', referenceNumber);
+
+                if (tierError) {
+                    console.error(`[Webhook] Failed to upgrade tier to ${tier}:`, tierError.message);
+                } else {
+                    console.log(`[Webhook] Upgraded user ${referenceNumber} to ${tier} tier.`);
+                }
+            }
+
+            // 6. Mark transaction as paid in the audit table
+            if (linkId) {
+                const { error: txError } = await supabaseAdmin
+                    .from('transactions')
+                    .update({
+                        status: 'paid',
+                        paid_at: new Date().toISOString(),
+                        credits_granted: creditsToGrant
+                    })
+                    .eq('paymongo_link_id', linkId)
+                    .eq('user_id', referenceNumber);
+
+                if (txError) {
+                    // Non-fatal — credits are already granted
+                    console.warn('[Webhook] Failed to update transaction record:', txError.message);
+                }
+            }
+
+            console.log(`[Webhook] Granted ${creditsToGrant} credits + tier="${tier}" to user ${referenceNumber} (amount: ${amount} centavos).`);
+            return res.status(200).json({ received: true, credits_granted: creditsToGrant, tier });
         }
 
         // Acknowledge all other event types without processing
