@@ -1,4 +1,3 @@
-import { createClient } from '@supabase/supabase-js';
 import { verifyAuth } from './_lib/authMiddleware.js';
 
 export default async function handler(req, res) {
@@ -37,7 +36,8 @@ export default async function handler(req, res) {
         }
 
         // Base64 encode the secret key for basic auth
-        const encodedKey = Buffer.from(secretKey + ':').toString('base64');
+        // PayMongo accepts secretKey without trailing colon
+        const encodedKey = Buffer.from(secretKey).toString('base64');
 
         // 2. Create the dynamic PayMongo payment link
         // reference_number permanently ties this payment to the user
@@ -70,25 +70,26 @@ export default async function handler(req, res) {
         const linkId = data.data.id;
 
         // 3. Record the pending transaction in Supabase for audit trail
-        const supabaseAdmin = createClient(
-            process.env.VITE_SUPABASE_URL,
-            process.env.SUPABASE_SERVICE_ROLE_KEY
-        );
-
-        const { error: dbError } = await supabaseAdmin
-            .from('transactions')
-            .insert({
-                user_id: userId,
-                paymongo_link_id: linkId,
-                tier: tier.toLowerCase(),
-                amount_centavos: config.amount,
-                credits_granted: 0,           // updated to actual value when webhook fires
-                status: 'pending'
-            });
-
-        if (dbError) {
-            // Non-fatal: log but don't block the checkout
-            console.warn('[Checkout] Failed to record pending transaction:', dbError.message);
+        // Fully isolated — any failure here MUST NOT block the checkout response
+        try {
+            const supabaseUrl = process.env.VITE_SUPABASE_URL;
+            const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            if (supabaseUrl && serviceRoleKey) {
+                const { createClient } = await import('@supabase/supabase-js');
+                const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+                await supabaseAdmin.from('transactions').insert({
+                    user_id: userId,
+                    paymongo_link_id: linkId,
+                    tier: tier.toLowerCase(),
+                    amount_centavos: config.amount,
+                    credits_granted: 0,
+                    status: 'pending'
+                });
+            } else {
+                console.warn('[Checkout] Supabase env vars not set — transaction not recorded.');
+            }
+        } catch (dbErr) {
+            console.warn('[Checkout] Non-fatal: failed to record pending transaction:', dbErr.message);
         }
 
         // 4. Return checkout URL + QR image for device-aware frontend handling

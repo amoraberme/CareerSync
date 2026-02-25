@@ -3,8 +3,11 @@
 -- Run this in Supabase SQL Editor
 -- =============================================================
 
+-- Drop and recreate cleanly (safe during development)
+DROP TABLE IF EXISTS transactions CASCADE;
+
 -- Tracks every checkout session and its outcome
-CREATE TABLE IF NOT EXISTS transactions (
+CREATE TABLE transactions (
   id                 uuid        DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id            uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
   paymongo_link_id   text        NOT NULL,               -- PayMongo link ID (lnk_xxx)
