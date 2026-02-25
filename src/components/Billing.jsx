@@ -13,7 +13,7 @@ export default function Billing({ session }) {
     // ═══ CENTAVO MATCHING — Static QR Modal State ═══
     const [showQrModal, setShowQrModal] = useState(false);
     const [paymentSession, setPaymentSession] = useState(null);  // { session_id, exact_amount_due, display_amount }
-    const [sessionStatus, setSessionStatus] = useState('idle');   // 'idle' | 'loading' | 'waiting' | 'confirming' | 'paid' | 'expired' | 'error'
+    const [sessionStatus, setSessionStatus] = useState('idle');   // 'idle' | 'loading' | 'waiting' | 'paid' | 'expired' | 'error'
     const [errorMessage, setErrorMessage] = useState('');
     const [countdown, setCountdown] = useState(600);              // 10 minutes in seconds
 
@@ -162,67 +162,6 @@ export default function Billing({ session }) {
         const m = Math.floor(sec / 60);
         const s = sec % 60;
         return `${m}:${s.toString().padStart(2, '0')}`;
-    };
-
-    // ─── "I've Paid" confirmation — grants credits instantly ───
-    const handleConfirmPayment = async () => {
-        if (!paymentSession?.session_id) return;
-
-        setSessionStatus('confirming');
-        try {
-            const { data: { session: currentSession } } = await supabase.auth.getSession();
-            const response = await fetch('/api/confirm-payment', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(currentSession?.access_token && { 'Authorization': `Bearer ${currentSession.access_token}` })
-                },
-                body: JSON.stringify({ session_id: paymentSession.session_id })
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Failed to confirm payment.');
-            }
-
-            // Success!
-            setSessionStatus('paid');
-            stopCountdown();
-
-            // Refresh credit balance
-            if (session?.user?.id) {
-                await fetchCreditBalance(session.user.id);
-            }
-
-            // Success toast
-            import('./ui/Toast').then(({ toast }) => {
-                toast.success(
-                    <div className="flex flex-col">
-                        <strong className="font-bold text-lg mb-1">Credits Added!</strong>
-                        <span className="opacity-90">{data.credits_granted || 10} credits have been added.</span>
-                    </div>
-                );
-            });
-
-            // Auto-close after 3 seconds
-            setTimeout(() => {
-                setShowQrModal(false);
-                cleanupSession();
-            }, 3000);
-
-        } catch (error) {
-            console.error('Confirm payment error:', error);
-            setSessionStatus('waiting'); // Go back to waiting
-            import('./ui/Toast').then(({ toast }) => {
-                toast.error(
-                    <div className="flex flex-col">
-                        <strong className="font-bold text-lg mb-1">Confirmation Failed</strong>
-                        <span className="opacity-90">{error.message}</span>
-                    </div>
-                );
-            });
-        }
     };
 
     // ─── Cleanup on modal close / unmount ───
@@ -623,32 +562,25 @@ export default function Billing({ session }) {
                                     </p>
                                 </div>
 
-                                {/* ═══ I'VE PAID CONFIRMATION BUTTON ═══ */}
-                                <button
-                                    onClick={handleConfirmPayment}
-                                    disabled={sessionStatus === 'confirming'}
-                                    className="w-full py-4 rounded-2xl bg-obsidian dark:bg-darkText text-background dark:text-darkBg font-bold text-base hover:scale-[1.02] transition-transform shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center space-x-2 mb-3"
-                                >
-                                    {sessionStatus === 'confirming' ? (
-                                        <>
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                            <span>Crediting your account...</span>
-                                        </>
-                                    ) : (
-                                        <span>I've Paid {paymentSession.display_amount}</span>
-                                    )}
-                                </button>
-
                                 {/* Countdown Timer */}
-                                <div className="flex items-center justify-center space-x-2 text-xs mb-2">
+                                <div className="flex items-center justify-center space-x-2 text-xs mb-3">
                                     <Clock className="w-3.5 h-3.5 text-slate dark:text-darkText/50" />
                                     <span className={`font-mono ${countdown <= 60 ? 'text-[#EA4335] font-bold' : 'text-slate dark:text-darkText/50'}`}>
                                         {formatTime(countdown)} remaining
                                     </span>
                                 </div>
 
+                                {/* Realtime indicator */}
+                                <div className="flex items-center justify-center space-x-2 text-xs text-champagne/70 mb-4">
+                                    <span className="relative flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-champagne/60 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-champagne"></span>
+                                    </span>
+                                    <span>Listening for your payment...</span>
+                                </div>
+
                                 <p className="text-[11px] text-slate/50 dark:text-darkText/30">
-                                    After paying the exact amount via GCash, tap the button above to credit your account.
+                                    Your account will be credited <strong>automatically</strong> once the payment is detected. You can close this window — we'll notify you.
                                 </p>
                             </>
                         )}

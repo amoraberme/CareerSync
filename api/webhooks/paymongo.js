@@ -154,13 +154,24 @@ export default async function handler(req, res) {
         // Static QR Ph Payment — Unique Centavo Amount Matching
         // ═══════════════════════════════════════════════════════
         if (eventType === 'qrph.payment.paid' || eventType === 'payment.paid') {
+            // ─── ROBUST AMOUNT EXTRACTION ───
+            // PayMongo in-store QR payloads may nest the amount differently
             const paymentData = event?.data?.attributes?.data;
             const paymentAttributes = paymentData?.attributes || {};
 
-            // Extract the EXACT amount paid (in centavos)
-            const amount = paymentAttributes.amount || 0;
+            // Try multiple payload paths for the amount
+            const amount = paymentAttributes.amount
+                || event?.data?.attributes?.amount
+                || paymentData?.amount
+                || 0;
 
-            console.log(`[Webhook] QR Ph payment received — amount: ${amount} centavos`);
+            // Log the full structure for debugging
+            console.log(`[Webhook] Event type: ${eventType}`);
+            console.log(`[Webhook] Raw payload keys: ${JSON.stringify(Object.keys(event?.data?.attributes || {}))}`);
+            console.log(`[Webhook] data.attributes.data keys: ${JSON.stringify(Object.keys(paymentData || {}))}`);
+            console.log(`[Webhook] data.attributes.data.attributes keys: ${JSON.stringify(Object.keys(paymentAttributes))}`);
+            console.log(`[Webhook] Extracted amount: ${amount} centavos`);
+            console.log(`[Webhook] Full payload: ${JSON.stringify(event?.data?.attributes).substring(0, 500)}`);
 
             if (!amount || amount < 100) {
                 console.warn('[Webhook] QR Ph payment has invalid amount:', amount);
