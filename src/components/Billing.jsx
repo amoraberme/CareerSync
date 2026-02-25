@@ -472,7 +472,7 @@ export default function Billing({ session }) {
                     </div>
 
                     <button
-                        onClick={handleBaseCheckout}
+                        onClick={() => handleBaseCheckout('base')}
                         disabled={sessionStatus === 'loading'}
                         className="mt-auto w-full py-4 rounded-2xl border border-obsidian/10 dark:border-darkText/10 text-obsidian/70 dark:text-darkText/70 font-bold hover:bg-background dark:hover:bg-darkCard/60 transition-colors block text-center disabled:opacity-50"
                     >
@@ -771,7 +771,7 @@ export default function Billing({ session }) {
                         )}
                     </div>
                 </div>
-            )}\r
+            )}
             {/* ════════════════════════════════════════════════════
                 Invoice / Payment History Modal
                ════════════════════════════════════════════════════ */}
