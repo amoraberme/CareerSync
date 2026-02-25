@@ -73,7 +73,9 @@ export default async function handler(req, res) {
             });
         }
 
-        // 4. Insert pending verification record
+        // 4. Insert verification record AND grant credits immediately
+        // For ₱5 micro-transactions, we trust the reference and credit instantly
+        // The reference serves as an audit trail, not a gatekeeping mechanism
         const { data: inserted, error: insertError } = await supabaseAdmin
             .from('payment_verifications')
             .insert({
@@ -82,7 +84,8 @@ export default async function handler(req, res) {
                 tier: (tier || 'base').toLowerCase(),
                 amount_centavos: config.amount_centavos,
                 credits_to_grant: config.credits,
-                status: 'pending'
+                status: 'verified',
+                verified_at: new Date().toISOString()
             })
             .select('id')
             .single();
@@ -92,12 +95,36 @@ export default async function handler(req, res) {
             return res.status(500).json({ error: 'Failed to submit verification request.' });
         }
 
-        console.log(`[VerifyPayment] Pending verification created: ${inserted.id} for user ${userId}, ref: ${cleanRef}`);
+        // 5. Grant credits immediately
+        const { error: rpcError } = await supabaseAdmin.rpc('increment_credits', {
+            target_user_id: userId,
+            add_amount: config.credits
+        });
+
+        if (rpcError) {
+            // Fallback: direct update if RPC doesn't exist
+            console.warn('[VerifyPayment] RPC unavailable, using direct update:', rpcError.message);
+            const { data: profile } = await supabaseAdmin
+                .from('user_profiles')
+                .select('current_credit_balance')
+                .eq('id', userId)
+                .single();
+
+            if (profile) {
+                await supabaseAdmin
+                    .from('user_profiles')
+                    .update({ current_credit_balance: profile.current_credit_balance + config.credits })
+                    .eq('id', userId);
+            }
+        }
+
+        console.log(`[VerifyPayment] INSTANT: Granted ${config.credits} credits to user ${userId}, ref: ${cleanRef}`);
 
         return res.status(200).json({
             success: true,
             verification_id: inserted.id,
-            message: 'Reference number submitted! Credits will be granted once your payment is confirmed.'
+            credits_granted: config.credits,
+            message: `${config.credits} credits added to your account!`
         });
 
     } catch (error) {

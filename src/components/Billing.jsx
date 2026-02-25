@@ -194,11 +194,25 @@ export default function Billing({ session }) {
             }
 
             setSubmitState('success');
-            setSubmitMessage(data.message || 'Reference submitted! Credits will be granted once confirmed.');
+            setSubmitMessage(data.message || `${data.credits_granted || 10} credits added to your account!`);
 
-            // Set the pending payment state — this triggers persistent polling
-            // even if the modal is closed
-            await checkPendingPayments();
+            // Credits were granted instantly by the backend — refresh balance now
+            if (session?.user?.id) {
+                await fetchCreditBalance(session.user.id);
+            }
+
+            // Show success toast
+            import('./ui/Toast').then(({ toast }) => {
+                toast.success(
+                    <div className="flex flex-col">
+                        <strong className="font-bold text-lg mb-1">Credits Added!</strong>
+                        <span className="opacity-90">{data.credits_granted || 10} credits have been added to your account.</span>
+                    </div>
+                );
+            });
+
+            // Auto-close modal after 2.5 seconds
+            setTimeout(() => setShowQrModal(false), 2500);
 
         } catch (error) {
             console.error('Reference submit error:', error);
@@ -282,8 +296,8 @@ export default function Billing({ session }) {
                 Shows OUTSIDE the modal — survives modal close and page refresh */}
             {pendingPayment && (
                 <div className={`max-w-2xl mx-auto mb-8 rounded-2xl border p-5 transition-all duration-500 ${pendingPayment.status === 'verified'
-                        ? 'bg-[#34A853]/5 border-[#34A853]/20'
-                        : 'bg-champagne/5 border-champagne/20'
+                    ? 'bg-[#34A853]/5 border-[#34A853]/20'
+                    : 'bg-champagne/5 border-champagne/20'
                     }`}>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
@@ -501,12 +515,12 @@ export default function Billing({ session }) {
                                 </div>
                                 <h3 className="text-xl font-bold text-obsidian dark:text-darkText mb-2">Reference Submitted!</h3>
                                 <p className="text-sm text-slate dark:text-darkText/60 mb-4">{submitMessage}</p>
-                                <div className="flex items-center justify-center space-x-2 text-xs text-champagne mb-4">
-                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                    <span>Checking for payment confirmation...</span>
+                                <div className="flex items-center justify-center space-x-2 text-xs text-[#34A853] mb-4">
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    <span>Credits added — closing shortly...</span>
                                 </div>
                                 <p className="text-[11px] text-slate/50 dark:text-darkText/30 mb-4">
-                                    You can safely close this window. A status banner will appear above the pricing cards once your payment is confirmed.
+                                    Your balance has been updated.
                                 </p>
                                 <button
                                     onClick={() => setShowQrModal(false)}
