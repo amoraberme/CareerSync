@@ -85,6 +85,9 @@ function App() {
   const [invoiceLoading, setInvoiceLoading] = useState(false);
   const [invoiceError, setInvoiceError] = useState('');
 
+  // ═══ Payment modal visibility — hides Navbar when QR screen is open ═══
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+
   const fetchInvoiceHistory = useCallback(async () => {
     setShowInvoice(true);
     setInvoiceLoading(true);
@@ -216,7 +219,7 @@ function App() {
       case 'history':
         return <HistoryDashboard session={session} setCurrentView={setCurrentView} />;
       case 'plans':
-        return <Billing session={session} />;
+        return <Billing session={session} onPaymentModalChange={setPaymentModalOpen} />;
       case 'profile':
         return <Profile session={session} setCurrentView={setCurrentView} />;
       case 'workspace':
@@ -232,12 +235,20 @@ function App() {
   return (
     <GlobalErrorBoundary>
       <div className="min-h-screen bg-background text-obsidian dark:bg-darkBg dark:text-darkText selection:bg-obsidian selection:text-background dark:selection:bg-champagne dark:selection:text-darkBg relative font-sans">
-        <Navbar
-          currentView={currentView}
-          setCurrentView={(v) => { setCurrentView(v); }}
-          onLogout={() => { resetWorkspace(); supabase.auth.signOut(); }}
-          onOpenInvoice={fetchInvoiceHistory}
-        />
+        {/* Navbar — hidden while QR payment modal is open */}
+        {!paymentModalOpen && (
+          <Navbar
+            currentView={currentView}
+            setCurrentView={(v) => { setCurrentView(v); }}
+            onLogout={() => { resetWorkspace(); supabase.auth.signOut(); }}
+            onOpenInvoice={fetchInvoiceHistory}
+          />
+        )}
+
+        {/* Dim overlay when payment modal is open (blurs the main content behind) */}
+        {paymentModalOpen && (
+          <div className="fixed inset-0 z-[150] bg-white/80 dark:bg-darkBg/80 backdrop-blur-sm" />
+        )}
 
         {/* Main Content Area */}
         <main className="pt-32 pb-24 relative z-10">

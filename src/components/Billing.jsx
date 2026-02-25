@@ -6,7 +6,7 @@ import useWorkspaceStore from '../store/useWorkspaceStore';
 
 const isMobileDevice = () => /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
 
-export default function Billing({ session }) {
+export default function Billing({ session, onPaymentModalChange }) {
     const containerRef = useRef(null);
     const [isProcessing, setIsProcessing] = useState(null);
     const [isMobile, setIsMobile] = useState(false);
@@ -29,6 +29,11 @@ export default function Billing({ session }) {
     const [invoiceError, setInvoiceError] = useState('');
 
     const fetchCreditBalance = useWorkspaceStore(state => state.fetchCreditBalance);
+
+    // Notify parent (App.jsx) when QR modal opens/closes so Navbar can hide
+    useEffect(() => {
+        onPaymentModalChange?.(showQrModal);
+    }, [showQrModal, onPaymentModalChange]);
 
     // ─── Cleanup refs ───
     const realtimeChannelRef = useRef(null);
@@ -656,7 +661,7 @@ export default function Billing({ session }) {
                ════════════════════════════════════════════════════ */}
             {showQrModal && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-background dark:bg-darkBg" onClick={handleCloseModal} />
+                    <div className="absolute inset-0" onClick={handleCloseModal} />
 
                     <div className="relative bg-white dark:bg-darkBg border border-obsidian/10 dark:border-darkText/10 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl text-center"
                         style={{ animation: 'fadeInUp 0.3s ease-out' }}>
