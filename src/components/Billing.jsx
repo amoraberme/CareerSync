@@ -27,6 +27,7 @@ export default function Billing({ session }) {
     const realtimeChannelRef = useRef(null);
     const countdownRef = useRef(null);
     const pollingRef = useRef(null);
+    const paymentHandledRef = useRef(false); // Guard against double-success
 
     // ─── Initiate Payment: calls /api/initiate-payment to get unique centavo amount ───
     const handleBaseCheckout = async () => {
@@ -86,6 +87,7 @@ export default function Billing({ session }) {
         if (realtimeChannelRef.current) {
             supabase.removeChannel(realtimeChannelRef.current);
         }
+        paymentHandledRef.current = false; // Reset guard on new session
 
         const channel = supabase
             .channel(`payment_session_${sessionId}`)
@@ -99,17 +101,22 @@ export default function Billing({ session }) {
                 },
                 async (payload) => {
                     const newStatus = payload.new?.status;
-                    console.log(`[Realtime] Session ${sessionId} status → ${newStatus}`);
+                    // Read credits directly from the updated DB row, not from stale closure state
+                    const creditsGranted = payload.new?.credits_to_grant || 10;
+                    console.log(`[Realtime] Session ${sessionId} status → ${newStatus}, credits: ${creditsGranted}`);
 
-                    if (newStatus === 'paid') {
-                        handlePaymentSuccess(paymentSession?.credits || 10);
+                    if (newStatus === 'paid' && !paymentHandledRef.current) {
+                        paymentHandledRef.current = true;
+                        handlePaymentSuccess(creditsGranted);
                     } else if (newStatus === 'expired') {
                         setSessionStatus('expired');
                         stopCountdown();
                     }
                 }
             )
-            .subscribe();
+            .subscribe((status) => {
+                console.log(`[Realtime] Channel ${sessionId} subscribe status: ${status}`);
+            });
 
         realtimeChannelRef.current = channel;
     };
@@ -125,8 +132,9 @@ export default function Billing({ session }) {
                     .eq('id', sessionId)
                     .single();
 
-                if (data && data.status === 'paid') {
+                if (data && data.status === 'paid' && !paymentHandledRef.current) {
                     console.log(`[Polling] Detected paid status for session ${sessionId}`);
+                    paymentHandledRef.current = true;
                     handlePaymentSuccess(data.credits_to_grant);
                 } else if (data && data.status === 'expired') {
                     setSessionStatus('expired');

@@ -87,20 +87,44 @@ export default async function handler(req, res) {
 
         // ═══════════════════════════════════════════════════════
         // payment.paid — Direct QR Ph / GCash / other direct payments
-        // Payload: event.data.attributes.amount (in centavos)
+        // PayMongo may nest the amount at different levels depending on payment method.
+        // We try every known path and log them all for debugging.
         // ═══════════════════════════════════════════════════════
         if (eventType === 'payment.paid') {
-            // For payment.paid, the amount is directly on attrs
-            const amount = attrs?.amount || attrs?.data?.attributes?.amount || 0;
+            // Try all known payload paths for the amount:
+            // Path A: data.attributes.amount (top-level payment object)
+            const pathA = attrs?.amount;
+            // Path B: data.attributes.data.attributes.amount (nested payment)
+            const pathB = attrs?.data?.attributes?.amount;
+            // Path C: data.attributes.data.amount (some older formats)
+            const pathC = attrs?.data?.amount;
+            // Path D: full event object top level (unlikely but safe)
+            const pathD = event?.data?.amount;
+            // Path E: direct body amount (edge case)
+            const pathE = event?.amount;
+
+            const amount = pathA || pathB || pathC || pathD || pathE || 0;
 
             await supabaseAdmin.from('webhook_logs').insert({
-                payload: { _log: 'payment.paid', amount, attrs }
+                payload: {
+                    _log: 'payment.paid_detail',
+                    amount_used: amount,
+                    path_A_attrs_amount: pathA,
+                    path_B_attrs_data_attrs_amount: pathB,
+                    path_C_attrs_data_amount: pathC,
+                    path_D_data_amount: pathD,
+                    path_E_event_amount: pathE,
+                    attrs_keys: attrs ? Object.keys(attrs) : [],
+                    attrs_data_keys: attrs?.data ? Object.keys(attrs.data) : [],
+                    attrs_data_attrs_keys: attrs?.data?.attributes ? Object.keys(attrs.data.attributes) : [],
+                    full_event: event,
+                }
             });
-            console.log(`[Webhook] payment.paid — amount: ${amount} centavos`);
+            console.log(`[Webhook] payment.paid — amount: ${amount} centavos (pathA=${pathA}, pathB=${pathB}, pathC=${pathC})`);
 
             if (!amount || amount < 100) {
                 console.warn('[Webhook] Invalid amount:', amount);
-                return res.status(200).json({ received: true, matched: false, reason: 'invalid_amount', amount });
+                return res.status(200).json({ received: true, matched: false, reason: 'invalid_amount', amount, pathA, pathB, pathC });
             }
 
             return await processAmountMatch(supabaseAdmin, amount, res);
