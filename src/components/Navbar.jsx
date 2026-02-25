@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import useWorkspaceStore from '../store/useWorkspaceStore';
-import { Settings, User, Moon, Sun, LogOut, Menu, X } from 'lucide-react';
+import { Settings, User, Moon, Sun, LogOut, Menu, X, Receipt } from 'lucide-react';
 
-export default function Navbar({ currentView, setCurrentView, onLogout }) {
+export default function Navbar({ currentView, setCurrentView, onLogout, onOpenInvoice }) {
     const [scrolled, setScrolled] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -60,7 +60,7 @@ export default function Navbar({ currentView, setCurrentView, onLogout }) {
                         {[
                             { id: 'workspace', label: 'Workspace' },
                             { id: 'history', label: 'History' },
-                            { id: 'billing', label: 'Billing' }
+                            { id: 'plans', label: 'Plans' }
                         ].map(view => (
                             <button
                                 key={view.id}
@@ -85,6 +85,16 @@ export default function Navbar({ currentView, setCurrentView, onLogout }) {
                             </span>
                             <span className="text-xs font-mono text-slate uppercase tracking-widest">{creditBalance} Credits</span>
                         </div>
+
+                        {/* Invoice History — desktop only */}
+                        <button
+                            onClick={onOpenInvoice}
+                            title="Invoice History"
+                            className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold text-slate dark:text-darkText/60 hover:text-champagne dark:hover:text-champagne bg-obsidian/5 dark:bg-darkText/5 border border-obsidian/8 dark:border-darkText/8 hover:bg-champagne/5 transition-all"
+                        >
+                            <Receipt className="w-3.5 h-3.5" />
+                            Invoices
+                        </button>
 
                         {/* Settings Dropdown — desktop only */}
                         <div className="hidden md:block relative" ref={dropdownRef} onMouseLeave={() => setIsSettingsOpen(false)}>
@@ -170,7 +180,7 @@ export default function Navbar({ currentView, setCurrentView, onLogout }) {
                             {[
                                 { id: 'workspace', label: 'Workspace' },
                                 { id: 'history', label: 'History' },
-                                { id: 'billing', label: 'Billing' },
+                                { id: 'plans', label: 'Plans' },
                                 { id: 'profile', label: 'Profile' }
                             ].map(view => (
                                 <button
@@ -188,6 +198,13 @@ export default function Navbar({ currentView, setCurrentView, onLogout }) {
 
                         {/* Bottom Actions */}
                         <div className="space-y-3 border-t border-obsidian/10 dark:border-darkText/10 pt-6">
+                            <button
+                                onClick={() => { onOpenInvoice?.(); setIsMobileMenuOpen(false); }}
+                                className="w-full flex items-center px-6 py-4 rounded-2xl text-base font-medium text-obsidian dark:text-darkText hover:bg-obsidian/5 dark:hover:bg-darkText/5 transition-colors"
+                            >
+                                <Receipt className="w-5 h-5 mr-4 opacity-70" />
+                                Invoice History
+                            </button>
                             <button
                                 onClick={() => { toggleTheme(); }}
                                 className="w-full flex items-center px-6 py-4 rounded-2xl text-base font-medium text-obsidian dark:text-darkText hover:bg-obsidian/5 dark:hover:bg-darkText/5 transition-colors"

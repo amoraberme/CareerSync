@@ -228,18 +228,21 @@ async function processAmountMatch(supabaseAdmin, amount, res) {
 
     // ─── Step 2: Upgrade tier if Standard or Premium ───
     if (matchedTier === 'standard' || matchedTier === 'premium') {
+        const tierExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
         const { error: tierError } = await supabaseAdmin
             .from('user_profiles')
             .update({
                 tier: matchedTier,
-                credits_reset_date: new Date().toISOString().split('T')[0] // YYYY-MM-DD
+                tier_expires_at: tierExpiresAt,
+                daily_credits_used: 0,
+                daily_credits_reset_at: new Date().toISOString()
             })
             .eq('id', matchedUserId);
 
         if (tierError) {
             console.warn(`[Webhook] Tier upgrade to '${matchedTier}' failed:`, tierError.message);
         } else {
-            console.log(`[Webhook] ⬆️ Tier upgraded to '${matchedTier}' for user ${matchedUserId}`);
+            console.log(`[Webhook] ⬆️ Tier upgraded to '${matchedTier}' for user ${matchedUserId}, expires: ${tierExpiresAt}`);
         }
     }
 

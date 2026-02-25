@@ -429,18 +429,9 @@ export default function Billing({ session }) {
             )}
 
             <div className="text-center mb-16">
-                <div className="flex items-center justify-center gap-4 mb-4">
-                    <h2 className="text-4xl font-sans tracking-tight text-obsidian dark:text-darkText font-semibold">
-                        Strategic <span className="font-drama italic text-champagne font-normal">Advantage</span>
-                    </h2>
-                    <button
-                        onClick={fetchInvoiceHistory}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl border border-obsidian/10 dark:border-darkText/10 text-sm font-semibold text-slate dark:text-darkText/70 hover:bg-obsidian/5 dark:hover:bg-darkText/5 hover:text-champagne dark:hover:text-champagne transition-all"
-                    >
-                        <Receipt className="w-4 h-4" />
-                        Invoice History
-                    </button>
-                </div>
+                <h2 className="text-4xl font-sans tracking-tight text-obsidian dark:text-darkText mb-4 font-semibold">
+                    Choose Your <span className="font-drama italic text-champagne font-normal">Plan</span>
+                </h2>
                 <p className="text-slate dark:text-darkText/70 max-w-2xl mx-auto text-lg leading-relaxed">
                     Choose the intelligence capacity that matches your professional throughput. Lock in your precision toolkit today.
                 </p>

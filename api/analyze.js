@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { verifyAuth } from './_lib/authMiddleware.js';
+import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -12,6 +13,47 @@ export default async function handler(req, res) {
 
     try {
         const { jobTitle, industry, description, resumeText, resumeData } = req.body;
+
+        // ═══ Daily Credit Gate ═══
+        // Base: unlimited — skip check entirely.
+        // Standard: 40 analyses/day | Premium: 50 analyses/day.
+        // On-the-fly 24h reset via the `consume_daily_credit` Postgres function.
+        const supabaseUrl = process.env.VITE_SUPABASE_URL;
+        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        if (supabaseUrl && serviceKey) {
+            const supabaseAdmin = createClient(supabaseUrl, serviceKey);
+
+            // Fetch the user's tier first
+            const { data: profile } = await supabaseAdmin
+                .from('user_profiles')
+                .select('tier, daily_credits_used, daily_credits_reset_at')
+                .eq('id', user.id)
+                .single();
+
+            const tier = profile?.tier || 'base';
+
+            if (tier !== 'base') {
+                // Call consume_daily_credit — handles reset + cap check atomically
+                const { data: allowed, error: rpcError } = await supabaseAdmin
+                    .rpc('consume_daily_credit', { p_user_id: user.id });
+
+                if (rpcError) {
+                    console.warn('[Analyze] consume_daily_credit RPC error:', rpcError.message);
+                    // Non-fatal: allow analysis to proceed if RPC fails
+                } else if (allowed === false) {
+                    const cap = tier === 'premium' ? 50 : 40;
+                    const resetAt = profile?.daily_credits_reset_at
+                        ? new Date(new Date(profile.daily_credits_reset_at).getTime() + 24 * 60 * 60 * 1000)
+                        : new Date(Date.now() + 24 * 60 * 60 * 1000);
+                    return res.status(429).json({
+                        error: `Daily limit reached. Your ${tier} plan includes ${cap} analyses per day.`,
+                        daily_cap: cap,
+                        resets_at: resetAt.toISOString(),
+                    });
+                }
+            }
+        }
+        // ═══ End Credit Gate ═══
 
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {

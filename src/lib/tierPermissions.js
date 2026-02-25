@@ -9,6 +9,9 @@
 const TIER_PERMISSIONS = {
     base: {
         label: 'Base Token',
+        unlimited: true,          // No credit deductions for base users
+        dailyCreditCap: null,     // N/A — unlimited
+        tierLockDays: 0,          // No lock period
         pdf_export: false,
         resume_optimization: false,
         cover_letter: true,
@@ -17,6 +20,9 @@ const TIER_PERMISSIONS = {
     },
     standard: {
         label: 'Standard',
+        unlimited: false,
+        dailyCreditCap: 40,       // 40 analyses per day
+        tierLockDays: 30,         // Locked for 30 days after purchase
         pdf_export: true,
         resume_optimization: false,
         cover_letter: true,
@@ -25,6 +31,9 @@ const TIER_PERMISSIONS = {
     },
     premium: {
         label: 'Premium',
+        unlimited: false,
+        dailyCreditCap: 50,       // 50 analyses per day
+        tierLockDays: 30,         // Locked for 30 days after purchase
         pdf_export: true,
         resume_optimization: true,
         cover_letter: true,
