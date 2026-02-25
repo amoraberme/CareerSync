@@ -26,6 +26,7 @@ export default function Billing({ session }) {
     // ─── Cleanup refs ───
     const realtimeChannelRef = useRef(null);
     const countdownRef = useRef(null);
+    const pollingRef = useRef(null);
 
     // ─── Initiate Payment: calls /api/initiate-payment to get unique centavo amount ───
     const handleBaseCheckout = async () => {
@@ -67,8 +68,9 @@ export default function Billing({ session }) {
             setSessionStatus('waiting');
             setCountdown(data.ttl_seconds || 600);
 
-            // Start Realtime subscription and countdown
+            // Start Realtime subscription, fallback polling, and countdown
             startRealtimeListener(data.session_id);
+            startPolling(data.session_id);
             startCountdown(data.ttl_seconds || 600);
 
         } catch (error) {
@@ -100,29 +102,7 @@ export default function Billing({ session }) {
                     console.log(`[Realtime] Session ${sessionId} status → ${newStatus}`);
 
                     if (newStatus === 'paid') {
-                        setSessionStatus('paid');
-                        stopCountdown();
-
-                        // Refresh credit balance
-                        if (session?.user?.id) {
-                            await fetchCreditBalance(session.user.id);
-                        }
-
-                        // Success toast
-                        import('./ui/Toast').then(({ toast }) => {
-                            toast.success(
-                                <div className="flex flex-col">
-                                    <strong className="font-bold text-lg mb-1">Credits Added!</strong>
-                                    <span className="opacity-90">{paymentSession?.credits || 10} credits have been added.</span>
-                                </div>
-                            );
-                        });
-
-                        // Auto-close after 3 seconds
-                        setTimeout(() => {
-                            setShowQrModal(false);
-                            cleanupSession();
-                        }, 3000);
+                        handlePaymentSuccess(paymentSession?.credits || 10);
                     } else if (newStatus === 'expired') {
                         setSessionStatus('expired');
                         stopCountdown();
@@ -132,6 +112,70 @@ export default function Billing({ session }) {
             .subscribe();
 
         realtimeChannelRef.current = channel;
+    };
+
+    // ─── Fallback Polling (in case Realtime drops) ───
+    const startPolling = (sessionId) => {
+        stopPolling();
+        pollingRef.current = setInterval(async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('payment_sessions')
+                    .select('status, credits_to_grant')
+                    .eq('id', sessionId)
+                    .single();
+
+                if (data && data.status === 'paid') {
+                    console.log(`[Polling] Detected paid status for session ${sessionId}`);
+                    handlePaymentSuccess(data.credits_to_grant);
+                } else if (data && data.status === 'expired') {
+                    setSessionStatus('expired');
+                    stopCountdown();
+                    stopPolling();
+                }
+            } catch (err) {
+                console.error('[Polling] Error:', err);
+            }
+        }, 3000); // Poll every 3 seconds
+    };
+
+    const stopPolling = () => {
+        if (pollingRef.current) {
+            clearInterval(pollingRef.current);
+            pollingRef.current = null;
+        }
+    };
+
+    const handlePaymentSuccess = async (creditsGranted) => {
+        setSessionStatus('paid');
+        stopCountdown();
+        stopPolling();
+
+        if (realtimeChannelRef.current) {
+            supabase.removeChannel(realtimeChannelRef.current);
+            realtimeChannelRef.current = null;
+        }
+
+        // Refresh credit balance
+        if (session?.user?.id) {
+            await fetchCreditBalance(session.user.id);
+        }
+
+        // Success toast
+        import('./ui/Toast').then(({ toast }) => {
+            toast.success(
+                <div className="flex flex-col">
+                    <strong className="font-bold text-lg mb-1">Credits Added!</strong>
+                    <span className="opacity-90">{creditsGranted || 10} credits have been added.</span>
+                </div>
+            );
+        });
+
+        // Auto-close after 3 seconds
+        setTimeout(() => {
+            setShowQrModal(false);
+            cleanupSession();
+        }, 3000);
     };
 
     // ─── 10-minute countdown timer ───
@@ -171,6 +215,7 @@ export default function Billing({ session }) {
             realtimeChannelRef.current = null;
         }
         stopCountdown();
+        stopPolling();
         setPaymentSession(null);
         setSessionStatus('idle');
         setErrorMessage('');
@@ -222,6 +267,7 @@ export default function Billing({ session }) {
                     setSessionStatus('waiting');
                     setCountdown(remaining);
                     startRealtimeListener(s.id);
+                    startPolling(s.id);
                     startCountdown(remaining);
                 }
             }
