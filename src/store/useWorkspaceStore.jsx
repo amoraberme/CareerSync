@@ -24,7 +24,7 @@ const useWorkspaceStore = create((set, get) => ({
     isDark: JSON.parse(localStorage.getItem('theme_isDark')) || false,
 
     // Billing & Credits
-    creditBalance: 1,
+    creditBalance: 50,
 
     // Subscription tier
     userTier: 'base',
