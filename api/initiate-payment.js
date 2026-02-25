@@ -1,5 +1,6 @@
 import { verifyAuth } from './_lib/authMiddleware.js';
 import { createClient } from '@supabase/supabase-js';
+import { generateSessionQRPhPayload } from './_lib/emvco.js';
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -72,7 +73,12 @@ export default async function handler(req, res) {
         const centavos = exactAmount % 100;
         const displayAmount = `₱${pesos}.${centavos.toString().padStart(2, '0')}`;
 
-        console.log(`[InitiatePayment] User ${userId} assigned ${displayAmount} (${exactAmount} centavos), session: ${session.session_id}`);
+        // Generate a dynamic QRPh payload with the exact centavo amount injected.
+        // Requires STATIC_QRPH_DATA env var (the raw EMVCo string from your merchant QR).
+        // If not configured, returns null — frontend will fall back to generic gcash:// link.
+        const qrphPayload = generateSessionQRPhPayload(exactAmount);
+
+        console.log(`[InitiatePayment] User ${userId} assigned ${displayAmount} (${exactAmount} centavos), session: ${session.session_id}, qrph: ${qrphPayload ? 'yes' : 'no'}`);
 
         return res.status(200).json({
             session_id: session.session_id,
@@ -80,7 +86,8 @@ export default async function handler(req, res) {
             display_amount: displayAmount,
             credits: config.credits,
             tier: (tier || 'base').toLowerCase(),
-            ttl_seconds: 600  // 10 minutes
+            ttl_seconds: 600,        // 10 minutes
+            qrph_payload: qrphPayload // null if STATIC_QRPH_DATA is not configured
         });
 
     } catch (error) {

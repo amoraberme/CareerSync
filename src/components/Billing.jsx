@@ -641,18 +641,50 @@ export default function Billing({ session }) {
                                 {/* ── Desktop: QR code for scanning | Mobile: GCash deep link ── */}
                                 {isMobile ? (
                                     <div className="mb-4 w-full">
-                                        <a
-                                            href={`gcash://pay?amount=${(paymentSession.exact_amount_due / 100).toFixed(2)}`}
-                                            className="flex flex-col items-center justify-center w-full py-5 rounded-2xl bg-[#0070BA] text-white font-bold text-lg shadow-xl active:scale-95 transition-transform mb-3"
-                                        >
-                                            <div className="flex items-center space-x-2 mb-1">
-                                                <Smartphone className="w-5 h-5" />
-                                                <span>Open GCash</span>
-                                            </div>
-                                            <span className="text-xs font-normal opacity-80">Tap to open the GCash app directly</span>
-                                        </a>
+                                        {(() => {
+                                            // Build the best available deep link:
+                                            // If qrph_payload is present (STATIC_QRPH_DATA env var is configured),
+                                            // use the actual EMVCo QRPh string with the exact amount baked in.
+                                            // GCash reads the payload and pre-fills merchant + amount for the user.
+                                            // Falls back to gcash://pay?amount=X if no payload available.
+                                            const encoded = paymentSession.qrph_payload
+                                                ? encodeURIComponent(paymentSession.qrph_payload)
+                                                : null;
+                                            const amountParam = (paymentSession.exact_amount_due / 100).toFixed(2);
+
+                                            // Android: use explicit intent with package name for reliability
+                                            // iOS: use gcash:// scheme (universal link fallback via HTTPS)
+                                            const isAndroid = /Android/i.test(navigator.userAgent);
+
+                                            const deepLink = encoded
+                                                ? isAndroid
+                                                    ? `intent://payqr?qrData=${encoded}#Intent;scheme=gcash;package=com.globe.gcash.android;end`
+                                                    : `https://link.gcash.com/payqr?qrData=${encoded}`
+                                                : isAndroid
+                                                    ? `intent://pay?amount=${amountParam}#Intent;scheme=gcash;package=com.globe.gcash.android;end`
+                                                    : `gcash://pay?amount=${amountParam}`;
+
+                                            return (
+                                                <a
+                                                    href={deepLink}
+                                                    className="flex flex-col items-center justify-center w-full py-5 rounded-2xl bg-[#0070BA] text-white font-bold text-lg shadow-xl active:scale-95 transition-transform mb-3"
+                                                >
+                                                    <div className="flex items-center space-x-2 mb-1">
+                                                        <Smartphone className="w-5 h-5" />
+                                                        <span>Open GCash &amp; Pay</span>
+                                                    </div>
+                                                    <span className="text-xs font-normal opacity-80">
+                                                        {paymentSession.qrph_payload
+                                                            ? 'Amount & merchant pre-filled from QRPh data'
+                                                            : 'GCash will open — enter the exact amount shown below'}
+                                                    </span>
+                                                </a>
+                                            );
+                                        })()}
                                         <p className="text-[11px] text-slate/50 dark:text-darkText/30">
-                                            Enter <strong className="text-champagne">{paymentSession.display_amount}</strong> as the exact amount in GCash — do NOT round.
+                                            Tap the button above. Confirm the payment of{' '}
+                                            <strong className="text-champagne">{paymentSession.display_amount}</strong>{' '}
+                                            in GCash — do NOT change the amount.
                                         </p>
                                     </div>
                                 ) : (
