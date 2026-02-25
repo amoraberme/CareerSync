@@ -69,6 +69,10 @@ export default async function handler(req, res) {
 
     try {
         const event = JSON.parse(rawBody);
+
+        // Log the exact payload to Supabase for debugging the structure
+        await supabaseAdmin.from('webhook_logs').insert({ payload: event });
+
         const eventType = event?.data?.attributes?.type;
 
         // PayMongo fires 'link.payment.paid' when a payment link is completed
