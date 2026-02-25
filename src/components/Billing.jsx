@@ -45,7 +45,7 @@ export default function Billing({ session }) {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to generate checkout link');
+                throw new Error(data.detail || data.error || 'Failed to generate checkout link');
             }
 
             if (isMobileDevice()) {

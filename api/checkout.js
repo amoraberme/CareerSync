@@ -53,7 +53,8 @@ export default async function handler(req, res) {
                     attributes: {
                         amount: config.amount,
                         description: config.description,
-                        reference_number: userId  // User ID embedded — webhook uses this
+                        // PayMongo reference_number max 25 chars — strip hyphens from UUID
+                        reference_number: userId.replace(/-/g, '').substring(0, 25)
                     }
                 }
             })
@@ -62,7 +63,11 @@ export default async function handler(req, res) {
         if (!paymongoResponse.ok) {
             const errorData = await paymongoResponse.text();
             console.error('PayMongo API Error:', errorData);
-            return res.status(paymongoResponse.status).json({ error: 'Failed to create checkout link with payment provider.' });
+            // Forward PayMongo's actual error message so we can debug from the frontend
+            return res.status(paymongoResponse.status).json({
+                error: 'PayMongo error',
+                detail: errorData
+            });
         }
 
         const data = await paymongoResponse.json();
