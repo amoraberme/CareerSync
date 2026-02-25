@@ -2,6 +2,21 @@ import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 
 export default async function handler(req, res) {
+    // --- DEBUG RAW INTERCEPT ---
+    try {
+        const supabaseUrl = process.env.VITE_SUPABASE_URL;
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        if (supabaseUrl && serviceRoleKey) {
+            const admin = createClient(supabaseUrl, serviceRoleKey);
+            await admin.from('webhook_logs').insert({
+                payload: { intercept: true, method: req.method, headers: req.headers, body: req.body }
+            });
+        }
+    } catch (e) {
+        console.error("Intercept failed:", e);
+    }
+    // --- END DEBUG ---
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
