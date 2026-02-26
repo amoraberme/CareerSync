@@ -48,7 +48,7 @@ const Landing = ({ onNavigate }) => {
 
                     {/* CTA */}
                     <button
-                        onClick={() => { window.location.href = 'https://career-sync-blush.vercel.app/'; }}
+                        onClick={() => onNavigate('auth')}
                         className="px-6 py-2.5 bg-obsidian dark:bg-darkText text-background dark:text-darkBg rounded-full text-sm font-bold shadow-lg hover:scale-105 transition-transform flex items-center gap-2"
                     >
                         Sign In
