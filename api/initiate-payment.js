@@ -16,27 +16,38 @@ export default async function handler(req, res) {
     if (!user) return;
 
     try {
+        const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
         const { tier, mobile } = req.body;
         const userId = user.id;
 
-        // W-9: Use centralized TIER_CONFIG — single source of truth
+        // 3. ENFORCE TIER LOCKS
+        // Rule: If now() < plan_locked_until AND they are buying same or lower tier, BLOCK.
+        const { data: profile, error: profileErr } = await supabaseAdmin
+            .from('user_profiles')
+            .select('plan_tier, plan_locked_until')
+            .eq('id', userId)
+            .single();
+
+        if (profile && profile.plan_locked_until && new Date(profile.plan_locked_until) > new Date()) {
+            const tiers = ['free', 'base', 'standard', 'premium'];
+            const currentRank = tiers.indexOf(profile.plan_tier || 'free');
+            const targetRank = tiers.indexOf(tier.toLowerCase());
+
+            // If target is same or lower than current active (standard/premium only)
+            if (currentRank >= 2 && targetRank <= currentRank) {
+                return res.status(400).json({
+                    error: `You currently have an active ${profile.plan_tier.toUpperCase()} plan. You cannot downgrade or repurchase this tier until it expires on ${new Date(profile.plan_locked_until).toLocaleDateString()}.`
+                });
+            }
+        }
+
+        // 4. Load tier configuration
         const config = TIER_CONFIG[(tier || 'base').toLowerCase()];
         if (!config) {
             return res.status(400).json({
                 error: `Invalid tier. Must be one of: ${Object.keys(TIER_CONFIG).join(', ')}.`
             });
         }
-
-        // 2. Initialize Supabase admin client
-        const supabaseUrl = process.env.VITE_SUPABASE_URL;
-        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-        if (!supabaseUrl || !serviceRoleKey) {
-            console.error('[InitiatePayment] Missing Supabase configuration.');
-            return res.status(500).json({ error: 'Server configuration error.' });
-        }
-
-        const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
         // 3. Assign a unique centavo amount via atomic row-locking RPC
         const { data, error } = await supabaseAdmin.rpc('assign_unique_centavo', {

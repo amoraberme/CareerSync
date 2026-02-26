@@ -203,24 +203,45 @@ async function processAmountMatch(supabaseAdmin, amount, res) {
         }
     }
 
-    // ─── Step 2: Upgrade tier if Standard or Premium ───
+    // ─── Step 2: Handle Tier and Credits for Standard/Premium ───
     if (matchedTier === 'standard' || matchedTier === 'premium') {
-        const tierExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        const initialCredits = matchedTier === 'premium' ? 50 : 40;
         const { error: tierError } = await supabaseAdmin
             .from('user_profiles')
             .update({
-                tier: matchedTier,
-                tier_expires_at: tierExpiresAt,
-                daily_credits_used: 0,
-                daily_credits_reset_at: new Date().toISOString()
+                plan_tier: matchedTier,
+                premium_credits: initialCredits,
+                plan_locked_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                premium_next_refill: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
             })
             .eq('id', matchedUserId);
 
         if (tierError) {
             console.warn(`[Webhook] Tier upgrade to '${matchedTier}' failed:`, tierError.message);
         } else {
-            console.log(`[Webhook] ⬆️ Tier upgraded to '${matchedTier}' for user ${matchedUserId}.`);
+            console.log(`[Webhook] ⬆️ Tier upgraded to '${matchedTier}' for user ${matchedUserId}. Credits set to ${initialCredits}.`);
         }
+    }
+
+    // ─── Step 3: Handle Base Tokens ───
+    if (matchedTier === 'base') {
+        const { data: profile } = await supabaseAdmin
+            .from('user_profiles')
+            .select('base_tokens')
+            .eq('id', matchedUserId)
+            .single();
+
+        const newBalance = (profile?.base_tokens || 0) + matchedCredits;
+
+        await supabaseAdmin
+            .from('user_profiles')
+            .update({
+                base_tokens: newBalance,
+                base_token_expiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+            })
+            .eq('id', matchedUserId);
+
+        console.log(`[Webhook] 🪙 Base tokens updated: ${newBalance}. Expiry reset to T+24h.`);
     }
 
     // Note: payment_sessions.status was already set to 'paid' by claim_payment_session() RPC.
