@@ -16,12 +16,12 @@ export default async function handler(req, res) {
     try {
         const { text: userInputText } = req.body;
 
-        if (!text || text.trim() === '') {
+        if (!userInputText || userInputText.trim() === '') {
             return res.status(400).json({ error: 'No text provided for parsing.' });
         }
 
         // W-3: Enforce input size limit (prevent massive payloads crashing the serverless fn)
-        if (text.length > 20000) {
+        if (userInputText.length > 20000) {
             return res.status(400).json({ error: 'Input too large. Please paste a shorter job listing (max 20,000 characters).' });
         }
 
