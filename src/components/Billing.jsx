@@ -5,19 +5,385 @@ import gsap from 'gsap';
 import { supabase } from '../supabaseClient';
 import useWorkspaceStore from '../store/useWorkspaceStore';
 
-const isMobileDevice = () => /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+const isLocked = (lockedUntil) => {
+    if (!lockedUntil) return false;
+    return new Date(lockedUntil) > new Date();
+};
 
-import { useBilling } from '../core/billing/useBilling';
+const isMobileDevice = () => /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
 
 export default function Billing({ session, onPaymentModalChange }) {
     const containerRef = useRef(null);
-    const {
-        isProcessing, isMobile, showQrModal, setShowQrModal, paymentSession, sessionStatus,
-        errorMessage, countdown, qrModal, setQrModal, paymentConfirmed, setPaymentConfirmed,
-        showInvoice, setShowInvoice, invoiceLoading, invoiceError, invoiceHistory,
-        handleBaseCheckout, handleDynamicCheckout, fetchInvoiceHistory, cleanupSession,
-        formatTime
-    } = useBilling(session, onPaymentModalChange);
+    const [isProcessing, setIsProcessing] = useState(null);
+    const [isMobile, setIsMobile] = useState(false);
+
+    // ═══ CENTAVO MATCHING — Static QR Modal State ═══
+    const [showQrModal, setShowQrModal] = useState(false);
+    const [paymentSession, setPaymentSession] = useState(null);  // { session_id, exact_amount_due, display_amount }
+    const [sessionStatus, setSessionStatus] = useState('idle');   // 'idle' | 'loading' | 'waiting' | 'paid' | 'expired' | 'error'
+    const [errorMessage, setErrorMessage] = useState('');
+    const [countdown, setCountdown] = useState(600);              // 10 minutes in seconds
+
+    // Dynamic checkout QR modal state (Standard/Premium)
+    const [qrModal, setQrModal] = useState(null);
+    const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+
+
+    // Invoice / Payment History state
+    const [showInvoice, setShowInvoice] = useState(false);
+    const [invoiceLoading, setInvoiceLoading] = useState(false);
+    const [invoiceError, setInvoiceError] = useState('');
+    const [invoiceHistory, setInvoiceHistory] = useState([]);
+
+
+    const fetchCreditBalance = useWorkspaceStore(state => state.fetchCreditBalance);
+    const userTier = useWorkspaceStore(state => state.userTier);
+    const planLockedUntil = useWorkspaceStore(state => state.planLockedUntil);
+
+    // Notify parent (App.jsx) when QR modal opens/closes so Navbar can hide
+    useEffect(() => {
+        onPaymentModalChange?.(showQrModal);
+    }, [showQrModal, onPaymentModalChange]);
+
+    // ─── Cleanup refs ───
+    const realtimeChannelRef = useRef(null);
+    const countdownRef = useRef(null);
+    const pollingRef = useRef(null);
+    const paymentHandledRef = useRef(false); // Guard against double-success
+
+    // ─── Initiate Payment: calls /api/initiate-payment to get unique centavo amount ───
+    // Used by ALL tiers — base, standard, and premium all use centavo matching
+    const handleBaseCheckout = async (tierName = 'base') => {
+        if (!session?.user?.id) {
+            import('./ui/Toast').then(({ toast }) => {
+                toast.error(
+                    <div className="flex flex-col">
+                        <strong className="font-bold text-lg mb-1">Authentication Required</strong>
+                        <span className="opacity-90">Please log in to proceed.</span>
+                    </div>
+                );
+            });
+            return;
+        }
+
+        setShowQrModal(true);
+        setSessionStatus('loading');
+        setErrorMessage('');
+        setPaymentSession(null);
+
+        try {
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+            const response = await fetch('/api/initiate-payment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(currentSession?.access_token && { 'Authorization': `Bearer ${currentSession.access_token}` })
+                },
+                body: JSON.stringify({ tier: tierName, mobile: isMobile })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to initiate payment.');
+            }
+
+            setPaymentSession(data);
+            setSessionStatus('waiting');
+            setCountdown(data.ttl_seconds || 600);
+
+            // Start Realtime subscription, fallback polling, and countdown
+            startRealtimeListener(data.session_id);
+            startPolling(data.session_id);
+            startCountdown(data.ttl_seconds || 600);
+
+        } catch (error) {
+            console.error('Initiate payment error:', error);
+            setSessionStatus('error');
+            setErrorMessage(error.message);
+        }
+    };
+
+    // ─── Supabase Realtime: listen for payment_sessions status changes ───
+    const startRealtimeListener = (sessionId) => {
+        // Clean up any existing subscription
+        if (realtimeChannelRef.current) {
+            supabase.removeChannel(realtimeChannelRef.current);
+        }
+        paymentHandledRef.current = false; // Reset guard on new session
+
+        const channel = supabase
+            .channel(`payment_session_${sessionId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'payment_sessions',
+                    filter: `id=eq.${sessionId}`
+                },
+                async (payload) => {
+                    const newStatus = payload.new?.status;
+                    // Read credits directly from the updated DB row, not from stale closure state
+                    const creditsGranted = payload.new?.credits_to_grant || 10;
+                    console.log(`[Realtime] Session ${sessionId} status → ${newStatus}, credits: ${creditsGranted}`);
+
+                    if (newStatus === 'paid' && !paymentHandledRef.current) {
+                        paymentHandledRef.current = true;
+                        handlePaymentSuccess(creditsGranted);
+                    } else if (newStatus === 'expired') {
+                        setSessionStatus('expired');
+                        stopCountdown();
+                    }
+                }
+            )
+            .subscribe((status) => {
+                console.log(`[Realtime] Channel ${sessionId} subscribe status: ${status}`);
+            });
+
+        realtimeChannelRef.current = channel;
+    };
+
+    // W-6 FIX: Cleanup Realtime channel + timers on component unmount (e.g. navigate away)
+    useEffect(() => {
+        return () => {
+            if (realtimeChannelRef.current) {
+                supabase.removeChannel(realtimeChannelRef.current);
+                realtimeChannelRef.current = null;
+            }
+            if (countdownRef.current) clearInterval(countdownRef.current);
+            if (pollingRef.current) clearInterval(pollingRef.current);
+        };
+    }, []);
+
+    // ─── Fallback Polling (in case Realtime drops) ───
+    const startPolling = (sessionId) => {
+        stopPolling();
+        // N-6 FIX: Add jitter to polling interval to avoid thundering herd when many
+        // users are on the payment page simultaneously.
+        const jitter = Math.floor(Math.random() * 1500);
+        pollingRef.current = setInterval(async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('payment_sessions')
+                    .select('status, credits_to_grant')
+                    .eq('id', sessionId)
+                    .single();
+
+                if (data && data.status === 'paid' && !paymentHandledRef.current) {
+                    console.log(`[Polling] Detected paid status for session ${sessionId}`);
+                    paymentHandledRef.current = true;
+                    handlePaymentSuccess(data.credits_to_grant);
+                } else if (data && data.status === 'expired') {
+                    setSessionStatus('expired');
+                    stopCountdown();
+                    stopPolling();
+                }
+            } catch (err) {
+                console.error('[Polling] Error:', err);
+            }
+        }, 3000 + jitter); // Poll every 3-4.5s with jitter
+    };
+
+    const stopPolling = () => {
+        if (pollingRef.current) {
+            clearInterval(pollingRef.current);
+            pollingRef.current = null;
+        }
+    };
+
+    const handlePaymentSuccess = async (creditsGranted) => {
+        setSessionStatus('paid');
+        stopCountdown();
+        stopPolling();
+
+        if (realtimeChannelRef.current) {
+            supabase.removeChannel(realtimeChannelRef.current);
+            realtimeChannelRef.current = null;
+        }
+
+        // Refresh credit balance
+        if (session?.user?.id) {
+            await fetchCreditBalance(session.user.id);
+        }
+
+        // Success toast
+        import('./ui/Toast').then(({ toast }) => {
+            toast.success(
+                <div className="flex flex-col">
+                    <strong className="font-bold text-lg mb-1">Credits Added!</strong>
+                    <span className="opacity-90">{creditsGranted || 10} credits have been added.</span>
+                </div>
+            );
+        });
+
+        // Auto-close after 3 seconds
+        setTimeout(() => {
+            setShowQrModal(false);
+            cleanupSession();
+        }, 3000);
+    };
+
+    // ─── 10-minute countdown timer ───
+    const startCountdown = (seconds) => {
+        stopCountdown();
+        let remaining = seconds;
+        setCountdown(remaining);
+
+        countdownRef.current = setInterval(() => {
+            remaining--;
+            setCountdown(remaining);
+
+            if (remaining <= 0) {
+                stopCountdown();
+                setSessionStatus('expired');
+            }
+        }, 1000);
+    };
+
+    const stopCountdown = () => {
+        if (countdownRef.current) {
+            clearInterval(countdownRef.current);
+            countdownRef.current = null;
+        }
+    };
+
+    const formatTime = (sec) => {
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
+        return `${m}:${s.toString().padStart(2, '0')}`;
+    };
+
+    // ─── Cleanup on modal close / unmount ───
+    const cleanupSession = () => {
+        if (realtimeChannelRef.current) {
+            supabase.removeChannel(realtimeChannelRef.current);
+            realtimeChannelRef.current = null;
+        }
+        stopCountdown();
+        stopPolling();
+        setPaymentSession(null);
+        setSessionStatus('idle');
+        setErrorMessage('');
+    };
+
+    const handleCloseModal = () => {
+        setShowQrModal(false);
+        // Don't cleanup yet — let Realtime keep listening in background
+        // The banner will show outside the modal
+    };
+
+    useEffect(() => {
+        return () => {
+            cleanupSession();
+        };
+    }, []);
+
+    // ─── Check if there's an active pending session on mount (state recovery) ───
+    useEffect(() => {
+        const recoverSession = async () => {
+            if (!session?.user?.id) return;
+
+            const { data } = await supabase
+                .from('payment_sessions')
+                .select('id, exact_amount_due, credits_to_grant, tier, status, created_at')
+                .eq('user_id', session.user.id)
+                .eq('status', 'pending')
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (data && data.length > 0) {
+                const s = data[0];
+                const pesos = Math.floor(s.exact_amount_due / 100);
+                const centavos = s.exact_amount_due % 100;
+
+                // Check if session is still within TTL
+                const createdAt = new Date(s.created_at);
+                const elapsed = Math.floor((Date.now() - createdAt.getTime()) / 1000);
+                const remaining = Math.max(0, 600 - elapsed);
+
+                if (remaining > 0) {
+                    setPaymentSession({
+                        session_id: s.id,
+                        exact_amount_due: s.exact_amount_due,
+                        display_amount: `₱${pesos}.${centavos.toString().padStart(2, '0')}`,
+                        credits: s.credits_to_grant,
+                        tier: s.tier
+                    });
+                    setSessionStatus('waiting');
+                    setCountdown(remaining);
+                    startRealtimeListener(s.id);
+                    startPolling(s.id);
+                    startCountdown(remaining);
+                }
+            }
+        };
+
+        recoverSession();
+    }, [session?.user?.id]);
+
+    // ─── Standard/Premium: Dynamic Checkout Links ───
+    const handleDynamicCheckout = async (tier) => {
+        if (!session?.user?.id) {
+            import('./ui/Toast').then(({ toast }) => {
+                toast.error(
+                    <div className="flex flex-col">
+                        <strong className="font-bold text-lg mb-1">Authentication Required</strong>
+                        <span className="opacity-90">Please log in to proceed with checkout.</span>
+                    </div>
+                );
+            });
+            return;
+        }
+
+        setIsProcessing(tier);
+        try {
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+            const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(currentSession?.access_token && { 'Authorization': `Bearer ${currentSession.access_token}` })
+                },
+                body: JSON.stringify({ tier })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.detail || data.error || 'Failed to generate checkout link');
+            }
+
+            if (isMobileDevice()) {
+                window.location.href = data.checkout_url;
+            } else {
+                setQrModal({ qr_image: data.qr_image, checkout_url: data.checkout_url, tier });
+                setPaymentConfirmed(false);
+            }
+        } catch (error) {
+            console.error('Checkout error:', error);
+            import('./ui/Toast').then(({ toast }) => {
+                toast.error(
+                    <div className="flex flex-col">
+                        <strong className="font-bold text-lg mb-1">Checkout Failed</strong>
+                        <span className="opacity-90">{error.message}</span>
+                    </div>
+                );
+            });
+        } finally {
+            setIsProcessing(null);
+        }
+    };
+
+    const handlePaymentDone = async () => {
+        setPaymentConfirmed(true);
+        if (session?.user?.id) await fetchCreditBalance(session.user.id);
+        setTimeout(() => { setQrModal(null); setPaymentConfirmed(false); }, 2000);
+    };
+
+    useEffect(() => {
+        setIsMobile(isMobileDevice());
+    }, []);
 
     useEffect(() => {
         let ctx = gsap.context(() => {
@@ -28,14 +394,27 @@ export default function Billing({ session, onPaymentModalChange }) {
         return () => ctx.revert();
     }, []);
 
-    const handleCloseModal = () => {
-        setShowQrModal(false);
-    };
-
-    const handlePaymentDone = async () => {
-        setPaymentConfirmed(true);
-        // fetchCreditBalance is handled inside hook now, but we can call it if needed
-        setTimeout(() => { setQrModal(null); setPaymentConfirmed(false); }, 2000);
+    // ─── Fetch invoice history from backend ───
+    const fetchInvoiceHistory = async () => {
+        setShowInvoice(true);
+        setInvoiceLoading(true);
+        setInvoiceError('');
+        try {
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+            const response = await fetch('/api/payment-history', {
+                method: 'GET',
+                headers: {
+                    ...(currentSession?.access_token && { 'Authorization': `Bearer ${currentSession.access_token}` })
+                }
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Failed to load history.');
+            setInvoiceHistory(data.history || []);
+        } catch (err) {
+            setInvoiceError(err.message);
+        } finally {
+            setInvoiceLoading(false);
+        }
     };
 
     return (
@@ -224,10 +603,10 @@ export default function Billing({ session, onPaymentModalChange }) {
 
                     <button
                         onClick={() => handleBaseCheckout('premium')}
-                        disabled={sessionStatus === 'loading'}
+                        disabled={sessionStatus === 'loading' || (userTier === 'premium' && isLocked(planLockedUntil))}
                         className="w-full py-4 rounded-2xl bg-champagne text-obsidian font-bold text-base hover:brightness-105 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-champagne/30 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {sessionStatus === 'loading' ? 'Generating…' : '🔒 Get Premium — ₱3/mo'}
+                        {sessionStatus === 'loading' ? 'Generating…' : (userTier === 'premium' && isLocked(planLockedUntil)) ? '✓ Plan Active' : '🔒 Get Premium — ₱3/mo'}
                     </button>
                     <p className="text-xs text-center text-champagne/50 dark:text-champagne/35 mt-2">
                         Your payment is processed securely. Credits are only added after your AI analysis successfully completes.
@@ -284,10 +663,10 @@ export default function Billing({ session, onPaymentModalChange }) {
 
                     <button
                         onClick={() => handleBaseCheckout('standard')}
-                        disabled={sessionStatus === 'loading'}
+                        disabled={sessionStatus === 'loading' || (userTier === 'standard' && isLocked(planLockedUntil))}
                         className="w-full py-3.5 rounded-2xl border-2 border-blue-500/40 text-blue-600 dark:text-blue-400 font-bold text-sm hover:bg-blue-500/5 hover:border-blue-500/60 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {sessionStatus === 'loading' ? 'Generating…' : '🔒 Get Standard — ₱2/mo'}
+                        {sessionStatus === 'loading' ? 'Generating…' : (userTier === 'standard' && isLocked(planLockedUntil)) ? '✓ Plan Active' : '🔒 Get Standard — ₱2/mo'}
                     </button>
                     <p className="text-xs text-center text-slate/60 dark:text-darkText/35 mt-2">
                         Your payment is processed securely. Credits are only added after your AI analysis successfully completes.

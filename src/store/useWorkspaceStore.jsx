@@ -34,6 +34,7 @@ const useWorkspaceStore = create((set, get) => ({
 
     // Subscription tier
     userTier: 'base',
+    planLockedUntil: null,
 
     // Actions
     updateField: (field, value) => set({ [field]: value }),
@@ -58,7 +59,7 @@ const useWorkspaceStore = create((set, get) => ({
         try {
             const { data, error } = await supabase
                 .from('user_profiles')
-                .select('current_credit_balance, tier')
+                .select('current_credit_balance, plan_tier, tier, plan_locked_until')
                 .eq('id', userId)
                 .single();
 
@@ -66,7 +67,8 @@ const useWorkspaceStore = create((set, get) => ({
             if (data) {
                 set({
                     creditBalance: data.current_credit_balance,
-                    userTier: data.tier || 'base'
+                    userTier: data.plan_tier || data.tier || 'base',
+                    planLockedUntil: data.plan_locked_until || null
                 });
             }
         } catch (error) {
