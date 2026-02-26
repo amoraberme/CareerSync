@@ -45,7 +45,7 @@ You MUST respond ONLY with a raw JSON object matching this exact schema:
 }`;
 
         // 3. User content — strictly separated
-        const userContent = `Parse the following job listing text:\n\n${text}`;
+        const userContent = `Parse the following job listing text:\n\n${userInputText}`;
 
         // 4. Call Gemini with Cascade Router
         const { text, modelUsed } = await callGeminiWithCascade(apiKey, {
