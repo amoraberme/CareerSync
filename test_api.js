@@ -1,6 +1,6 @@
 async function testWebhook() {
     try {
-        const res = await fetch("https://career-sync-blush.vercel.app/api/webhooks/paymongo", {
+        const res = await fetch("https://careersync.website/api/webhooks/paymongo", {
             method: "POST",
             headers: {
                 "Paymongo-Signature": "t=1,te=1",
@@ -18,7 +18,7 @@ async function testWebhook() {
 
 async function testAnalyze() {
     try {
-        const res = await fetch("https://career-sync-blush.vercel.app/api/analyze", {
+        const res = await fetch("https://careersync.website/api/analyze", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

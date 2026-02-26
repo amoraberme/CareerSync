@@ -121,7 +121,7 @@ export default async function handler(req, res) {
 
                     if (methodId) {
                         // W-2 FIX: /plans (not the old /billing path)
-                        const returnUrl = `${process.env.VITE_APP_URL || 'https://career-sync-blush.vercel.app'}/plans`;
+                        const returnUrl = `${process.env.VITE_APP_URL || 'https://careersync.website'}/plans`;
                         const attachResp = await fetch(`https://api.paymongo.com/v1/payment_intents/${intentId}/attach`, {
                             method: 'POST',
                             headers,

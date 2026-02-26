@@ -5,7 +5,7 @@
  */
 export function applyCors(req, res) {
     const allowedOrigin =
-        process.env.VITE_APP_URL || 'https://career-sync-blush.vercel.app';
+        process.env.VITE_APP_URL || 'https://careersync.website';
 
     res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');

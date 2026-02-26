@@ -11,7 +11,7 @@ const Privacy = ({ onBack }) => {
                     </p>
                     <p className="text-sm font-mono uppercase tracking-widest text-slate/60 dark:text-darkText/40 mb-8">
                         Effective Date: February 26, 2026<br />
-                        Platform: CareerSync (career-sync.blush.vercel.app)
+                        Platform: CareerSync (careersync.website)
                     </p>
                 </section>
 
