@@ -43,8 +43,8 @@ export default async function handler(req, res) {
 
             // If target is same or lower than current active (standard/premium only)
             if (currentRank >= 2 && targetRank <= currentRank) {
-                return res.status(400).json({
-                    error: `You currently have an active ${profile.plan_tier.toUpperCase()} plan. You cannot downgrade or repurchase this tier until it expires on ${new Date(profile.plan_locked_until).toLocaleDateString()}.`
+                return res.status(403).json({
+                    error: "You already have an active subscription."
                 });
             }
         }
