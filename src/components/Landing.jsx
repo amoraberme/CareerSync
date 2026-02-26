@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Check, ArrowRight, Github, ExternalLink, Shield, Zap, Target, FileText } from 'lucide-react';
+import { Check, ArrowRight, Shield, Zap, Target, FileText } from 'lucide-react';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
 
@@ -66,10 +66,7 @@ const Landing = ({ onNavigate }) => {
                 </div>
 
                 <div className="max-w-5xl mx-auto text-center">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-champagne/10 border border-champagne/20 text-champagne text-[11px] font-bold uppercase tracking-widest mb-8">
-                        <Zap className="w-3 h-3 fill-current" />
-                        Powered by Google Gemini 2.0 Flash
-                    </div>
+
 
                     <h1 className="hero-title text-6xl md:text-8xl font-bold tracking-tightest leading-[0.9] mb-8 text-obsidian dark:text-darkText">
                         Build your career <br />
@@ -77,7 +74,7 @@ const Landing = ({ onNavigate }) => {
                     </h1>
 
                     <p className="hero-sub text-xl md:text-2xl text-slate dark:text-darkText/60 max-w-2xl mx-auto mb-12 leading-relaxed">
-                        The AI-powered career intelligence platform designed for the Philippine market.
+                        The AI-powered career intelligence platform designed for job seekers.
                         Instantly score, optimize, and generate materials tailored to your target role.
                     </p>
 
@@ -98,38 +95,38 @@ const Landing = ({ onNavigate }) => {
                     </div>
                 </div>
 
-                {/* Dashboard Preview / Mockup placeholder */}
-                <div className="mt-24 max-w-6xl mx-auto rounded-[3rem] border border-obsidian/5 dark:border-darkText/5 p-4 bg-surface/30 dark:bg-darkCard/20 backdrop-blur-md shadow-2xl">
-                    <div className="aspect-video bg-white dark:bg-darkBg rounded-[2rem] overflow-hidden flex items-center justify-center relative group">
-                        <div className="absolute inset-0 bg-gradient-to-br from-champagne/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <FileText className="w-24 h-24 text-obsidian/5 dark:text-darkText/5" />
-                        <div className="absolute bottom-12 left-12 p-6 bg-background dark:bg-darkCard rounded-2xl shadow-xl border border-obsidian/5 dark:border-darkText/5 max-w-xs scale-90 md:scale-100">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-10 h-10 rounded-full bg-champagne/20 flex items-center justify-center text-champagne font-bold">89</div>
-                                <div className="text-sm font-bold">Match Score</div>
-                            </div>
-                            <div className="space-y-2">
-                                <div className="h-2 w-full bg-obsidian/5 dark:bg-darkText/5 rounded-full" />
-                                <div className="h-2 w-[80%] bg-obsidian/5 dark:bg-darkText/5 rounded-full" />
-                                <div className="h-2 w-[60%] bg-obsidian/5 dark:bg-darkText/5 rounded-full" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </section>
 
-            {/* ═══ TRUSTED BY ═══ */}
+            {/* ═══ TECH STACK RIBBON ═══ */}
             <section className="py-20 border-y border-obsidian/5 dark:border-darkText/5">
                 <div className="max-w-7xl mx-auto px-6 text-center">
                     <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate/40 dark:text-darkText/30 mb-12 italic">
                         The ultimate analytical companion for career growth
                     </p>
                     <div className="flex flex-wrap justify-center items-center gap-12 md:gap-20 opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
-                        <div className="text-2xl font-black font-drama italic">betashares</div>
-                        <div className="text-2xl font-black font-mono">submagic</div>
-                        <div className="text-2xl font-black">GitHub</div>
-                        <div className="text-2xl font-black font-serif">moz://a</div>
-                        <div className="text-2xl font-black opacity-80 italic">1Password</div>
+                        {/* GitHub */}
+                        <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" /></svg>
+
+                        {/* Supabase */}
+                        <svg className="w-12 h-12" viewBox="0 0 24 24" fill="currentColor"><path d="M21.362 9.354H12V.341L2.638 14.646H12v9.013z" /></svg>
+
+                        {/* Google Cloud */}
+                        <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" /></svg>
+
+                        {/* Vercel */}
+                        <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M24 22.525H0l12-21.05z" /></svg>
+
+                        {/* AntiGravity */}
+                        <div className="flex flex-col items-center">
+                            <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z" /></svg>
+                            <span className="text-[10px] font-bold tracking-tighter mt-1">ANTIGRAVITY</span>
+                        </div>
+
+                        {/* Gemini */}
+                        <div className="flex flex-col items-center">
+                            <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l-3 9H2l7 5-3 9 6-6 6 6-3-9 7-5h-7z" /></svg>
+                            <span className="text-[10px] font-bold tracking-tighter mt-1">GEMINI AI</span>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -162,7 +159,7 @@ const Landing = ({ onNavigate }) => {
                             </div>
 
                             <button onClick={() => onNavigate('auth')} className="w-full py-4 rounded-2xl bg-obsidian dark:bg-darkText text-background dark:text-darkBg font-bold mb-8 transition-transform active:scale-95">
-                                Try for FREE
+                                Get Started
                             </button>
 
                             <ul className="space-y-4 mb-8 flex-1">
@@ -206,10 +203,6 @@ const Landing = ({ onNavigate }) => {
                             <ul className="space-y-4 mb-8 flex-1">
                                 <li className="flex gap-3 text-sm">
                                     <Check className="w-4 h-4 text-champagne shrink-0" />
-                                    <span><strong>Unlimited</strong> Base Tokens</span>
-                                </li>
-                                <li className="flex gap-3 text-sm">
-                                    <Check className="w-4 h-4 text-champagne shrink-0" />
                                     <span><strong>50 Premium Credits</strong> daily refilled</span>
                                 </li>
                                 <li className="flex gap-3 text-sm">
@@ -242,14 +235,10 @@ const Landing = ({ onNavigate }) => {
                             </div>
 
                             <button onClick={() => onNavigate('auth')} className="w-full py-4 rounded-2xl bg-obsidian dark:bg-darkText text-background dark:text-darkBg font-bold mb-8 transition-transform active:scale-95">
-                                Select Plan
+                                Get Started
                             </button>
 
                             <ul className="space-y-4 mb-8 flex-1">
-                                <li className="flex gap-3 text-sm text-slate dark:text-darkText/70">
-                                    <Check className="w-4 h-4 text-champagne shrink-0" />
-                                    <span><strong>Unlimited</strong> Base Tokens</span>
-                                </li>
                                 <li className="flex gap-3 text-sm text-slate dark:text-darkText/70">
                                     <Check className="w-4 h-4 text-champagne shrink-0" />
                                     <span><strong>40 Premium Credits</strong> daily refilled</span>
@@ -289,10 +278,6 @@ const Landing = ({ onNavigate }) => {
                         <button onClick={() => onNavigate('privacy')} className="text-xs font-bold uppercase tracking-widest hover:text-champagne transition-colors">Privacy Policy</button>
                     </div>
 
-                    <div className="flex items-center gap-6">
-                        <Github className="w-5 h-5 text-slate/40 hover:text-obsidian dark:hover:text-darkText cursor-pointer transition-colors" />
-                        <ExternalLink className="w-5 h-5 text-slate/40 hover:text-obsidian dark:hover:text-darkText cursor-pointer transition-colors" />
-                    </div>
                 </div>
             </footer>
         </div>

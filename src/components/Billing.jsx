@@ -562,14 +562,6 @@ export default function Billing({ session, onPaymentModalChange }) {
                                 <Check className="w-3 h-3 text-champagne" />
                             </span>
                             <span className="text-obsidian dark:text-darkText">
-                                <strong className="text-champagne">Unlimited</strong> Base Tokens
-                            </span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                            <span className="w-5 h-5 rounded-full bg-champagne/15 flex items-center justify-center shrink-0 mt-0.5">
-                                <Check className="w-3 h-3 text-champagne" />
-                            </span>
-                            <span className="text-obsidian dark:text-darkText">
                                 <strong className="text-champagne">50 Premium Credits</strong>
                                 <span className="text-xs text-slate dark:text-darkText/50 ml-1">— refills daily</span>
                             </span>
@@ -631,14 +623,6 @@ export default function Billing({ session, onPaymentModalChange }) {
 
                     {/* Features */}
                     <ul className="space-y-3 mb-8 flex-1 text-sm">
-                        <li className="flex items-start gap-3">
-                            <span className="w-5 h-5 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                                <Check className="w-3 h-3 text-blue-500" />
-                            </span>
-                            <span className="text-obsidian/90 dark:text-darkText/90">
-                                <strong className="font-semibold text-obsidian dark:text-darkText">Unlimited</strong> Base Tokens
-                            </span>
-                        </li>
                         <li className="flex items-start gap-3">
                             <span className="w-5 h-5 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 mt-0.5">
                                 <Check className="w-3 h-3 text-blue-500" />
