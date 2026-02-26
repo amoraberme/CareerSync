@@ -65,33 +65,28 @@ export default async function handler(req, res) {
 
     try {
         const event = req.body;
-        const eventType = event?.data?.attributes?.type;
         const attrs = event?.data?.attributes;
+        const eventType = attrs?.type;
 
-        // C-4 FIX: Only log non-PII metadata — never the full event payload.
-        await supabaseAdmin.from('webhook_logs').insert({
-            payload: {
-                _log: 'verified_event',
-                eventType,
-                timestamp,
-                has_attrs: !!attrs,
-            }
-        });
+        console.log(`[PayMongo Webhook] 🔔 Event Received: ${eventType}`);
 
-        console.log(`[Webhook] Event type: ${eventType}`);
-
-        // ═══ payment.paid — Secure Fulfillment (Metadata + Amount Fallback) ═══
         if (eventType === 'payment.paid') {
-            const resource = attrs?.data?.attributes?.resource || attrs;
+            const resource = attrs?.data?.attributes?.resource || attrs?.data || attrs;
             const metadata = resource?.metadata || {};
             const { userId, planType } = metadata;
-            const amount = resource?.attributes?.amount || resource?.amount || attrs?.amount || 0;
+            const amount = resource?.amount || attrs?.amount || 0;
 
-            console.log(`[Webhook] payment.paid received. Amount: ${amount}, User: ${userId || 'N/A'}, Plan: ${planType || 'N/A'}`);
+            console.log(`[PayMongo Webhook] 📦 Initial Analysis:`, {
+                hasResource: !!resource,
+                hasMetadata: !!metadata,
+                extractedUserId: userId,
+                extractedPlan: planType,
+                amountCentavos: amount
+            });
 
-            // ─── Case A: Metadata exists (Secure Intent Flow) ───
+            // ─── Case A: Metadata Match (Primary & Secure) ───
             if (userId && planType) {
-                console.log(`[Webhook] Using metadata fulfillment for User: ${userId}`);
+                console.log(`[PayMongo Webhook] 🎯 EXECUTION: Metadata Fulfillment for User ${userId} (${planType})`);
 
                 let updateData = {};
                 let creditAmount = 0;
@@ -114,29 +109,50 @@ export default async function handler(req, res) {
                     };
                 } else if (planType === 'base') {
                     creditAmount = 10;
-                    const { data: profile } = await supabaseAdmin.from('user_profiles').select('base_tokens').eq('id', userId).single();
+                    const { data: profile, error: fetchErr } = await supabaseAdmin.from('user_profiles').select('base_tokens').eq('id', userId).single();
+                    if (fetchErr) console.error(`[PayMongo Webhook] ❌ Profile Fetch Error (User ID: ${userId}):`, fetchErr.message);
+
                     updateData = {
                         base_tokens: (profile?.base_tokens || 0) + 10,
                         base_token_expiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
                     };
                 }
 
-                const { error: fulfillError } = await supabaseAdmin.from('user_profiles').update(updateData).eq('id', userId);
+                console.log(`[PayMongo Webhook] 🔄 DB UPDATE: Applying tier '${planType}' and ${creditAmount} credits...`);
+
+                const { error: fulfillError } = await supabaseAdmin
+                    .from('user_profiles')
+                    .update(updateData)
+                    .eq('id', userId);
+
                 if (fulfillError) {
-                    console.error('[Webhook] Fulfillment failed:', fulfillError.message);
-                    return res.status(500).json({ error: 'Fulfillment failed.' });
+                    console.error(`[PayMongo Webhook] ❌ SUPABASE UPDATE FAILED (REASON):`, fulfillError.message);
+                    // Critical: Still try to sync session so UI doesn't hang forever
+                } else {
+                    console.log(`[PayMongo Webhook] ✅ DB UPDATE SUCCESSFUL for User ${userId}.`);
                 }
 
-                // Sync session for UI
-                await supabaseAdmin.from('payment_sessions').update({ status: 'paid', credits_to_grant: creditAmount })
-                    .eq('user_id', userId).eq('exact_amount_due', amount).eq('status', 'pending');
+                // Sync session for UI (Realtime sync)
+                const { error: sessionError } = await supabaseAdmin
+                    .from('payment_sessions')
+                    .update({ status: 'paid', credits_to_grant: creditAmount })
+                    .eq('user_id', userId)
+                    .eq('exact_amount_due', amount)
+                    .eq('status', 'pending');
 
-                return res.status(200).json({ status: 'success' });
+                if (sessionError) {
+                    console.warn(`[PayMongo Webhook] ⚠️ UI Session Sync Failed:`, sessionError.message);
+                } else {
+                    console.log(`[PayMongo Webhook] 📱 UI Session Synced successfully.`);
+                }
+
+                return res.status(200).json({ status: 'success', metadata_fulfillment: true });
             }
 
-            // ─── Case B: No metadata (Fallback to Amount Matching) ───
-            console.log(`[Webhook] No metadata found. Falling back to Amount Matching for ${amount} centavos.`);
+            // ─── Case B: Amount Matching (Fallback for direct/custom QR payments) ───
+            console.log(`[PayMongo Webhook] ⚠️ FALLBACK: No metadata found. Attempting Amount Matching for ${amount} centavos.`);
             if (!amount || amount < 100) {
+                console.error(`[PayMongo Webhook] ❌ ABORT: Amount ${amount} is invalid for fulfillment.`);
                 return res.status(200).json({ received: true, matched: false, reason: 'invalid_amount' });
             }
             return await processAmountMatch(supabaseAdmin, amount, res);
