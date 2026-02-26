@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Trash2, Calendar, Search, Filter, Lock, ArrowRight } from 'lucide-react';
+import { Trash2, Calendar, Search, Filter, Lock } from 'lucide-react';
 import Tooltip from './ui/Tooltip';
 import gsap from 'gsap';
 import { supabase } from '../supabaseClient';
@@ -154,24 +154,7 @@ export default function HistoryDashboard({ session, setCurrentView }) {
                     {loading ? (
                         <div className="p-12 text-center text-slate dark:text-darkText/70 font-mono text-sm">Loading history...</div>
                     ) : filteredApplications.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center p-20 text-center animate-fade-in">
-                            <div className="w-20 h-20 bg-champagne/10 rounded-full flex items-center justify-center mb-6">
-                                <Search className="w-10 h-10 text-champagne" />
-                            </div>
-                            <h3 className="text-xl font-bold text-obsidian dark:text-darkText mb-2">
-                                No analyses found
-                            </h3>
-                            <p className="text-slate dark:text-darkText/60 max-w-sm mb-10 leading-relaxed">
-                                You haven't analyzed any resumes yet. Head over to the Workspace to begin.
-                            </p>
-                            <button
-                                onClick={() => setCurrentView('workspace')}
-                                className="bg-obsidian dark:bg-darkText text-background dark:text-darkBg px-8 py-3.5 rounded-full font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform flex items-center gap-2"
-                            >
-                                Open Workspace
-                                <ArrowRight className="w-4 h-4" />
-                            </button>
-                        </div>
+                        <div className="p-12 text-center text-slate dark:text-darkText/70 font-mono text-sm">No analysis history found matching these filters.</div>
                     ) : (
                         displayedApplications.map((app) => (
                             <div key={app.id} onClick={() => handleRowClick(app)} className="history-row flex flex-col gap-3 p-6 lg:grid lg:grid-cols-6 lg:gap-4 lg:items-center hover:bg-background dark:hover:bg-darkCard/60 transition-colors group cursor-pointer relative">

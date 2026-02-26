@@ -2,23 +2,6 @@ import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 import { applyCors } from '../_lib/corsHelper.js';
 
-// ─── CRITICAL STEP 1: Disable Next.js body parser ───
-// This allows us to read the RAW request body needed for signature verification
-export const config = {
-    api: {
-        bodyParser: false,
-    },
-};
-
-// Helper: Read raw body buffer
-async function getRawBody(req) {
-    const chunks = [];
-    for await (const chunk of req) {
-        chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
-    }
-    return Buffer.concat(chunks);
-}
-
 export default async function handler(req, res) {
     // W-8: CORS
     if (applyCors(req, res)) return;
@@ -42,20 +25,12 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Webhook secret not configured.' });
     }
 
-    // ─── C-1 FIX: ENFORCE signature verification using RAW body ───
+    // ─── C-1 FIX: ENFORCE signature verification — reject on mismatch ───
+    // W-5 FIX: No DB writes before this check passes.
     const signatureHeader = req.headers['paymongo-signature'];
     if (!signatureHeader) {
-        console.error('[PayMongo Webhook] ❌ Missing signature header.');
+        console.error('[Webhook] Missing paymongo-signature header — rejecting.');
         return res.status(401).json({ error: 'Missing signature.' });
-    }
-
-    let rawBody;
-    try {
-        rawBody = await getRawBody(req);
-        console.log(`[PayMongo Webhook] 📦 Raw body read successfully (${rawBody.length} bytes).`);
-    } catch (e) {
-        console.error('[PayMongo Webhook] ❌ Failed to read raw body:', e.message);
-        return res.status(500).json({ error: 'Raw body read error.' });
     }
 
     const parts = {};
@@ -66,122 +41,69 @@ export default async function handler(req, res) {
     const { t: timestamp, li: liveSig, te: testSig } = parts;
     const signature = liveSig || testSig;
 
+    if (!timestamp || !signature) {
+        console.error('[Webhook] Malformed signature header — rejecting.');
+        return res.status(401).json({ error: 'Malformed signature.' });
+    }
+
+    const rawBody = JSON.stringify(req.body);
     const expected = crypto
         .createHmac('sha256', webhookSecret)
-        .update(`${timestamp}.${rawBody.toString()}`)
+        .update(`${timestamp}.${rawBody}`)
         .digest('hex');
 
     if (signature !== expected) {
-        console.error('[PayMongo Webhook] ❌ Signature mismatch — REJECTED.');
+        // C-1 FIX: Reject — do not proceed. No DB write.
+        console.error('[Webhook] Signature mismatch — request rejected.');
         return res.status(401).json({ error: 'Invalid signature.' });
     }
 
-    console.log('[PayMongo Webhook] ✅ Signature verified successfully.');
-
-    // Parse the body manually since we disabled the parser
-    let body;
-    try {
-        body = JSON.parse(rawBody.toString());
-    } catch (e) {
-        console.error('[PayMongo Webhook] ❌ Malformed JSON body.');
-        return res.status(400).json({ error: 'Invalid JSON.' });
-    }
+    console.log('[Webhook] Signature verified successfully.');
 
     // ─── Signature passed — now safe to connect to DB ───
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
     try {
-        const event = body;
+        const event = req.body;
+        const eventType = event?.data?.attributes?.type;
         const attrs = event?.data?.attributes;
-        const eventType = attrs?.type;
 
-        console.log(`[PayMongo Webhook] 🔔 Event Received: ${eventType}`);
+        // C-4 FIX: Only log non-PII metadata — never the full event payload.
+        await supabaseAdmin.from('webhook_logs').insert({
+            payload: {
+                _log: 'verified_event',
+                eventType,
+                timestamp,
+                has_attrs: !!attrs,
+            }
+        });
 
+        console.log(`[Webhook] Event type: ${eventType}`);
+
+        // ═══ payment.paid — Direct QR Ph / GCash payments ═══
         if (eventType === 'payment.paid') {
-            const resource = attrs?.data?.attributes?.resource || attrs?.data || attrs;
-            const metadata = resource?.metadata || {};
-            const { userId, planType } = metadata;
-            const amount = resource?.amount || attrs?.amount || 0;
+            const pathA = attrs?.amount;
+            const pathB = attrs?.data?.attributes?.amount;
+            const pathC = attrs?.data?.amount;
+            const amount = pathA || pathB || pathC || 0;
 
-            console.log(`[PayMongo Webhook] 📦 Initial Analysis:`, {
-                hasResource: !!resource,
-                hasMetadata: !!metadata,
-                extractedUserId: userId,
-                extractedPlan: planType,
-                amountCentavos: amount
+            // Log amount paths without PII
+            await supabaseAdmin.from('webhook_logs').insert({
+                payload: {
+                    _log: 'payment.paid_amount',
+                    amount_used: amount,
+                    path_A: pathA,
+                    path_B: pathB,
+                    path_C: pathC,
+                }
             });
 
-            // ─── Case A: Metadata Match (Primary & Secure) ───
-            if (userId && planType) {
-                console.log(`[PayMongo Webhook] 🎯 EXECUTION: Metadata Fulfillment for User ${userId} (${planType})`);
+            console.log(`[Webhook] payment.paid — amount: ${amount} centavos`);
 
-                let updateData = {};
-                let creditAmount = 0;
-
-                if (planType === 'premium') {
-                    creditAmount = 50;
-                    updateData = {
-                        plan_tier: 'premium',
-                        premium_credits: 50,
-                        plan_locked_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                        premium_next_refill: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-                    };
-                } else if (planType === 'standard') {
-                    creditAmount = 40;
-                    updateData = {
-                        plan_tier: 'standard',
-                        premium_credits: 40,
-                        plan_locked_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                        premium_next_refill: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-                    };
-                } else if (planType === 'base') {
-                    creditAmount = 10;
-                    const { data: profile, error: fetchErr } = await supabaseAdmin.from('user_profiles').select('base_tokens').eq('id', userId).single();
-                    if (fetchErr) console.error(`[PayMongo Webhook] ❌ Profile Fetch Error (User ID: ${userId}):`, fetchErr.message);
-
-                    updateData = {
-                        base_tokens: (profile?.base_tokens || 0) + 10,
-                        base_token_expiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-                    };
-                }
-
-                console.log(`[PayMongo Webhook] 🔄 DB UPDATE: Applying tier '${planType}' and ${creditAmount} credits...`);
-
-                const { error: fulfillError } = await supabaseAdmin
-                    .from('user_profiles')
-                    .update(updateData)
-                    .eq('id', userId);
-
-                if (fulfillError) {
-                    console.error(`[PayMongo Webhook] ❌ SUPABASE UPDATE FAILED (REASON):`, fulfillError.message);
-                    // Critical: Still try to sync session so UI doesn't hang forever
-                } else {
-                    console.log(`[PayMongo Webhook] ✅ DB UPDATE SUCCESSFUL for User ${userId}.`);
-                }
-
-                // Sync session for UI (Realtime sync)
-                const { error: sessionError } = await supabaseAdmin
-                    .from('payment_sessions')
-                    .update({ status: 'paid', credits_to_grant: creditAmount })
-                    .eq('user_id', userId)
-                    .eq('exact_amount_due', amount)
-                    .eq('status', 'pending');
-
-                if (sessionError) {
-                    console.warn(`[PayMongo Webhook] ⚠️ UI Session Sync Failed:`, sessionError.message);
-                } else {
-                    console.log(`[PayMongo Webhook] 📱 UI Session Synced successfully.`);
-                }
-
-                return res.status(200).json({ status: 'success', metadata_fulfillment: true });
-            }
-
-            // ─── Case B: Amount Matching (Fallback for direct/custom QR payments) ───
-            console.log(`[PayMongo Webhook] ⚠️ FALLBACK: No metadata found. Attempting Amount Matching for ${amount} centavos.`);
             if (!amount || amount < 100) {
-                console.error(`[PayMongo Webhook] ❌ ABORT: Amount ${amount} is invalid for fulfillment.`);
-                return res.status(200).json({ received: true, matched: false, reason: 'invalid_amount' });
+                return res.status(200).json({ received: true, matched: false, reason: 'invalid_amount', amount });
             }
+
             return await processAmountMatch(supabaseAdmin, amount, res);
         }
 
@@ -281,45 +203,24 @@ async function processAmountMatch(supabaseAdmin, amount, res) {
         }
     }
 
-    // ─── Step 2: Handle Tier and Credits for Standard/Premium ───
+    // ─── Step 2: Upgrade tier if Standard or Premium ───
     if (matchedTier === 'standard' || matchedTier === 'premium') {
-        const initialCredits = matchedTier === 'premium' ? 50 : 40;
+        const tierExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
         const { error: tierError } = await supabaseAdmin
             .from('user_profiles')
             .update({
-                plan_tier: matchedTier,
-                premium_credits: initialCredits,
-                plan_locked_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                premium_next_refill: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+                tier: matchedTier,
+                tier_expires_at: tierExpiresAt,
+                daily_credits_used: 0,
+                daily_credits_reset_at: new Date().toISOString()
             })
             .eq('id', matchedUserId);
 
         if (tierError) {
             console.warn(`[Webhook] Tier upgrade to '${matchedTier}' failed:`, tierError.message);
         } else {
-            console.log(`[Webhook] ⬆️ Tier upgraded to '${matchedTier}' for user ${matchedUserId}. Credits set to ${initialCredits}.`);
+            console.log(`[Webhook] ⬆️ Tier upgraded to '${matchedTier}' for user ${matchedUserId}.`);
         }
-    }
-
-    // ─── Step 3: Handle Base Tokens ───
-    if (matchedTier === 'base') {
-        const { data: profile } = await supabaseAdmin
-            .from('user_profiles')
-            .select('base_tokens')
-            .eq('id', matchedUserId)
-            .single();
-
-        const newBalance = (profile?.base_tokens || 0) + matchedCredits;
-
-        await supabaseAdmin
-            .from('user_profiles')
-            .update({
-                base_tokens: newBalance,
-                base_token_expiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-            })
-            .eq('id', matchedUserId);
-
-        console.log(`[Webhook] 🪙 Base tokens updated: ${newBalance}. Expiry reset to T+24h.`);
     }
 
     // Note: payment_sessions.status was already set to 'paid' by claim_payment_session() RPC.

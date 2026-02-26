@@ -32,8 +32,6 @@ export default function Billing({ session, onPaymentModalChange }) {
 
 
     const fetchCreditBalance = useWorkspaceStore(state => state.fetchCreditBalance);
-    const userTier = useWorkspaceStore(state => state.userTier);
-    const planLockedUntil = useWorkspaceStore(state => state.planLockedUntil);
 
     // Notify parent (App.jsx) when QR modal opens/closes so Navbar can hide
     useEffect(() => {
@@ -90,7 +88,6 @@ export default function Billing({ session, onPaymentModalChange }) {
             // Start Realtime subscription, fallback polling, and countdown
             startRealtimeListener(data.session_id);
             startPolling(data.session_id);
-            startProfilePolling(userTier || 'free'); // Added Profile Polling
             startCountdown(data.ttl_seconds || 600);
 
         } catch (error) {
@@ -251,50 +248,6 @@ export default function Billing({ session, onPaymentModalChange }) {
     };
 
     // ─── Cleanup on modal close / unmount ───
-    // ─── Profile Polling Fallback (Unblocks UI even if Webhook is slow) ───
-    const startProfilePolling = (initialTier) => {
-        console.log(`[Polling] 🛡️ Starting profile status polling (initial: ${initialTier})`);
-        let attempts = 0;
-        const maxAttempts = 15; // 45 seconds total
-
-        const interval = setInterval(async () => {
-            attempts++;
-            if (!session?.user?.id) return clearInterval(interval);
-
-            try {
-                // Fetch user profile directly bypass RLS concerns or cache
-                const { data: profile, error } = await supabase
-                    .from('user_profiles')
-                    .select('plan_tier, premium_credits, base_tokens')
-                    .eq('id', session.user.id)
-                    .single();
-
-                if (error) throw error;
-
-                // Condition 1: Tier changed (Standard/Premium)
-                const tierChanged = profile.plan_tier !== initialTier && profile.plan_tier !== 'free';
-                // Condition 2: Base tokens exist (if that's what we bought)
-                const tokensFound = profile.base_tokens > 0;
-
-                if ((tierChanged || tokensFound) && !paymentHandledRef.current) {
-                    console.log(`[Polling] ✅ Success detected via Profile Poll! Tier: ${profile.plan_tier}`);
-                    paymentHandledRef.current = true;
-                    handlePaymentSuccess(profile.premium_credits || 10);
-                    clearInterval(interval);
-                }
-
-                if (attempts >= maxAttempts) {
-                    console.warn(`[Polling] ⏳ Timeout reached after 45s.`);
-                    clearInterval(interval);
-                }
-            } catch (err) {
-                console.error('[Polling] Profile check failed:', err.message);
-            }
-        }, 3000); // Check every 3 seconds
-
-        return () => clearInterval(interval);
-    };
-
     const cleanupSession = () => {
         if (realtimeChannelRef.current) {
             supabase.removeChannel(realtimeChannelRef.current);
@@ -643,11 +596,10 @@ export default function Billing({ session, onPaymentModalChange }) {
 
                     <button
                         onClick={() => handleBaseCheckout('premium')}
-                        disabled={sessionStatus === 'loading' || (userTier === 'premium' && planLockedUntil && new Date(planLockedUntil) > new Date())}
-                        className="w-full py-4 rounded-2xl bg-champagne text-obsidian font-bold text-base hover:brightness-105 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-champagne/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate/10 disabled:text-slate/60 disabled:shadow-none disabled:border-slate/20 disabled:border-2"
+                        disabled={sessionStatus === 'loading'}
+                        className="w-full py-4 rounded-2xl bg-champagne text-obsidian font-bold text-base hover:brightness-105 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-champagne/30 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {sessionStatus === 'loading' ? 'Generating…' :
-                            (userTier === 'premium' && planLockedUntil && new Date(planLockedUntil) > new Date()) ? 'Current Plan (Active)' : '🔒 Get Premium — ₱3/mo'}
+                        {sessionStatus === 'loading' ? 'Generating…' : '🔒 Get Premium — ₱3/mo'}
                     </button>
                     <p className="text-xs text-center text-champagne/50 dark:text-champagne/35 mt-2">
                         Your payment is processed securely. Credits are only added after your AI analysis successfully completes.
@@ -704,11 +656,10 @@ export default function Billing({ session, onPaymentModalChange }) {
 
                     <button
                         onClick={() => handleBaseCheckout('standard')}
-                        disabled={sessionStatus === 'loading' || (userTier === 'standard' && planLockedUntil && new Date(planLockedUntil) > new Date())}
-                        className="w-full py-3.5 rounded-2xl border-2 border-blue-500/40 text-blue-600 dark:text-blue-400 font-bold text-sm hover:bg-blue-500/5 hover:border-blue-500/60 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:border-slate/20 disabled:text-slate/60"
+                        disabled={sessionStatus === 'loading'}
+                        className="w-full py-3.5 rounded-2xl border-2 border-blue-500/40 text-blue-600 dark:text-blue-400 font-bold text-sm hover:bg-blue-500/5 hover:border-blue-500/60 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {sessionStatus === 'loading' ? 'Generating…' :
-                            (userTier === 'standard' && planLockedUntil && new Date(planLockedUntil) > new Date()) ? 'Current Plan (Active)' : '🔒 Get Standard — ₱2/mo'}
+                        {sessionStatus === 'loading' ? 'Generating…' : '🔒 Get Standard — ₱2/mo'}
                     </button>
                     <p className="text-xs text-center text-slate/60 dark:text-darkText/35 mt-2">
                         Your payment is processed securely. Credits are only added after your AI analysis successfully completes.
@@ -749,9 +700,9 @@ export default function Billing({ session, onPaymentModalChange }) {
                                 </div>
                                 <h3 className="text-lg font-bold text-obsidian dark:text-darkText mb-2">Unable to Generate Amount</h3>
                                 <p className="text-sm text-slate dark:text-darkText/60 mb-4">{errorMessage}</p>
-                                <button onClick={() => handleBaseCheckout()}
+                                <button onClick={handleBaseCheckout}
                                     className="w-full py-3 rounded-2xl bg-obsidian/5 dark:bg-darkText/5 text-obsidian dark:text-darkText font-semibold hover:bg-obsidian/10 dark:hover:bg-darkText/10 transition-colors">
-                                    Get New Amount
+                                    Try Again
                                 </button>
                             </div>
                         )}
