@@ -80,90 +80,66 @@ export default async function handler(req, res) {
 
         console.log(`[Webhook] Event type: ${eventType}`);
 
-        // ═══ payment.paid — Secure Fulfillment via Metadata ═══
+        // ═══ payment.paid — Secure Fulfillment (Metadata + Amount Fallback) ═══
         if (eventType === 'payment.paid') {
             const resource = attrs?.data?.attributes?.resource || attrs;
             const metadata = resource?.metadata || {};
             const { userId, planType } = metadata;
+            const amount = resource?.attributes?.amount || resource?.amount || attrs?.amount || 0;
 
-            if (!userId || !planType) {
-                console.error('[Webhook] SEVERE ERROR: Missing fulfillment metadata (userId/planType).', metadata);
-                return res.status(400).json({ error: 'Missing fulfillment metadata.' });
+            console.log(`[Webhook] payment.paid received. Amount: ${amount}, User: ${userId || 'N/A'}, Plan: ${planType || 'N/A'}`);
+
+            // ─── Case A: Metadata exists (Secure Intent Flow) ───
+            if (userId && planType) {
+                console.log(`[Webhook] Using metadata fulfillment for User: ${userId}`);
+
+                let updateData = {};
+                let creditAmount = 0;
+
+                if (planType === 'premium') {
+                    creditAmount = 50;
+                    updateData = {
+                        plan_tier: 'premium',
+                        premium_credits: 50,
+                        plan_locked_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                        premium_next_refill: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+                    };
+                } else if (planType === 'standard') {
+                    creditAmount = 40;
+                    updateData = {
+                        plan_tier: 'standard',
+                        premium_credits: 40,
+                        plan_locked_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                        premium_next_refill: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+                    };
+                } else if (planType === 'base') {
+                    creditAmount = 10;
+                    const { data: profile } = await supabaseAdmin.from('user_profiles').select('base_tokens').eq('id', userId).single();
+                    updateData = {
+                        base_tokens: (profile?.base_tokens || 0) + 10,
+                        base_token_expiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+                    };
+                }
+
+                const { error: fulfillError } = await supabaseAdmin.from('user_profiles').update(updateData).eq('id', userId);
+                if (fulfillError) {
+                    console.error('[Webhook] Fulfillment failed:', fulfillError.message);
+                    return res.status(500).json({ error: 'Fulfillment failed.' });
+                }
+
+                // Sync session for UI
+                await supabaseAdmin.from('payment_sessions').update({ status: 'paid', credits_to_grant: creditAmount })
+                    .eq('user_id', userId).eq('exact_amount_due', amount).eq('status', 'pending');
+
+                return res.status(200).json({ status: 'success' });
             }
 
-            console.log(`[Webhook] Processing fulfillment for User: ${userId}, Plan: ${planType}`);
-
-            // ─── Step 1: Secure Tier & Credit Fulfillment ───
-            let updateData = {};
-            let creditAmount = 0;
-
-            if (planType === 'premium') {
-                creditAmount = 50;
-                updateData = {
-                    plan_tier: 'premium',
-                    premium_credits: 50,
-                    plan_locked_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                    premium_next_refill: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-                };
-            } else if (planType === 'standard') {
-                creditAmount = 40;
-                updateData = {
-                    plan_tier: 'standard',
-                    premium_credits: 40,
-                    plan_locked_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                    premium_next_refill: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-                };
-            } else if (planType === 'base') {
-                // Base tokens add to existing balance and expire in 24h
-                const { data: profile } = await supabaseAdmin
-                    .from('user_profiles')
-                    .select('base_tokens')
-                    .eq('id', userId)
-                    .single();
-
-                creditAmount = 10;
-                updateData = {
-                    base_tokens: (profile?.base_tokens || 0) + 10,
-                    base_token_expiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-                };
+            // ─── Case B: No metadata (Fallback to Amount Matching) ───
+            console.log(`[Webhook] No metadata found. Falling back to Amount Matching for ${amount} centavos.`);
+            if (!amount || amount < 100) {
+                return res.status(200).json({ received: true, matched: false, reason: 'invalid_amount' });
             }
-
-            const { error: fulfillError } = await supabaseAdmin
-                .from('user_profiles')
-                .update(updateData)
-                .eq('id', userId);
-
-            if (fulfillError) {
-                console.error('[Webhook] Fulfillment failed:', fulfillError.message);
-                return res.status(500).json({ error: 'Fulfillment failed.' });
-            }
-
-            // ─── Step 2: Sync with Frontend (Mark Session Paid) ───
-            // We use the same 'claim' logic or a direct update if we have the specific session.
-            // Since we use centavo matching, we find the session for this user + amount.
-            const amount = resource?.attributes?.amount || resource?.amount || 0;
-            const { error: sessionError } = await supabaseAdmin
-                .from('payment_sessions')
-                .update({
-                    status: 'paid',
-                    credits_to_grant: creditAmount // Ensure UI shows correct hardcoded amount
-                })
-                .eq('user_id', userId)
-                .eq('exact_amount_due', amount)
-                .eq('status', 'pending');
-
-            if (sessionError) {
-                console.warn('[Webhook] Session status update failed (non-critical):', sessionError.message);
-            }
-
-            console.log(`[Webhook] ✅ Successfully fulfilled ${planType} plan for user ${userId}. Credits: ${creditAmount}`);
-
-            // Optional: Log success to webhook_logs
-            await supabaseAdmin.from('webhook_logs').insert({
-                payload: { _log: 'fulfillment_success', userId, planType, creditAmount }
-            });
-
-            return res.status(200).json({ status: 'success' });
+            return await processAmountMatch(supabaseAdmin, amount, res);
         }
 
         // ═══ qrph.expired ═══
