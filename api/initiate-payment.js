@@ -173,7 +173,7 @@ export default async function handler(req, res) {
         });
 
     } catch (error) {
-        console.error('[InitiatePayment] Error:', error);
+        console.error("Payment Gateway Error:", error.response?.data || error.message);
         return res.status(500).json({ error: 'Internal server error.' });
     }
 }
