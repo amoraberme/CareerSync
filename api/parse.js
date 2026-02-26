@@ -1,5 +1,6 @@
 import { callGeminiWithCascade } from './_lib/geminiRouter.js';
 import { verifyAuth } from './_lib/authMiddleware.js';
+import { createClient } from '@supabase/supabase-js';
 import { applyCors } from './_lib/corsHelper.js';
 
 export default async function handler(req, res) {
@@ -15,6 +16,48 @@ export default async function handler(req, res) {
 
     try {
         const { text: userInputText } = req.body;
+
+        // ═══ Daily Credit Gate ═══
+        const supabaseUrl = process.env.VITE_SUPABASE_URL;
+        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        let usageData = { type: 'base' };
+
+        if (supabaseUrl && serviceKey) {
+            const supabaseAdmin = createClient(supabaseUrl, serviceKey);
+
+            const { data: profile } = await supabaseAdmin
+                .from('user_profiles')
+                .select('tier, daily_credits_used, daily_credits_reset_at, current_credit_balance')
+                .eq('id', user.id)
+                .single();
+
+            const tier = profile?.tier || 'base';
+
+            if (tier !== 'base') {
+                const { data: allowed, error: rpcError } = await supabaseAdmin
+                    .rpc('consume_daily_credit', { p_user_id: user.id });
+
+                if (rpcError) {
+                    console.error('[Parse] consume_daily_credit RPC error:', rpcError.message);
+                    return res.status(500).json({ error: 'Credit system error. Please try again.' });
+                }
+
+                if (allowed === false) {
+                    const cap = tier === 'premium' ? 50 : 40;
+                    return res.status(429).json({
+                        error: `Daily limit reached. Your ${tier} plan includes ${cap} parses per day.`,
+                    });
+                }
+                usageData = { type: 'daily', used: (profile.daily_credits_used || 0) + 1, cap: tier === 'premium' ? 50 : 40 };
+            } else {
+                // Base tier: check balance (deduction happens in frontend for now, or we can move it here)
+                if ((profile?.current_credit_balance || 0) < 1) {
+                    return res.status(402).json({ error: 'Insufficient credits. Please top up.' });
+                }
+                usageData = { type: 'balance', remaining: profile.current_credit_balance };
+            }
+        }
+        // ═══ End Credit Gate ═══
 
         if (!userInputText || userInputText.trim() === '') {
             return res.status(400).json({ error: 'No text provided for parsing.' });
@@ -60,7 +103,8 @@ You MUST respond ONLY with a raw JSON object matching this exact schema:
 
         return res.status(200).json({
             ...parsedData,
-            _routing: { model: modelUsed }
+            _routing: { model: modelUsed },
+            _usage: usageData
         });
     } catch (error) {
         console.error("AI Parse Error:", error);

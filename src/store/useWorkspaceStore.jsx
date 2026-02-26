@@ -19,6 +19,7 @@ const useWorkspaceStore = create((set, get) => ({
     // Analysis Results
     analysisData: null,
     isAnalyzing: false,
+    isParsing: false,
 
     // Theme state — W-1 FIX: wrap localStorage access in try/catch to prevent SSR crash
     isDark: (() => {
@@ -130,12 +131,12 @@ const useWorkspaceStore = create((set, get) => ({
                 const { data: rpcSuccess, error: rpcError } = await supabase.rpc('decrement_credits', { deduct_amount: 1 });
 
                 if (rpcError || !rpcSuccess) {
-                    // Log but don't block — analysis already succeeded. Balance will re-sync on next fetch.
                     console.error("Credit deduction RPC error (analysis already completed):", rpcError?.message);
-                } else {
-                    set({ creditBalance: creditBalance - 1 });
                 }
             }
+
+            // Sync balance from server state after every successful AI call
+            await get().fetchCreditBalance(session?.user?.id);
 
             // Build enriched result
             const enrichedData = {
@@ -167,6 +168,61 @@ const useWorkspaceStore = create((set, get) => ({
             });
         } finally {
             set({ isAnalyzing: false });
+        }
+    },
+
+    runParse: async (session) => {
+        set({ isParsing: true });
+        const { pastedText, creditBalance, userTier } = get();
+        if (!pastedText.trim()) return;
+
+        const isBaseUser = userTier === 'base';
+        if (isBaseUser && creditBalance < 1) {
+            import('../components/ui/Toast').then(({ toast }) => toast.error('Insufficient credits for parsing.'));
+            return;
+        }
+
+        try {
+            const accessToken = session?.access_token;
+            const response = await fetch('/api/parse', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(accessToken && { 'Authorization': `Bearer ${accessToken}` })
+                },
+                body: JSON.stringify({ text: pastedText })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                import('../components/ui/Toast').then(({ toast }) => toast.error(data.error || 'Failed to parse text.'));
+                return;
+            }
+
+            // If base user, deduct credits for parsing too
+            if (isBaseUser) {
+                await supabase.rpc('decrement_credits', { deduct_amount: 1 });
+            }
+
+            // Sync profile
+            await get().fetchCreditBalance(session?.user?.id);
+
+            set({
+                jobTitle: data.jobTitle || '',
+                industry: data.industry || '',
+                experienceLevel: data.experienceLevel || '',
+                requiredSkills: Array.isArray(data.requiredSkills) ? data.requiredSkills : [],
+                description: data.cleanDescription || pastedText,
+                pastedText: ''
+            });
+
+            return true; // Success
+        } catch (error) {
+            console.error("Parse failed:", error);
+            import('../components/ui/Toast').then(({ toast }) => toast.error('Parse failed. Check connection.'));
+        } finally {
+            set({ isParsing: false });
         }
     },
 

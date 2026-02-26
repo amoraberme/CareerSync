@@ -19,10 +19,11 @@ export default async function handler(req, res) {
         const { jobTitle, industry, description, resumeText, resumeData } = req.body;
 
         // ═══ Daily Credit Gate ═══
-        // Base: governed by credit balance (decrement_credits in store) — skip daily cap.
-        // Standard: 40 analyses/day | Premium: 50 analyses/day — enforced here.
         const supabaseUrl = process.env.VITE_SUPABASE_URL;
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        let usageData = { type: 'base' };
+        // Base: governed by credit balance (decrement_credits in store) — skip daily cap.
+        // Standard: 40 analyses/day | Premium: 50 analyses/day — enforced here.
         if (supabaseUrl && serviceKey) {
             const supabaseAdmin = createClient(supabaseUrl, serviceKey);
 
@@ -56,6 +57,9 @@ export default async function handler(req, res) {
                         resets_at: resetAt.toISOString(),
                     });
                 }
+                usageData = { type: 'daily', used: (profile.daily_credits_used || 0) + 1, cap: tier === 'premium' ? 50 : 40 };
+            } else {
+                usageData = { type: 'balance', remaining: profile?.current_credit_balance || 0 };
             }
         }
         // ═══ End Credit Gate ═══
@@ -139,7 +143,8 @@ You MUST respond ONLY with a raw JSON object matching this schema:
 
         return res.status(200).json({
             ...parsedData,
-            _routing: { model: modelUsed }
+            _routing: { model: modelUsed },
+            _usage: usageData
         });
     } catch (error) {
         console.error("AI Analysis Error:", error);

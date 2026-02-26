@@ -7,11 +7,10 @@ import useWorkspaceStore from '../store/useWorkspaceStore';
 
 export default function CoreEngine({ session, setCurrentView }) {
     const [showPasteModal, setShowPasteModal] = useState(false);
-    const [isParsing, setIsParsing] = useState(false);
     const {
         jobTitle, industry, experienceLevel, requiredSkills, description, pastedText,
         resumeUploaded, resumeData, resumeFileName, resumeFileSize,
-        isAnalyzing, updateField, runAnalysis
+        isAnalyzing, isParsing, updateField, runAnalysis, runParse
     } = useWorkspaceStore();
 
     const containerRef = useRef(null);
@@ -32,42 +31,8 @@ export default function CoreEngine({ session, setCurrentView }) {
 
     const handleAutoFill = async (e) => {
         e.preventDefault();
-        if (!pastedText.trim()) return;
-
-        setIsParsing(true);
-        try {
-            const { data: { session: currentSession } } = await supabase.auth.getSession();
-            const response = await fetch('/api/parse', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(currentSession?.access_token && { 'Authorization': `Bearer ${currentSession.access_token}` })
-                },
-                body: JSON.stringify({ text: pastedText })
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                const errorMsg = data.error || 'Failed to parse text.';
-                import('./ui/Toast').then(({ toast }) => toast.error(errorMsg));
-                return;
-            }
-
-            updateField('jobTitle', data.jobTitle || '');
-            updateField('industry', data.industry || '');
-            updateField('experienceLevel', data.experienceLevel || '');
-            updateField('requiredSkills', Array.isArray(data.requiredSkills) ? data.requiredSkills : []);
-            updateField('description', data.cleanDescription || pastedText);
-
-            setShowPasteModal(false);
-            updateField('pastedText', '');
-        } catch (error) {
-            console.error("Parse failed:", error);
-            import('./ui/Toast').then(({ toast }) => toast.error('Check your connection or API status.'));
-        } finally {
-            setIsParsing(false);
-        }
+        const success = await runParse(session);
+        if (success) setShowPasteModal(false);
     };
 
     const handleFileUpload = (e) => {
