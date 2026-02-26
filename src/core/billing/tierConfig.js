@@ -19,8 +19,8 @@ export const TIER_CONFIG = {
     standard: {
         label: 'Standard',
         base_amount: 200,           // ₱2.00 in centavos
-        // Nominal credit grant — Standard access is controlled by daily_cap, not balance
-        credits_on_purchase: 1,
+        // Standard plan grants 40 credits on purchase
+        credits_on_purchase: 40,
         daily_cap: 40,
         lock_days: 30,
         unlimited_base: true,       // Base credit balance is never deducted
@@ -28,7 +28,7 @@ export const TIER_CONFIG = {
     premium: {
         label: 'Premium',
         base_amount: 300,           // ₱3.00 in centavos
-        credits_on_purchase: 1,
+        credits_on_purchase: 50,
         daily_cap: 50,
         lock_days: 30,
         unlimited_base: true,
