@@ -1,7 +1,8 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { verifyAuth } from './_lib/authMiddleware.js';
 import { createClient } from '@supabase/supabase-js';
-import { applyCors } from './_lib/corsHelper.js';
+import { applyCors } from '../src/core/billing/corsHelper.js';
+import { TIER_CONFIG } from '../src/core/billing/tierConfig.js';
 
 export default async function handler(req, res) {
     // W-8: CORS headers on every response including preflight
