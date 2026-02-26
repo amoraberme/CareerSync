@@ -663,10 +663,10 @@ export default function Billing({ session, onPaymentModalChange }) {
 
                     <button
                         onClick={() => handleBaseCheckout('standard')}
-                        disabled={sessionStatus === 'loading' || (userTier === 'standard' && isLocked(planLockedUntil))}
+                        disabled={sessionStatus === 'loading' || isLocked(planLockedUntil)}
                         className="w-full py-3.5 rounded-2xl border-2 border-blue-500/40 text-blue-600 dark:text-blue-400 font-bold text-sm hover:bg-blue-500/5 hover:border-blue-500/60 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {sessionStatus === 'loading' ? 'Generating…' : (userTier === 'standard' && isLocked(planLockedUntil)) ? '✓ Plan Active' : '🔒 Get Standard — ₱2/mo'}
+                        {sessionStatus === 'loading' ? 'Generating…' : isLocked(planLockedUntil) ? (userTier === 'premium' ? '🔒 Premium Active' : '✓ Plan Active') : '🔒 Get Standard — ₱2/mo'}
                     </button>
                     <p className="text-xs text-center text-slate/60 dark:text-darkText/35 mt-2">
                         Your payment is processed securely. Credits are only added after your AI analysis successfully completes.
