@@ -1,0 +1,333 @@
+# 🔍 CareerSync — Static Analysis Bug Report
+> Audit Date: 2026-02-25 | Auditor: Antigravity (Senior QA / Security)
+
+---
+
+## 🔴 CRITICAL
+
+---
+
+### C-1 — Webhook Signature Verification is Bypassed
+**Problem:** [paymongo.js](file:///c:/Users/Jerico/Documents/App/HireSync/test_paymongo.js) verifies the HMAC signature but **only logs a warning on mismatch** — the webhook continues processing regardless. Any attacker who can POST to `/api/webhooks/paymongo` can trigger free credit grants without paying.
+
+**Location:** [paymongo.js](file:///c:/Users/Jerico/Documents/App/HireSync/api/webhooks/paymongo.js#L53-L65)
+```diff
+- if (signature !== expected) {
+-     console.warn('[Webhook] Signature mismatch (bypassed for debugging).');
+- } else {
+-     console.log('[Webhook] Signature verified successfully.');
+- }
++ if (signature !== expected) {
++     console.error('[Webhook] Signature mismatch — rejecting request.');
++     return res.status(401).json({ error: 'Invalid signature.' });
++ }
+```
+
+---
+
+### C-2 — Double Credit Deduction (or Double Credit Grant Risk)
+**Problem:** The store calls `decrement_credits` RPC _before_ the `/api/analyze` call. Then [analyze.js](file:///c:/Users/Jerico/Documents/App/HireSync/api/analyze.js) calls `consume_daily_credit` (also a DB write). If the first deduction succeeds but the AI call fails, the credit is **permanently lost** with no refund. Conversely, if the RPC in [analyze.js](file:///c:/Users/Jerico/Documents/App/HireSync/api/analyze.js) fails silently (line 41-42: `// Non-fatal: allow analysis to proceed`), premium users get **unlimited free analyses**.
+
+**Location:** [useWorkspaceStore.jsx L95](file:///c:/Users/Jerico/Documents/App/HireSync/src/store/useWorkspaceStore.jsx#L95) + [analyze.js L41](file:///c:/Users/Jerico/Documents/App/HireSync/api/analyze.js#L41)
+
+**Fix:** The `decrement_credits` call should happen _after_ a successful response from `/api/analyze`. Also remove the `// Non-fatal` bypass in [analyze.js](file:///c:/Users/Jerico/Documents/App/HireSync/api/analyze.js) and return 500 instead.
+```js
+// analyze.js — make the RPC failure fatal:
+if (rpcError) {
+    console.error('[Analyze] consume_daily_credit RPC error:', rpcError.message);
+    return res.status(500).json({ error: 'Credit deduction failed. Please try again.' });
+}
+```
+
+---
+
+### C-3 — `isAnalyzing` Never Resets on HTTP Error
+**Problem:** In [useWorkspaceStore.jsx](file:///c:/Users/Jerico/Documents/App/HireSync/src/store/useWorkspaceStore.jsx), after the credit deduction succeeds and `/api/analyze` returns, there is **no `!response.ok` check**. If the server returns 429 (daily limit), 500, or any error JSON, the code still calls [set({ analysisData: enrichedData })](file:///c:/Users/Jerico/Documents/App/HireSync/src/store/useWorkspaceStore.jsx#155-169) with the error object, crashing [AnalysisTabs](file:///c:/Users/Jerico/Documents/App/HireSync/src/components/AnalysisTabs.jsx#9-239) trying to render `data.matchScore`.
+
+**Location:** [useWorkspaceStore.jsx L125-L147](file:///c:/Users/Jerico/Documents/App/HireSync/src/store/useWorkspaceStore.jsx#L125)
+```diff
+  const data = await response.json();
++ if (!response.ok) {
++     const msg = data?.error || 'Analysis failed. Please try again.';
++     // Refund credit locally
++     set({ creditBalance: get().creditBalance + 1, isAnalyzing: false });
++     import('../components/ui/Toast').then(({ toast }) => toast.error(msg));
++     return;
++ }
+  const enrichedData = { ...data, ... };
+```
+
+---
+
+### C-4 — Full Payment Event Payload Stored in DB (PII Exposure)
+**Problem:** The webhook logs `full_event: event` and `full_attrs: attrs` into `webhook_logs`. PayMongo payment events contain full card/GCash metadata, billing addresses, phone numbers. Storing this verbatim is a **data privacy violation** (DPDPA/GDPR risk).
+
+**Location:** [paymongo.js L82-L83](file:///c:/Users/Jerico/Documents/App/HireSync/api/webhooks/paymongo.js#L82)
+```diff
+- full_event: event,
+- ...
+- full_attrs: attrs,
++ // Store only non-PII fields
++ event_type: eventType,
++ amount: amount,
+```
+
+---
+
+### C-5 — `authMiddleware` Uses Anon Key Instead of Service Role Key
+**Problem:** [verifyAuth](file:///c:/Users/Jerico/Documents/App/HireSync/api/_lib/authMiddleware.js#6-39) creates a Supabase client with `VITE_SUPABASE_ANON_KEY`. While `getUser(token)` does work with the anon key, this exposes the anon key value in server logs/stack traces unnecessarily. More importantly, it means RLS policies on the client are anon-level, not admin-level. The service role key should be used for backend token verification.
+
+**Location:** [authMiddleware.js L3-L4](file:///c:/Users/Jerico/Documents/App/HireSync/api/_lib/authMiddleware.js#L3)
+```diff
+- const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+- const supabase = createClient(supabaseUrl, supabaseAnonKey, ...);
++ const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
++ const supabase = createClient(supabaseUrl, serviceKey, ...);
+```
+
+---
+
+### C-6 — No Idempotency Check on Credit Grant
+**Problem:** [processAmountMatch](file:///c:/Users/Jerico/Documents/App/HireSync/api/webhooks/paymongo.js#174-262) in the webhook selects a session then updates it — but these are two **separate DB calls with no transaction**. A duplicate PayMongo webhook delivery (which PayMongo explicitly may send) will match the same pending session twice and grant credits twice before the `status = 'paid'` update completes.
+
+**Location:** [paymongo.js L184-L253](file:///c:/Users/Jerico/Documents/App/HireSync/api/webhooks/paymongo.js#L184)
+```sql
+-- Add a Postgres function to do this atomically:
+UPDATE payment_sessions
+SET status = 'paid', paid_at = NOW()
+WHERE id = $1 AND status = 'pending'
+RETURNING id; -- Returns nothing if already paid → idempotent
+```
+Then: only grant credits if the UPDATE returned a row.
+
+---
+
+## 🟡 WARNING
+
+---
+
+### W-1 — `localStorage.getItem` Called at Zustand Module Init (SSR / Hydration Crash)
+**Problem:** Line 24 in the store calls `localStorage.getItem(...)` at module initialization time. On any SSR environment or if `localStorage` is temporarily unavailable, this throws `ReferenceError: localStorage is not defined`.
+
+**Location:** [useWorkspaceStore.jsx L24](file:///c:/Users/Jerico/Documents/App/HireSync/src/store/useWorkspaceStore.jsx#L24)
+```diff
+- isDark: JSON.parse(localStorage.getItem('theme_isDark')) || false,
++ isDark: (() => { try { return JSON.parse(localStorage.getItem('theme_isDark')) || false; } catch { return false; } })(),
+```
+
+---
+
+### W-2 — Hardcoded Return URL in [initiate-payment.js](file:///c:/Users/Jerico/Documents/App/HireSync/api/initiate-payment.js)
+**Problem:** If `VITE_APP_URL` is not set in Vercel env vars, the GCash return URL falls back to a hardcoded production URL. This breaks all local testing and staging environments silently.
+
+**Location:** [initiate-payment.js L124](file:///c:/Users/Jerico/Documents/App/HireSync/api/initiate-payment.js#L124)
+```diff
+- const returnUrl = `${process.env.VITE_APP_URL || 'https://career-sync-blush.vercel.app'}/billing`;
++ if (!process.env.VITE_APP_URL) {
++     console.warn('[InitiatePayment] VITE_APP_URL not set — GCash redirect may fail in staging.');
++ }
++ const returnUrl = `${process.env.VITE_APP_URL || 'https://career-sync-blush.vercel.app'}/plans`;
+// Also note: the return path says '/billing' — page was renamed to '/plans'
+```
+
+---
+
+### W-3 — Resume File Size Has No Server-Side Cap
+**Problem:** [handleFileUpload](file:///c:/Users/Jerico/Documents/App/HireSync/src/components/CoreEngine.jsx#67-86) in CoreEngine reads the entire file into base64 and sends it in the POST body to `/api/analyze`. There is **no file size limit** on either end. A user can upload a 50MB file, which will crash the Vercel serverless function (4.5MB body limit) and waste their credit.
+
+**Location:** [CoreEngine.jsx L67-L84](file:///c:/Users/Jerico/Documents/App/HireSync/src/components/CoreEngine.jsx#L67)
+```diff
+  const handleFileUpload = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
++     if (file.size > 5 * 1024 * 1024) { // 5MB cap
++         alert('File too large. Maximum size is 5MB.');
++         e.target.value = '';
++         return;
++     }
+```
+
+---
+
+### W-4 — `tierConfig` in [initiate-payment.js](file:///c:/Users/Jerico/Documents/App/HireSync/api/initiate-payment.js) Is Out of Sync with Business Logic
+**Problem:** [initiate-payment.js](file:///c:/Users/Jerico/Documents/App/HireSync/api/initiate-payment.js) still grants **750 credits for Standard and 1050 for Premium** (old values). After the tier overhaul, Standard users get 40 daily premium credits and Premium gets 50. The credits field in `tierConfig` is what gets stored in `payment_sessions.credits_to_grant` and then granted via the webhook. Granting 750 credits to a Standard subscriber who should only get 40/day is a major discrepancy.
+
+**Location:** [initiate-payment.js L19-L22](file:///c:/Users/Jerico/Documents/App/HireSync/api/initiate-payment.js#L19)
+```diff
+  const tierConfig = {
+-     base: { base_amount: 100, credits: 10, label: 'Base Token' },
+-     standard: { base_amount: 200, credits: 750, label: 'Standard' },
+-     premium: { base_amount: 300, credits: 1050, label: 'Premium' }
++     base: { base_amount: 100, credits: 10, label: 'Base Token' },
++     // Standard/Premium grant unlimited BASE access + daily cap. The 'credits' field
++     // here is legacy. For subscription tiers, grant a nominal amount (e.g. 1 credit)
++     // since actual access is controlled by the tier + daily_credits_used.
++     standard: { base_amount: 200, credits: 1, label: 'Standard' },
++     premium: { base_amount: 300, credits: 1, label: 'Premium' }
+  };
+```
+
+---
+
+### W-5 — Webhook Logs ALL Requests Before Auth Check (DoS / Storage Abuse)
+**Problem:** The very first thing the webhook does (before checking `req.method`, before verifying the signature) is write to `webhook_logs`. Anyone can spam POST requests to flood the `webhook_logs` table, running up your Supabase storage and eventually degrading DB performance.
+
+**Location:** [paymongo.js L10-L24](file:///c:/Users/Jerico/Documents/App/HireSync/api/webhooks/paymongo.js#L10)
+
+**Fix:** Move early logging to _after_ signature verification, or add a rate limit header check first.
+
+---
+
+### W-6 — Payment Modal Realtime Channel Never Cleaned Up on Page Navigate
+**Problem:** [startRealtimeListener](file:///c:/Users/Jerico/Documents/App/HireSync/src/components/Billing.jsx#97-136) subscribes a Supabase Realtime channel stored in `realtimeChannelRef`. The [handleCloseModal](file:///c:/Users/Jerico/Documents/App/HireSync/src/components/Billing.jsx#245-250) function removes the channel. However, if the user **navigates away** from the Plans page (e.g. clicks Workspace) _while the timer is running_, the channel is never removed — resulting in a memory leak and phantom credit-grant listeners.
+
+**Location:** [Billing.jsx — `handleCloseModal` + component unmount](file:///c:/Users/Jerico/Documents/App/HireSync/src/components/Billing.jsx)
+```diff
++ useEffect(() => {
++     return () => {
++         // Cleanup on unmount
++         if (realtimeChannelRef.current) supabase.removeChannel(realtimeChannelRef.current);
++         clearInterval(countdownRef.current);
++         clearInterval(pollingRef.current);
++     };
++ }, []);
+```
+
+---
+
+### W-7 — [runAnalysis](file:///c:/Users/Jerico/Documents/App/HireSync/src/store/useWorkspaceStore.jsx#69-154) Saves to History Even on AI Error Response
+**Problem:** In `useWorkspaceStore`, after the fetch call, history is saved (`candidates_history.insert`) and `analysisData` is set **before checking if the response was successful** (see C-3). Even a 500 error JSON gets saved to history with `match_score: 0`.
+
+**Location:** [useWorkspaceStore.jsx L134-L144](file:///c:/Users/Jerico/Documents/App/HireSync/src/store/useWorkspaceStore.jsx#L134)
+
+**Fix:** Covered by the `!response.ok` guard in C-3.
+
+---
+
+### W-8 — No CORS Headers on API Routes
+**Problem:** None of the API routes set explicit `Access-Control-Allow-Origin` headers or handle preflight `OPTIONS` requests. Vercel defaults are loose. For a production app, you should lock CORS to your own domain.
+
+**Location:** All files in `api/`
+```js
+// Add to top of each handler:
+res.setHeader('Access-Control-Allow-Origin', process.env.VITE_APP_URL || 'https://career-sync-blush.vercel.app');
+res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+if (req.method === 'OPTIONS') return res.status(200).end();
+```
+
+---
+
+### W-9 — [tierPermissions.js](file:///c:/Users/Jerico/Documents/App/HireSync/src/lib/tierPermissions.js) Feature Flags Don't Match UI or Backend Logic
+**Problem:** [tierPermissions.js](file:///c:/Users/Jerico/Documents/App/HireSync/src/lib/tierPermissions.js) still lists `dailyCreditCap: 40/50` but [initiate-payment.js](file:///c:/Users/Jerico/Documents/App/HireSync/api/initiate-payment.js) still grants 750/1050 legacy credits. These three sources (tierPermissions, initiate-payment, analyze.js) define tier behaviour independently with no shared constant — guaranteed to drift.
+
+**Fix:** Create a single `src/lib/tierConfig.js` (or `api/_lib/tierConfig.js`) shared constant file imported by both frontend and backend.
+
+---
+
+## 🟢 NITPICK
+
+---
+
+### N-1 — Default Hardcoded Resume in Prompt Leaks Internal Test Data
+**Problem:** If no resume is provided, the system prompt falls back to: `"Senior Frontend Developer, 5 years Experience. React, Tailwind, GSAP. No WebGL."` — this is a dev test string visible to all base-tier users who don't upload a resume.
+
+**Location:** [analyze.js L98](file:///c:/Users/Jerico/Documents/App/HireSync/api/analyze.js#L98)
+```diff
+- `${resumeText || "Senior Frontend Developer, 5 years Experience. React, Tailwind, GSAP. No WebGL."}`
++ `${resumeText || "No resume provided. Provide a general-purpose analysis based on the job description only."}`
+```
+
+---
+
+### N-2 — `creditBalance` Initialises to `1` in Store
+**Problem:** The initial value of `creditBalance` is `1`, not `0`. Before the first [fetchCreditBalance](file:///c:/Users/Jerico/Documents/App/HireSync/src/store/useWorkspaceStore.jsx#48-68) resolves, the UI will show "1 CREDIT" even for a brand-new user with 0 credits.
+
+**Location:** [useWorkspaceStore.jsx L27](file:///c:/Users/Jerico/Documents/App/HireSync/src/store/useWorkspaceStore.jsx#L27)
+```diff
+- creditBalance: 1,
++ creditBalance: 0,
+```
+
+---
+
+### N-3 — No `<img>` Alt Text or ARIA Labels on Interactive Buttons
+**Problem:** The QR code `<img>` in Billing.jsx has `alt="PayMongo QR Code"` (good), but all icon-only buttons (X close button, Receipt/Invoices button in Navbar) lack `aria-label` attributes. Screen readers will announce them as unnamed buttons.
+
+**Fix:**
+```diff
+- <button onClick={handleCloseModal} className="...">
++ <button onClick={handleCloseModal} aria-label="Close payment modal" className="...">
+    <X className="w-5 h-5" />
+  </button>
+```
+
+---
+
+### N-4 — [Billing.jsx](file:///c:/Users/Jerico/Documents/App/HireSync/src/components/Billing.jsx) Still Contains Duplicate Unused Invoice State
+**Problem:** [Billing.jsx](file:///c:/Users/Jerico/Documents/App/HireSync/src/components/Billing.jsx) still declares `showInvoice`, `invoiceHistory`, `invoiceLoading`, `invoiceError` and [fetchInvoiceHistory](file:///c:/Users/Jerico/Documents/App/HireSync/src/components/Billing.jsx#372-394) (lines 26-29, 368-388) even though invoice state was lifted to [App.jsx](file:///c:/Users/Jerico/Documents/App/HireSync/src/App.jsx). These dead state variables waste memory on every render of the Plans page.
+
+**Location:** [Billing.jsx L26-L29, L368-L388](file:///c:/Users/Jerico/Documents/App/HireSync/src/components/Billing.jsx)
+
+**Fix:** Delete the duplicate state and [fetchInvoiceHistory](file:///c:/Users/Jerico/Documents/App/HireSync/src/components/Billing.jsx#372-394) function from [Billing.jsx](file:///c:/Users/Jerico/Documents/App/HireSync/src/components/Billing.jsx).
+
+---
+
+### N-5 — `payment_sessions` Query Uses `.single()` Without `.maybeSingle()`
+**Problem:** `supabase.from(...).single()` throws an error if zero rows are found **and** if multiple rows are found. Using `.maybeSingle()` is safer for the "no match" case.
+
+**Location:** [paymongo.js L191](file:///c:/Users/Jerico/Documents/App/HireSync/api/webhooks/paymongo.js#L191)
+```diff
+- .single();
++ .maybeSingle();
+```
+
+---
+
+### N-6 — Polling Interval Uses `setInterval` with No Jitter (Thundering Herd)
+**Problem:** [startPolling](file:///c:/Users/Jerico/Documents/App/HireSync/src/components/Billing.jsx#137-162) polls every N seconds. If many users are on the payment page simultaneously, all their polling requests hit the database at exactly the same interval — creating a thundering herd. Add randomised jitter.
+
+**Location:** `Billing.jsx — startPolling function`
+```js
+const jitter = Math.random() * 2000;
+const pollId = setInterval(pollSessionStatus, 5000 + jitter);
+```
+
+---
+
+### N-7 — `gemini-2.5-flash` Model Name May Be Invalid
+**Problem:** The Gemini model is called `gemini-2.5-flash`. As of late 2025, the available models are `gemini-1.5-flash`, `gemini-1.5-pro`, `gemini-2.0-flash`. If `gemini-2.5-flash` doesn't exist, the API returns a 404 and users get a broken analysis with no clear error.
+
+**Location:** [analyze.js L105](file:///c:/Users/Jerico/Documents/App/HireSync/api/analyze.js#L105)
+```diff
+- model: 'gemini-2.5-flash',
++ model: 'gemini-2.0-flash',
+```
+
+---
+
+## Summary Table
+
+| ID | Severity | Area | One-liner |
+|----|----------|------|-----------|
+| C-1 | 🔴 CRITICAL | Security | Webhook signature mismatch is ignored — free credits exploit |
+| C-2 | 🔴 CRITICAL | Logic | Double credit system causes lost credits or free analyses |
+| C-3 | 🔴 CRITICAL | Logic | No `response.ok` check — error JSON crashes AnalysisTabs |
+| C-4 | 🔴 CRITICAL | Privacy | Full PII payment payload stored in DB logs |
+| C-5 | 🔴 CRITICAL | Security | Auth middleware uses anon key instead of service role |
+| C-6 | 🔴 CRITICAL | Logic | Non-atomic credit grant allows double-grant on replay |
+| W-1 | 🟡 WARNING | Stability | `localStorage` call at module init crashes SSR |
+| W-2 | 🟡 WARNING | Config | Hardcoded production URL breaks staging |
+| W-3 | 🟡 WARNING | UX/Security | No file size cap — wastes credits, crashes serverless |
+| W-4 | 🟡 WARNING | Logic | `tierConfig` credits (750/1050) out of sync with new tier system |
+| W-5 | 🟡 WARNING | Security | Unauth log writes enable DoS / storage flood |
+| W-6 | 🟡 WARNING | Memory | Realtime channel leaks on page navigate away |
+| W-7 | 🟡 WARNING | Logic | Error results saved to history (covered by C-3 fix) |
+| W-8 | 🟡 WARNING | Security | No CORS headers on API routes |
+| W-9 | 🟡 WARNING | Maintainability | Tier config duplicated in 3 places — inevitable drift |
+| N-1 | 🟢 NITPICK | UX | Dev test string leaks into production prompts |
+| N-2 | 🟢 NITPICK | UX | Credit balance starts at `1` not `0` |
+| N-3 | 🟢 NITPICK | a11y | Icon buttons missing `aria-label` |
+| N-4 | 🟢 NITPICK | Code Quality | Dead invoice state still in [Billing.jsx](file:///c:/Users/Jerico/Documents/App/HireSync/src/components/Billing.jsx) |
+| N-5 | 🟢 NITPICK | Stability | `.single()` should be `.maybeSingle()` |
+| N-6 | 🟢 NITPICK | Performance | Polling has no jitter — thundering herd |
+| N-7 | 🟢 NITPICK | Config | `gemini-2.5-flash` model name likely invalid |

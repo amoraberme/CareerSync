@@ -126,6 +126,23 @@ Do not include any extra fields or text.`;
         return res.status(200).json(parsedData);
     } catch (error) {
         console.error("AI Analysis Error:", error);
+
+        // Handle specific Gemini error types (like 429)
+        if (error.status === 429) {
+            return res.status(429).json({
+                error: 'AI service is temporarily unavailable due to high demand (Rate Limit). Please try again in 1-2 minutes.',
+                details: 'Gemini API 429: Too Many Requests'
+            });
+        }
+
+        // Handle 404 or other statuses
+        if (error.status) {
+            return res.status(error.status).json({
+                error: `AI service error (${error.status}). Please try again later.`,
+                details: error.message
+            });
+        }
+
         return res.status(500).json({ error: 'Failed to process analysis' });
     }
 }
