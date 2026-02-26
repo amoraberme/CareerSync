@@ -18,7 +18,7 @@ export function useBilling(session, onPaymentModalChange) {
     const [paymentSession, setPaymentSession] = useState(null);
     const [sessionStatus, setSessionStatus] = useState('idle'); // 'idle' | 'loading' | 'waiting' | 'paid' | 'expired' | 'error'
     const [errorMessage, setErrorMessage] = useState('');
-    const [countdown, setCountdown] = useState(600);
+    const [countdown, setCountdown] = useState(180);
 
     // Dynamic checkout QR modal state
     const [qrModal, setQrModal] = useState(null);
@@ -188,7 +188,7 @@ export function useBilling(session, onPaymentModalChange) {
             setSessionStatus('waiting');
             startRealtimeListener(data.session_id);
             startPolling(data.session_id);
-            startCountdown(data.ttl_seconds || 600);
+            startCountdown(data.ttl_seconds || 180);
 
         } catch (error) {
             setSessionStatus('error');
@@ -271,7 +271,7 @@ export function useBilling(session, onPaymentModalChange) {
                 const s = data[0];
                 const createdAt = new Date(s.created_at);
                 const elapsed = Math.floor((Date.now() - createdAt.getTime()) / 1000);
-                const remaining = Math.max(0, 600 - elapsed);
+                const remaining = Math.max(0, 180 - elapsed);
 
                 if (remaining > 0) {
                     const pesos = Math.floor(s.exact_amount_due / 100);

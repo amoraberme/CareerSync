@@ -149,7 +149,7 @@ export default async function handler(req, res) {
             display_amount: displayAmount,
             credits: config.credits_on_purchase,
             tier: (tier || 'base').toLowerCase(),
-            ttl_seconds: 600,
+            ttl_seconds: 180,
             gcash_redirect_url: gcashRedirectUrl
         });
 

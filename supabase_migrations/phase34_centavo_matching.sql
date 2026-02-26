@@ -67,7 +67,7 @@ BEGIN
     SET status = 'expired'
     WHERE status = 'pending'
       AND base_amount = p_base_amount
-      AND created_at < now() - interval '10 minutes';
+      AND created_at < now() - interval '3 minutes';
 
     -- Step 2: Cancel any existing pending session for THIS user at THIS base_amount
     -- (prevents a single user from hoarding multiple centavos)
@@ -125,7 +125,7 @@ BEGIN
     UPDATE payment_sessions
     SET status = 'expired'
     WHERE status = 'pending'
-      AND created_at < now() - interval '10 minutes';
+      AND created_at < now() - interval '3 minutes';
 
     GET DIAGNOSTICS v_count = ROW_COUNT;
     RETURN v_count;
