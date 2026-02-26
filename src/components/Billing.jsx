@@ -32,6 +32,8 @@ export default function Billing({ session, onPaymentModalChange }) {
 
 
     const fetchCreditBalance = useWorkspaceStore(state => state.fetchCreditBalance);
+    const userTier = useWorkspaceStore(state => state.userTier);
+    const planLockedUntil = useWorkspaceStore(state => state.planLockedUntil);
 
     // Notify parent (App.jsx) when QR modal opens/closes so Navbar can hide
     useEffect(() => {
@@ -596,10 +598,11 @@ export default function Billing({ session, onPaymentModalChange }) {
 
                     <button
                         onClick={() => handleBaseCheckout('premium')}
-                        disabled={sessionStatus === 'loading'}
-                        className="w-full py-4 rounded-2xl bg-champagne text-obsidian font-bold text-base hover:brightness-105 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-champagne/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={sessionStatus === 'loading' || (userTier === 'premium' && planLockedUntil && new Date(planLockedUntil) > new Date())}
+                        className="w-full py-4 rounded-2xl bg-champagne text-obsidian font-bold text-base hover:brightness-105 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-champagne/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate/10 disabled:text-slate/60 disabled:shadow-none disabled:border-slate/20 disabled:border-2"
                     >
-                        {sessionStatus === 'loading' ? 'Generating…' : '🔒 Get Premium — ₱3/mo'}
+                        {sessionStatus === 'loading' ? 'Generating…' :
+                            (userTier === 'premium' && planLockedUntil && new Date(planLockedUntil) > new Date()) ? 'Current Plan (Active)' : '🔒 Get Premium — ₱3/mo'}
                     </button>
                     <p className="text-xs text-center text-champagne/50 dark:text-champagne/35 mt-2">
                         Your payment is processed securely. Credits are only added after your AI analysis successfully completes.
@@ -656,10 +659,11 @@ export default function Billing({ session, onPaymentModalChange }) {
 
                     <button
                         onClick={() => handleBaseCheckout('standard')}
-                        disabled={sessionStatus === 'loading'}
-                        className="w-full py-3.5 rounded-2xl border-2 border-blue-500/40 text-blue-600 dark:text-blue-400 font-bold text-sm hover:bg-blue-500/5 hover:border-blue-500/60 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={sessionStatus === 'loading' || (userTier === 'standard' && planLockedUntil && new Date(planLockedUntil) > new Date())}
+                        className="w-full py-3.5 rounded-2xl border-2 border-blue-500/40 text-blue-600 dark:text-blue-400 font-bold text-sm hover:bg-blue-500/5 hover:border-blue-500/60 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:border-slate/20 disabled:text-slate/60"
                     >
-                        {sessionStatus === 'loading' ? 'Generating…' : '🔒 Get Standard — ₱2/mo'}
+                        {sessionStatus === 'loading' ? 'Generating…' :
+                            (userTier === 'standard' && planLockedUntil && new Date(planLockedUntil) > new Date()) ? 'Current Plan (Active)' : '🔒 Get Standard — ₱2/mo'}
                     </button>
                     <p className="text-xs text-center text-slate/60 dark:text-darkText/35 mt-2">
                         Your payment is processed securely. Credits are only added after your AI analysis successfully completes.

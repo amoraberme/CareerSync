@@ -16,6 +16,14 @@ export default async function handler(req, res) {
     if (!user) return;
 
     try {
+        const supabaseUrl = process.env.VITE_SUPABASE_URL;
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+        if (!supabaseUrl || !serviceRoleKey) {
+            console.error('[InitiatePayment] CRITICAL: Missing Supabase environment variables.');
+            return res.status(500).json({ error: 'Server configuration error.' });
+        }
+
         const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
         const { tier, mobile } = req.body;
         const userId = user.id;
