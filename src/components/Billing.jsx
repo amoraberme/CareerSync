@@ -704,9 +704,9 @@ export default function Billing({ session, onPaymentModalChange }) {
                                 </div>
                                 <h3 className="text-lg font-bold text-obsidian dark:text-darkText mb-2">Unable to Generate Amount</h3>
                                 <p className="text-sm text-slate dark:text-darkText/60 mb-4">{errorMessage}</p>
-                                <button onClick={handleBaseCheckout}
+                                <button onClick={() => handleBaseCheckout()}
                                     className="w-full py-3 rounded-2xl bg-obsidian/5 dark:bg-darkText/5 text-obsidian dark:text-darkText font-semibold hover:bg-obsidian/10 dark:hover:bg-darkText/10 transition-colors">
-                                    Try Again
+                                    Get New Amount
                                 </button>
                             </div>
                         )}
