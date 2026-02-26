@@ -245,8 +245,17 @@ function App() {
     );
   }
 
+  // ═══ Public Routes (Terms & Privacy) ═══
+  // These are rendered regardless of session status
+  if (currentView === 'terms') {
+    return <Terms onBack={() => navigateTo('workspace')} />;
+  }
+  if (currentView === 'privacy') {
+    return <Privacy onBack={() => navigateTo('workspace')} />;
+  }
+
   if (!session) {
-    return <Auth />;
+    return <Auth onNavigate={navigateTo} />;
   }
 
   const renderView = () => {
@@ -257,10 +266,6 @@ function App() {
         return <Billing session={session} onPaymentModalChange={setPaymentModalOpen} />;
       case 'profile':
         return <Profile session={session} setCurrentView={setCurrentView} />;
-      case 'terms':
-        return <Terms onBack={() => navigateTo('workspace')} />;
-      case 'privacy':
-        return <Privacy onBack={() => navigateTo('workspace')} />;
       case 'workspace':
       default:
         return analysisData ? (

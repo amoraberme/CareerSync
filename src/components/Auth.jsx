@@ -42,7 +42,7 @@ const features = [
     }
 ];
 
-export default function Auth({ onLogin }) {
+export default function Auth({ onLogin, onNavigate }) {
     const containerRef = useRef(null);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -412,14 +412,14 @@ export default function Auth({ onLogin }) {
                     <p className="mt-8 text-[11px] text-slate/60 dark:text-darkText/40 text-center leading-relaxed">
                         By continuing, you agree to CareerSync's{' '}
                         <button
-                            onClick={(e) => { e.preventDefault(); window.history.pushState({ view: 'terms' }, '', '/Terms'); window.dispatchEvent(new PopStateEvent('popstate')); }}
+                            onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('terms'); }}
                             className="underline underline-offset-2 hover:text-obsidian dark:hover:text-darkText transition-colors"
                         >
                             Terms of Service
                         </button>{' '}
                         and{' '}
                         <button
-                            onClick={(e) => { e.preventDefault(); window.history.pushState({ view: 'privacy' }, '', '/Privacy'); window.dispatchEvent(new PopStateEvent('popstate')); }}
+                            onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('privacy'); }}
                             className="underline underline-offset-2 hover:text-obsidian dark:hover:text-darkText transition-colors"
                         >
                             Privacy Policy
