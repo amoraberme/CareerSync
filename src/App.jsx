@@ -69,6 +69,7 @@ import Profile from './components/Profile';
 import UpdatePassword from './components/UpdatePassword';
 import Terms from './components/legal/Terms';
 import Privacy from './components/legal/Privacy';
+import Landing from './components/Landing';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -245,17 +246,20 @@ function App() {
     );
   }
 
-  // ═══ Public Routes (Terms & Privacy) ═══
+  // ═══ Public Routes (Landing, Terms & Privacy) ═══
   // These are rendered regardless of session status
   if (currentView === 'terms') {
-    return <Terms onBack={() => navigateTo('workspace')} />;
+    return <Terms onBack={() => navigateTo(session ? 'workspace' : 'landing')} />;
   }
   if (currentView === 'privacy') {
-    return <Privacy onBack={() => navigateTo('workspace')} />;
+    return <Privacy onBack={() => navigateTo(session ? 'workspace' : 'landing')} />;
   }
 
   if (!session) {
-    return <Auth onNavigate={navigateTo} />;
+    if (currentView === 'auth') {
+      return <Auth onNavigate={navigateTo} />;
+    }
+    return <Landing onNavigate={navigateTo} />;
   }
 
   const renderView = () => {
