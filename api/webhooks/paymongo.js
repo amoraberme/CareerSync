@@ -80,31 +80,72 @@ export default async function handler(req, res) {
 
         console.log(`[Webhook] Event type: ${eventType}`);
 
-        // ═══ payment.paid — Direct QR Ph / GCash payments ═══
+        // ═══ payment.paid — Secure Fulfillment via Metadata ═══
         if (eventType === 'payment.paid') {
-            const pathA = attrs?.amount;
-            const pathB = attrs?.data?.attributes?.amount;
-            const pathC = attrs?.data?.amount;
-            const amount = pathA || pathB || pathC || 0;
+            const resource = attrs?.data?.attributes?.resource || attrs;
+            const metadata = resource?.metadata || {};
+            const { userId, planType } = metadata;
 
-            // Log amount paths without PII
-            await supabaseAdmin.from('webhook_logs').insert({
-                payload: {
-                    _log: 'payment.paid_amount',
-                    amount_used: amount,
-                    path_A: pathA,
-                    path_B: pathB,
-                    path_C: pathC,
-                }
-            });
-
-            console.log(`[Webhook] payment.paid — amount: ${amount} centavos`);
-
-            if (!amount || amount < 100) {
-                return res.status(200).json({ received: true, matched: false, reason: 'invalid_amount', amount });
+            if (!userId || !planType) {
+                console.error('[Webhook] SEVERE ERROR: Missing fulfillment metadata (userId/planType).', metadata);
+                return res.status(400).json({ error: 'Missing fulfillment metadata.' });
             }
 
-            return await processAmountMatch(supabaseAdmin, amount, res);
+            console.log(`[Webhook] Processing fulfillment for User: ${userId}, Plan: ${planType}`);
+
+            // ─── Step 1: Secure Tier & Credit Fulfillment ───
+            let updateData = {};
+            let creditAmount = 0;
+
+            if (planType === 'premium') {
+                creditAmount = 50;
+                updateData = {
+                    plan_tier: 'premium',
+                    premium_credits: 50,
+                    plan_locked_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                    premium_next_refill: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+                };
+            } else if (planType === 'standard') {
+                creditAmount = 40;
+                updateData = {
+                    plan_tier: 'standard',
+                    premium_credits: 40,
+                    plan_locked_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                    premium_next_refill: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+                };
+            } else if (planType === 'base') {
+                // Base tokens add to existing balance and expire in 24h
+                const { data: profile } = await supabaseAdmin
+                    .from('user_profiles')
+                    .select('base_tokens')
+                    .eq('id', userId)
+                    .single();
+
+                creditAmount = 10;
+                updateData = {
+                    base_tokens: (profile?.base_tokens || 0) + 10,
+                    base_token_expiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+                };
+            }
+
+            const { error: fulfillError } = await supabaseAdmin
+                .from('user_profiles')
+                .update(updateData)
+                .eq('id', userId);
+
+            if (fulfillError) {
+                console.error('[Webhook] Fulfillment failed:', fulfillError.message);
+                return res.status(500).json({ error: 'Fulfillment failed.' });
+            }
+
+            console.log(`[Webhook] ✅ Successfully fulfilled ${planType} plan for user ${userId}. Credits: ${creditAmount}`);
+
+            // Optional: Log success to webhook_logs
+            await supabaseAdmin.from('webhook_logs').insert({
+                payload: { _log: 'fulfillment_success', userId, planType, creditAmount }
+            });
+
+            return res.status(200).json({ status: 'success' });
         }
 
         // ═══ qrph.expired ═══

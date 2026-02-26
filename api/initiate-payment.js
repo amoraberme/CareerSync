@@ -118,7 +118,11 @@ export default async function handler(req, res) {
                                 currency: 'PHP',
                                 payment_method_allowed: ['gcash'],
                                 capture_type: 'automatic',
-                                description: `CareerSync ${config.label} — ${displayAmount}`
+                                description: `CareerSync ${config.label} — ${displayAmount}`,
+                                metadata: {
+                                    userId: userId,
+                                    planType: (tier || 'base').toLowerCase()
+                                }
                             }
                         }
                     })
