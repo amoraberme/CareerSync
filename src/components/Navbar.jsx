@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import useWorkspaceStore from '../store/useWorkspaceStore';
 import { Settings, User, Moon, Sun, LogOut, Menu, X, Receipt } from 'lucide-react';
 
-export default function Navbar({ currentView, setCurrentView, onLogout, onOpenInvoice }) {
+export default function Navbar({ currentView, setCurrentView, onLogout, onOpenInvoice, onNavigate }) {
     const [scrolled, setScrolled] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -41,7 +41,8 @@ export default function Navbar({ currentView, setCurrentView, onLogout, onOpenIn
     }, [isMobileMenuOpen]);
 
     const handleMobileNav = (viewId) => {
-        setCurrentView(viewId);
+        if (onNavigate) onNavigate(viewId);
+        else setCurrentView(viewId);
         setIsMobileMenuOpen(false);
     };
 
@@ -51,7 +52,7 @@ export default function Navbar({ currentView, setCurrentView, onLogout, onOpenIn
                 <nav className={`transition-all duration-300 rounded-full px-4 md:px-6 py-3 flex items-center justify-between pointer-events-auto ${scrolled ? 'bg-white/75 dark:bg-darkBg/75 backdrop-blur-md border border-obsidian/5 dark:border-darkText/5 py-2 shadow-sm w-full max-w-4xl' : 'w-full max-w-6xl'
                     }`}>
                     {/* Brand */}
-                    <div className="flex items-center space-x-1 cursor-pointer" onClick={() => setCurrentView('workspace')}>
+                    <div className="flex items-center space-x-1 cursor-pointer" onClick={() => onNavigate ? onNavigate('workspace') : setCurrentView('workspace')}>
                         <span className="font-sans font-bold text-xl text-obsidian dark:text-darkText tracking-tighter">Career<span className="font-drama italic font-normal text-champagne">Sync.</span></span>
                     </div>
 
@@ -64,7 +65,7 @@ export default function Navbar({ currentView, setCurrentView, onLogout, onOpenIn
                         ].map(view => (
                             <button
                                 key={view.id}
-                                onClick={() => setCurrentView(view.id)}
+                                onClick={() => onNavigate ? onNavigate(view.id) : setCurrentView(view.id)}
                                 className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${currentView === view.id
                                     ? 'bg-obsidian dark:bg-darkText text-background dark:text-darkBg shadow-md'
                                     : 'text-slate dark:text-darkText/70 hover:text-obsidian dark:hover:text-darkText'
@@ -117,7 +118,7 @@ export default function Navbar({ currentView, setCurrentView, onLogout, onOpenIn
                                                 <p className="text-xs font-mono text-slate dark:text-darkText/50 uppercase tracking-widest">Account Settings</p>
                                             </div>
                                             <button
-                                                onClick={() => { setCurrentView('profile'); setIsSettingsOpen(false); }}
+                                                onClick={() => { if (onNavigate) onNavigate('profile'); else setCurrentView('profile'); setIsSettingsOpen(false); }}
                                                 className="w-full text-left px-5 py-3 text-sm font-medium text-obsidian dark:text-darkText hover:bg-obsidian/5 dark:hover:bg-darkText/5 flex items-center transition-colors"
                                             >
                                                 <User className="w-4 h-4 mr-3 opacity-70" /> Profile

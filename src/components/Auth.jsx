@@ -411,9 +411,19 @@ export default function Auth({ onLogin }) {
                     {/* Legal Footer */}
                     <p className="mt-8 text-[11px] text-slate/60 dark:text-darkText/40 text-center leading-relaxed">
                         By continuing, you agree to CareerSync's{' '}
-                        <a href="#" className="underline underline-offset-2 hover:text-obsidian dark:hover:text-darkText transition-colors">Terms of Service</a>{' '}
+                        <button
+                            onClick={(e) => { e.preventDefault(); window.history.pushState({ view: 'terms' }, '', '/Terms'); window.dispatchEvent(new PopStateEvent('popstate')); }}
+                            className="underline underline-offset-2 hover:text-obsidian dark:hover:text-darkText transition-colors"
+                        >
+                            Terms of Service
+                        </button>{' '}
                         and{' '}
-                        <a href="#" className="underline underline-offset-2 hover:text-obsidian dark:hover:text-darkText transition-colors">Privacy Policy</a>,
+                        <button
+                            onClick={(e) => { e.preventDefault(); window.history.pushState({ view: 'privacy' }, '', '/Privacy'); window.dispatchEvent(new PopStateEvent('popstate')); }}
+                            className="underline underline-offset-2 hover:text-obsidian dark:hover:text-darkText transition-colors"
+                        >
+                            Privacy Policy
+                        </button>,
                         and to receive periodic emails with updates.
                     </p>
                 </div>

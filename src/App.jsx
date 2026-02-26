@@ -67,12 +67,24 @@ import HistoryDashboard from './components/HistoryDashboard';
 import Billing from './components/Billing';
 import Profile from './components/Profile';
 import UpdatePassword from './components/UpdatePassword';
+import Terms from './components/legal/Terms';
+import Privacy from './components/legal/Privacy';
 
 function App() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState('workspace');
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+
+  // Helper to handle client-side navigation with URL sync
+  const navigateTo = useCallback((view) => {
+    setCurrentView(view);
+    const path = view === 'terms' ? '/Terms' : view === 'privacy' ? '/Privacy' : '/';
+    if (window.location.pathname !== path) {
+      window.history.pushState({ view }, '', path);
+    }
+    window.scrollTo(0, 0);
+  }, []);
 
   const analysisData = useWorkspaceStore(state => state.analysisData);
   const isAnalyzing = useWorkspaceStore(state => state.isAnalyzing);
@@ -142,6 +154,29 @@ function App() {
     return () => {
       lenis.destroy();
     };
+  }, []);
+
+  // ═══ URL Synchronization for Routing ═══
+  useEffect(() => {
+    const handleLocationChange = () => {
+      const path = window.location.pathname.toLowerCase();
+      if (path === '/terms') {
+        setCurrentView('terms');
+      } else if (path === '/privacy') {
+        setCurrentView('privacy');
+      } else {
+        // If not a legal page, default to workspace or previous view
+        // Only reset if we are currently on a legal page view
+        setCurrentView(prev => (prev === 'terms' || prev === 'privacy') ? 'workspace' : prev);
+      }
+    };
+
+    // Initialize on mount
+    handleLocationChange();
+
+    // Listen for back/forward buttons
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
   }, []);
 
   useEffect(() => {
@@ -222,6 +257,10 @@ function App() {
         return <Billing session={session} onPaymentModalChange={setPaymentModalOpen} />;
       case 'profile':
         return <Profile session={session} setCurrentView={setCurrentView} />;
+      case 'terms':
+        return <Terms onBack={() => navigateTo('workspace')} />;
+      case 'privacy':
+        return <Privacy onBack={() => navigateTo('workspace')} />;
       case 'workspace':
       default:
         return analysisData ? (
@@ -242,6 +281,7 @@ function App() {
             setCurrentView={(v) => { setCurrentView(v); }}
             onLogout={() => { resetWorkspace(); supabase.auth.signOut(); }}
             onOpenInvoice={fetchInvoiceHistory}
+            onNavigate={(view) => navigateTo(view)}
           />
         )}
 
