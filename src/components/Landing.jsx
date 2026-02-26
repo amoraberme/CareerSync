@@ -33,9 +33,7 @@ const Landing = ({ onNavigate }) => {
                 <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                     {/* Logo */}
                     <div className="flex items-center gap-2 cursor-pointer" onClick={() => onNavigate('landing')}>
-                        <div className="w-8 h-8 bg-obsidian dark:bg-darkText rounded-lg flex items-center justify-center">
-                            <Target className="w-5 h-5 text-background dark:text-darkBg" />
-                        </div>
+                        <img src="/logo.png" alt="CareerSync Logo" className="w-8 h-8 object-contain" />
                         <span className="text-xl font-bold tracking-tightest">CareerSync</span>
                     </div>
 
@@ -265,9 +263,7 @@ const Landing = ({ onNavigate }) => {
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
                     <div className="flex flex-col items-center md:items-start gap-4">
                         <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-obsidian dark:bg-darkText rounded flex items-center justify-center">
-                                <Target className="w-3.5 h-3.5 text-background dark:text-darkBg" />
-                            </div>
+                            <img src="/logo.png" alt="CareerSync Logo" className="w-6 h-6 object-contain" />
                             <span className="text-lg font-bold tracking-tightest">CareerSync</span>
                         </div>
                         <p className="text-xs text-slate/60 dark:text-darkText/40">© 2026 CareerSync. All rights reserved.</p>

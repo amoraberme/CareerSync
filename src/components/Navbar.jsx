@@ -52,7 +52,8 @@ export default function Navbar({ currentView, setCurrentView, onLogout, onOpenIn
                 <nav className={`transition-all duration-300 rounded-full px-4 md:px-6 py-3 flex items-center justify-between pointer-events-auto ${scrolled ? 'bg-white/75 dark:bg-darkBg/75 backdrop-blur-md border border-obsidian/5 dark:border-darkText/5 py-2 shadow-sm w-full max-w-4xl' : 'w-full max-w-6xl'
                     }`}>
                     {/* Brand */}
-                    <div className="flex items-center space-x-1 cursor-pointer" onClick={() => onNavigate ? onNavigate('workspace') : setCurrentView('workspace')}>
+                    <div className="flex items-center space-x-2 cursor-pointer" onClick={() => onNavigate ? onNavigate('workspace') : setCurrentView('workspace')}>
+                        <img src="/logo.png" alt="CareerSync Logo" className="w-8 h-8 object-contain" />
                         <span className="font-sans font-bold text-xl text-obsidian dark:text-darkText tracking-tighter">Career<span className="font-drama italic font-normal text-champagne">Sync.</span></span>
                     </div>
 
