@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Trash2, Calendar, Search, Filter, Lock } from 'lucide-react';
+import Tooltip from './ui/Tooltip';
 import gsap from 'gsap';
 import { supabase } from '../supabaseClient';
 import useWorkspaceStore from '../store/useWorkspaceStore';
@@ -113,8 +114,12 @@ export default function HistoryDashboard({ session, setCurrentView }) {
         <div ref={containerRef} className="max-w-6xl mx-auto py-12 px-6">
             <div className="flex flex-wrap gap-4 justify-between items-end mb-8">
                 <div>
-                    <h2 className="text-4xl font-sans tracking-tight text-obsidian dark:text-darkText mb-2 font-semibold">
+                    <h2 className="text-4xl font-sans tracking-tight text-obsidian dark:text-darkText mb-2 font-semibold flex items-center gap-2">
                         Application <span className="font-drama italic text-champagne font-normal">History</span>
+                        <Tooltip
+                            align="left"
+                            text="Your analysis history is stored securely using row-level security, meaning only you can access these records. You can delete any entry at any time."
+                        />
                     </h2>
                     <p className="text-slate dark:text-darkText/70 text-lg">
                         {historyLimit === Infinity ? 'Unlimited history access.' : `Showing ${Math.min(historyLimit, filteredApplications.length)} most recent analyses.`}

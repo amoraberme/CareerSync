@@ -293,7 +293,7 @@ export default function Profile({ session, setCurrentView }) {
                         <div className="bg-[#EA4335]/5 border border-[#EA4335]/15 rounded-xl p-4 mb-6 flex items-start">
                             <AlertTriangle className="w-5 h-5 text-[#EA4335] mr-3 mt-0.5 shrink-0" />
                             <p className="text-xs text-[#EA4335]/90 leading-relaxed">
-                                Your account will be immediately terminated. Remaining credits will not be refunded. This cannot be undone.
+                                Deleting your account will permanently erase your profile and all analysis history from our active databases. <strong>Note:</strong> To prevent abuse of our free trial system, we securely retain an anonymous, unreadable hash of your email address. Remaining credits will not be refunded.
                             </p>
                         </div>
 

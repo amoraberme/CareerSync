@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Check, CreditCard, ShieldCheck, AlertCircle, Download, X, QrCode, Smartphone, ExternalLink, Loader2, CheckCircle2, RefreshCw, Clock, Receipt, FileText, ChevronRight } from 'lucide-react';
+import Tooltip from './ui/Tooltip';
 import gsap from 'gsap';
 import { supabase } from '../supabaseClient';
 import useWorkspaceStore from '../store/useWorkspaceStore';
@@ -526,6 +527,9 @@ export default function Billing({ session, onPaymentModalChange }) {
                     >
                         {sessionStatus === 'loading' ? 'Generating…' : '⚡ Buy Base Token'}
                     </button>
+                    <p className="text-xs text-center text-slate/60 dark:text-darkText/35 mt-2">
+                        Your payment is processed securely. Credits are only added after your AI analysis successfully completes.
+                    </p>
                 </div>
 
                 {/* ══════════════════ PREMIUM (CENTER SPOTLIGHT) ══════════════════ */}
@@ -605,6 +609,9 @@ export default function Billing({ session, onPaymentModalChange }) {
                     >
                         {sessionStatus === 'loading' ? 'Generating…' : '🔒 Get Premium — ₱3/mo'}
                     </button>
+                    <p className="text-xs text-center text-champagne/50 dark:text-champagne/35 mt-2">
+                        Your payment is processed securely. Credits are only added after your AI analysis successfully completes.
+                    </p>
                 </div>
 
                 {/* ══════════════════ STANDARD ══════════════════ */}
@@ -670,6 +677,9 @@ export default function Billing({ session, onPaymentModalChange }) {
                     >
                         {sessionStatus === 'loading' ? 'Generating…' : '🔒 Get Standard — ₱2/mo'}
                     </button>
+                    <p className="text-xs text-center text-slate/60 dark:text-darkText/35 mt-2">
+                        Your payment is processed securely. Credits are only added after your AI analysis successfully completes.
+                    </p>
                 </div>
             </div>
 
@@ -789,8 +799,12 @@ export default function Billing({ session, onPaymentModalChange }) {
 
                                 {/* ═══ THE EXACT AMOUNT — this is the key UX element ═══ */}
                                 <div className="bg-champagne/10 border-2 border-champagne/30 rounded-2xl p-4 mb-4">
-                                    <p className="text-xs font-mono uppercase tracking-wider text-champagne/80 mb-1">
+                                    <p className="text-xs font-mono uppercase tracking-wider text-champagne/80 mb-1 flex items-center justify-center gap-1">
                                         Enter this EXACT amount in GCash
+                                        <Tooltip
+                                            align="center"
+                                            text="Why an exact amount with centavos? We assign a unique centavo value (e.g., ₱1.47) to your session. This allows our system to instantly and securely match your GCash transfer to your account without requiring a credit card or storing your financial details."
+                                        />
                                     </p>
                                     <p className="text-4xl font-bold text-champagne tracking-tight">
                                         {paymentSession.display_amount}

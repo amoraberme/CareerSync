@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { UploadCloud, FileText, CheckCircle, Wand2, ArrowRight } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle, Wand2, ArrowRight, HelpCircle } from 'lucide-react';
+import Tooltip from './ui/Tooltip';
 import gsap from 'gsap';
 import { supabase } from '../supabaseClient';
 import useWorkspaceStore from '../store/useWorkspaceStore';
@@ -139,6 +140,9 @@ export default function CoreEngine({ session, setCurrentView }) {
                         <div className="flex-grow flex flex-col">
                             <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-1 block">Full Description</label>
                             <textarea value={description} onChange={(e) => updateField('description', e.target.value)} placeholder="Paste full job description here..." className="w-full flex-grow min-h-[160px] bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors resize-none"></textarea>
+                            <p className="text-xs text-slate/70 dark:text-darkText/40 mt-1.5 ml-1 leading-relaxed">
+                                We use this description to generate your Match Score and identify skill gaps. Our system uses strict safeguards to ensure the AI only evaluates your fit and cannot be manipulated by outside instructions.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -170,7 +174,13 @@ export default function CoreEngine({ session, setCurrentView }) {
                                 <div className="w-20 h-20 bg-background dark:bg-darkBg border border-obsidian/5 dark:border-darkText/5 shadow-sm rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:bg-surface dark:group-hover:bg-darkText/5 transition-all duration-300">
                                     <UploadCloud className="w-8 h-8 text-slate" />
                                 </div>
-                                <h3 className="text-xl font-medium text-obsidian dark:text-darkText mb-2">Upload Resume</h3>
+                                <h3 className="text-xl font-medium text-obsidian dark:text-darkText mb-2 flex items-center justify-center">
+                                    Upload Resume
+                                    <Tooltip
+                                        align="center"
+                                        text="Your resume is securely encrypted and processed solely to generate your optimization report. We transmit this text to our AI provider (Google Gemini) for analysis, but your data is strictly legally prohibited from being used to train their foundational models."
+                                    />
+                                </h3>
                                 <p className="text-slate dark:text-darkText/60 max-w-xs mx-auto mb-6 text-sm">
                                     Drag and drop your latest CV here. We support PDF, DOCX, and TXT up to 5MB.
                                 </p>
