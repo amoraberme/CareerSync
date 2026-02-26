@@ -328,47 +328,7 @@ const Terms = ({ onBack }) => {
                     </ul>
                 </section>
 
-                <section className="mt-20 border-t border-obsidian/10 dark:border-darkText/10 pt-12 italic opacity-60">
-                    <h2 className="text-2xl font-bold text-obsidian dark:text-darkText mb-4 not-italic opacity-100">13. Adversarial Validation (Internal Review Memo)</h2>
-                    <div className="text-base text-slate/80 dark:text-darkText/70 space-y-4 font-mono">
-                        <div className="flex gap-2">
-                            <span className="font-bold">To:</span> CareerSync Executive Team
-                        </div>
-                        <div className="flex gap-2">
-                            <span className="font-bold">From:</span> Senior Tech Legal Counsel
-                        </div>
-                        <div className="flex gap-2 mb-6">
-                            <span className="font-bold">Subject:</span> Vulnerability Patching & Stress Test of ToS Draft
-                        </div>
 
-                        <p className="mb-4">Following your execution protocol, I have simulated adversarial attacks against our operational logic and legal framework. Here are the vulnerabilities identified and patched within the drafted ToS:</p>
-
-                        <div className="space-y-6">
-                            <div>
-                                <p className="font-bold underline mb-1">The "Free Credit Looping" Exploit:</p>
-                                <p>• Attack Vector: A malicious user repeatedly deletes their account and re-registers via Supabase Auth to harvest the 1 free credit given to new users.</p>
-                                <p>• Legal/System Patch: I have explicitly weaponized our <code>previously_registered_emails</code> database table logic within Section 5 of the ToS. The ToS now legally defines this as "Account Deletion Fraud" and codifies our right to grant 0 free credits to re-registered emails.</p>
-                            </div>
-
-                            <div>
-                                <p className="font-bold underline mb-1">Prompt Injection & AI Liability:</p>
-                                <p>• Attack Vector: A user uploads a resume filled with hidden text commanding the Gemini 2.0 Flash API to generate hate speech, then sues CareerSync for distributing offensive content.</p>
-                                <p>• Legal/System Patch: Section 5 explicitly forbids Prompt Injection. Furthermore, our architecture defends against this by utilizing separated system/user roles, ensuring the AI does not execute commands found within the user-provided text.</p>
-                            </div>
-
-                            <div>
-                                <p className="font-bold underline mb-1">The "Friendly Fraud" Chargeback (Centavo-Matching):</p>
-                                <p>• Attack Vector: A user pays ₱1.47 via GCash, receives their analysis, and immediately files a dispute claiming they "don't know what this charge is."</p>
-                                <p>• Legal/System Patch: Section 6 and Section 7 completely neutralize this. Section 6 explicitly outlines the Centavo-Matching system, proving the user had to purposefully input a highly specific, non-round number (e.g., ₱1.47) to match the transaction. Section 7 invokes the "Immediate Consumption" clause, stating that because server compute (Vercel) and AI tokens (Gemini) are instantly burned, digital sales are strictly non-refundable.</p>
-                            </div>
-
-                            <div>
-                                <p className="font-bold underline mb-1">Data Privacy Act (DPA) Compliance:</p>
-                                <p>• Review: Section 9 successfully limits our liability by clarifying that data is housed on a third-party infrastructure (Supabase). Furthermore, our use of Row Level Security (RLS) ensures users only access their own data, heavily mitigating the risk of cross-tenant data leaks.</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
             </div>
         </LegalLayout>
     );
