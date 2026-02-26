@@ -90,6 +90,7 @@ export default function Billing({ session, onPaymentModalChange }) {
             // Start Realtime subscription, fallback polling, and countdown
             startRealtimeListener(data.session_id);
             startPolling(data.session_id);
+            startProfilePolling(userTier || 'free'); // Added Profile Polling
             startCountdown(data.ttl_seconds || 600);
 
         } catch (error) {
@@ -250,6 +251,50 @@ export default function Billing({ session, onPaymentModalChange }) {
     };
 
     // ─── Cleanup on modal close / unmount ───
+    // ─── Profile Polling Fallback (Unblocks UI even if Webhook is slow) ───
+    const startProfilePolling = (initialTier) => {
+        console.log(`[Polling] 🛡️ Starting profile status polling (initial: ${initialTier})`);
+        let attempts = 0;
+        const maxAttempts = 15; // 45 seconds total
+
+        const interval = setInterval(async () => {
+            attempts++;
+            if (!session?.user?.id) return clearInterval(interval);
+
+            try {
+                // Fetch user profile directly bypass RLS concerns or cache
+                const { data: profile, error } = await supabase
+                    .from('user_profiles')
+                    .select('plan_tier, premium_credits, base_tokens')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (error) throw error;
+
+                // Condition 1: Tier changed (Standard/Premium)
+                const tierChanged = profile.plan_tier !== initialTier && profile.plan_tier !== 'free';
+                // Condition 2: Base tokens exist (if that's what we bought)
+                const tokensFound = profile.base_tokens > 0;
+
+                if ((tierChanged || tokensFound) && !paymentHandledRef.current) {
+                    console.log(`[Polling] ✅ Success detected via Profile Poll! Tier: ${profile.plan_tier}`);
+                    paymentHandledRef.current = true;
+                    handlePaymentSuccess(profile.premium_credits || 10);
+                    clearInterval(interval);
+                }
+
+                if (attempts >= maxAttempts) {
+                    console.warn(`[Polling] ⏳ Timeout reached after 45s.`);
+                    clearInterval(interval);
+                }
+            } catch (err) {
+                console.error('[Polling] Profile check failed:', err.message);
+            }
+        }, 3000); // Check every 3 seconds
+
+        return () => clearInterval(interval);
+    };
+
     const cleanupSession = () => {
         if (realtimeChannelRef.current) {
             supabase.removeChannel(realtimeChannelRef.current);

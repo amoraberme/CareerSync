@@ -2,6 +2,23 @@ import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 import { applyCors } from '../_lib/corsHelper.js';
 
+// ─── CRITICAL STEP 1: Disable Next.js body parser ───
+// This allows us to read the RAW request body needed for signature verification
+export const config = {
+    api: {
+        bodyParser: false,
+    },
+};
+
+// Helper: Read raw body buffer
+async function getRawBody(req) {
+    const chunks = [];
+    for await (const chunk of req) {
+        chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    }
+    return Buffer.concat(chunks);
+}
+
 export default async function handler(req, res) {
     // W-8: CORS
     if (applyCors(req, res)) return;
@@ -25,12 +42,20 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Webhook secret not configured.' });
     }
 
-    // ─── C-1 FIX: ENFORCE signature verification — reject on mismatch ───
-    // W-5 FIX: No DB writes before this check passes.
+    // ─── C-1 FIX: ENFORCE signature verification using RAW body ───
     const signatureHeader = req.headers['paymongo-signature'];
     if (!signatureHeader) {
-        console.error('[Webhook] Missing paymongo-signature header — rejecting.');
+        console.error('[PayMongo Webhook] ❌ Missing signature header.');
         return res.status(401).json({ error: 'Missing signature.' });
+    }
+
+    let rawBody;
+    try {
+        rawBody = await getRawBody(req);
+        console.log(`[PayMongo Webhook] 📦 Raw body read successfully (${rawBody.length} bytes).`);
+    } catch (e) {
+        console.error('[PayMongo Webhook] ❌ Failed to read raw body:', e.message);
+        return res.status(500).json({ error: 'Raw body read error.' });
     }
 
     const parts = {};
@@ -41,30 +66,32 @@ export default async function handler(req, res) {
     const { t: timestamp, li: liveSig, te: testSig } = parts;
     const signature = liveSig || testSig;
 
-    if (!timestamp || !signature) {
-        console.error('[Webhook] Malformed signature header — rejecting.');
-        return res.status(401).json({ error: 'Malformed signature.' });
-    }
-
-    const rawBody = JSON.stringify(req.body);
     const expected = crypto
         .createHmac('sha256', webhookSecret)
-        .update(`${timestamp}.${rawBody}`)
+        .update(`${timestamp}.${rawBody.toString()}`)
         .digest('hex');
 
     if (signature !== expected) {
-        // C-1 FIX: Reject — do not proceed. No DB write.
-        console.error('[Webhook] Signature mismatch — request rejected.');
+        console.error('[PayMongo Webhook] ❌ Signature mismatch — REJECTED.');
         return res.status(401).json({ error: 'Invalid signature.' });
     }
 
-    console.log('[Webhook] Signature verified successfully.');
+    console.log('[PayMongo Webhook] ✅ Signature verified successfully.');
+
+    // Parse the body manually since we disabled the parser
+    let body;
+    try {
+        body = JSON.parse(rawBody.toString());
+    } catch (e) {
+        console.error('[PayMongo Webhook] ❌ Malformed JSON body.');
+        return res.status(400).json({ error: 'Invalid JSON.' });
+    }
 
     // ─── Signature passed — now safe to connect to DB ───
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
     try {
-        const event = req.body;
+        const event = body;
         const attrs = event?.data?.attributes;
         const eventType = attrs?.type;
 
