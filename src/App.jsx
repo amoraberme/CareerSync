@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, Component } from 'react';
 import { supabase } from './supabaseClient';
 import useWorkspaceStore from './store/useWorkspaceStore';
 import Lenis from 'lenis';
+import { Analytics } from '@vercel/analytics/react';
 
 class GlobalErrorBoundary extends Component {
   constructor(props) {
@@ -402,6 +403,7 @@ function App() {
             </div>
           </div>
         )}
+        <Analytics />
       </div>
     </GlobalErrorBoundary>
   );
