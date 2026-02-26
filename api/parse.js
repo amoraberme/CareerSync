@@ -50,7 +50,7 @@ You MUST respond ONLY with a raw JSON object matching this exact schema:
         // 4. Call Gemini
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: 'gemini-2.0-flash',  // N-7 FIX: valid model name
+            model: 'models/gemini-flash-latest',  // Verified working model
             systemInstruction: systemPrompt
         });
 

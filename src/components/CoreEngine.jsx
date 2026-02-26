@@ -45,21 +45,26 @@ export default function CoreEngine({ session, setCurrentView }) {
                 },
                 body: JSON.stringify({ text: pastedText })
             });
+
             const data = await response.json();
+
+            if (!response.ok) {
+                const errorMsg = data.error || 'Failed to parse text.';
+                import('./ui/Toast').then(({ toast }) => toast.error(errorMsg));
+                return;
+            }
 
             updateField('jobTitle', data.jobTitle || '');
             updateField('industry', data.industry || '');
             updateField('experienceLevel', data.experienceLevel || '');
             updateField('requiredSkills', Array.isArray(data.requiredSkills) ? data.requiredSkills : []);
-            updateField('description', data.cleanDescription || pastedText); // Fallback to raw text if fail
+            updateField('description', data.cleanDescription || pastedText);
 
             setShowPasteModal(false);
             updateField('pastedText', '');
         } catch (error) {
-            console.error("Parse failed, falling back to manual entry:", error);
-            updateField('description', pastedText); // Just dump the raw text as fallback
-            setShowPasteModal(false);
-            updateField('pastedText', '');
+            console.error("Parse failed:", error);
+            import('./ui/Toast').then(({ toast }) => toast.error('Check your connection or API status.'));
         } finally {
             setIsParsing(false);
         }

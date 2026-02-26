@@ -109,7 +109,7 @@ Do not include any extra fields or text.`;
         // 4. Call Gemini with separated roles
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: 'gemini-2.0-flash',  // N-7 FIX: valid model name
+            model: 'models/gemini-flash-latest',  // Verified working model
             systemInstruction: systemPrompt
         });
 
