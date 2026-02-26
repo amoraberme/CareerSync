@@ -138,6 +138,24 @@ export default async function handler(req, res) {
                 return res.status(500).json({ error: 'Fulfillment failed.' });
             }
 
+            // ─── Step 2: Sync with Frontend (Mark Session Paid) ───
+            // We use the same 'claim' logic or a direct update if we have the specific session.
+            // Since we use centavo matching, we find the session for this user + amount.
+            const amount = resource?.attributes?.amount || resource?.amount || 0;
+            const { error: sessionError } = await supabaseAdmin
+                .from('payment_sessions')
+                .update({
+                    status: 'paid',
+                    credits_to_grant: creditAmount // Ensure UI shows correct hardcoded amount
+                })
+                .eq('user_id', userId)
+                .eq('exact_amount_due', amount)
+                .eq('status', 'pending');
+
+            if (sessionError) {
+                console.warn('[Webhook] Session status update failed (non-critical):', sessionError.message);
+            }
+
             console.log(`[Webhook] ✅ Successfully fulfilled ${planType} plan for user ${userId}. Credits: ${creditAmount}`);
 
             // Optional: Log success to webhook_logs
