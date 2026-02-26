@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { callGeminiWithCascade } from './_lib/geminiRouter.js';
 import { verifyAuth } from './_lib/authMiddleware.js';
 import { applyCors } from './_lib/corsHelper.js';
 
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     if (!user) return;
 
     try {
-        const { text } = req.body;
+        const { text: userInputText } = req.body;
 
         if (!text || text.trim() === '') {
             return res.status(400).json({ error: 'No text provided for parsing.' });
@@ -47,24 +47,21 @@ You MUST respond ONLY with a raw JSON object matching this exact schema:
         // 3. User content — strictly separated
         const userContent = `Parse the following job listing text:\n\n${text}`;
 
-        // 4. Call Gemini
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({
-            model: 'gemini-2.0-flash',  // Reverted to high-quality model
-            systemInstruction: systemPrompt
-        });
-
-        const result = await model.generateContent({
+        // 4. Call Gemini with Cascade Router
+        const { text, modelUsed } = await callGeminiWithCascade(apiKey, {
+            systemInstruction: systemPrompt,
             contents: [{ role: "user", parts: [{ text: userContent }] }],
             generationConfig: {
                 responseMimeType: "application/json"
             }
         });
 
-        const responseText = result.response.text();
-        const parsedData = JSON.parse(responseText);
+        const parsedData = JSON.parse(text);
 
-        return res.status(200).json(parsedData);
+        return res.status(200).json({
+            ...parsedData,
+            _routing: { model: modelUsed }
+        });
     } catch (error) {
         console.error("AI Parse Error:", error);
 
