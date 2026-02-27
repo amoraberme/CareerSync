@@ -19,8 +19,6 @@ export default async function handler(req, res) {
         const { jobTitle, industry, description, resumeText, resumeData } = req.body;
 
         // ═══ Daily Credit Gate ═══
-        // Base: governed by credit balance (decrement_credits in store) — skip daily cap.
-        // Standard: 40 analyses/day | Premium: 50 analyses/day — enforced here.
         const supabaseUrl = process.env.VITE_SUPABASE_URL;
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
         if (supabaseUrl && serviceKey) {
@@ -28,17 +26,35 @@ export default async function handler(req, res) {
 
             const { data: profile } = await supabaseAdmin
                 .from('user_profiles')
-                .select('tier, daily_credits_used, daily_credits_reset_at')
+                .select('tier, daily_credits_used, daily_credits_reset_at, current_credit_balance')
                 .eq('id', user.id)
                 .single();
 
-            const tier = profile?.tier || 'base';
+            // Normalize tier: 'free' -> 'base'
+            const tier = (profile?.tier === 'free' || !profile?.tier) ? 'base' : profile.tier;
 
-            if (tier !== 'base') {
-                // C-2 FIX: consume_daily_credit is now FATAL — if it fails, block the analysis.
-                // This prevents premium users from getting unlimited free analyses on RPC error.
-                const { data: allowed, error: rpcError } = await supabaseAdmin
-                    .rpc('consume_daily_credit', { p_user_id: user.id });
+            if (tier === 'base') {
+                // Base tier: Deduct 3 credits
+                const { data: success, error: rpcError } = await supabaseAdmin.rpc('decrement_credits', {
+                    p_user_id: user.id,
+                    deduct_amount: 3,
+                    p_description: 'Deep Analysis',
+                    p_type: 'Analyze'
+                });
+
+                if (rpcError) {
+                    console.error('[Analyze] decrement_credits RPC error:', rpcError.message);
+                    return res.status(500).json({ error: 'Credit system error. Please try again.' });
+                }
+
+                if (!success) {
+                    return res.status(402).json({ error: 'Insufficient credits. Deep Analysis costs 3 credits. Please top up.' });
+                }
+            } else {
+                // Subscription tiers: Standard (40) / Premium (50)
+                const { data: allowed, error: rpcError } = await supabaseAdmin.rpc('consume_daily_credit', {
+                    p_user_id: user.id
+                });
 
                 if (rpcError) {
                     console.error('[Analyze] consume_daily_credit RPC error:', rpcError.message);
@@ -47,13 +63,8 @@ export default async function handler(req, res) {
 
                 if (allowed === false) {
                     const cap = tier === 'premium' ? 50 : 40;
-                    const resetAt = profile?.daily_credits_reset_at
-                        ? new Date(new Date(profile.daily_credits_reset_at).getTime() + 24 * 60 * 60 * 1000)
-                        : new Date(Date.now() + 24 * 60 * 60 * 1000);
                     return res.status(429).json({
                         error: `Daily limit reached. Your ${tier} plan includes ${cap} analyses per day.`,
-                        daily_cap: cap,
-                        resets_at: resetAt.toISOString(),
                     });
                 }
             }
