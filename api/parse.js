@@ -1,6 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { verifyAuth } from './_lib/authMiddleware.js';
-import { createClient } from '@supabase/supabase-js';
 import { applyCors } from './_lib/corsHelper.js';
 
 export default async function handler(req, res) {
@@ -16,54 +15,6 @@ export default async function handler(req, res) {
 
     try {
         const { text } = req.body;
-
-        // ═══ Daily Credit Gate ═══
-        const supabaseUrl = process.env.VITE_SUPABASE_URL;
-        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-        if (supabaseUrl && serviceKey) {
-            const supabaseAdmin = createClient(supabaseUrl, serviceKey);
-
-            const { data: profile } = await supabaseAdmin
-                .from('user_profiles')
-                .select('tier, current_credit_balance')
-                .eq('id', user.id)
-                .single();
-
-            const tier = (profile?.tier === 'free' || !profile?.tier) ? 'base' : profile.tier;
-
-            if (tier === 'base') {
-                const { data: success, error: rpcError } = await supabaseAdmin.rpc('decrement_credits', {
-                    p_user_id: user.id,
-                    deduct_amount: 1,
-                    p_description: 'Job Listing Parse',
-                    p_type: 'Parse'
-                });
-
-                if (rpcError) {
-                    console.error('[Parse] decrement_credits RPC error:', rpcError.message);
-                    return res.status(500).json({ error: 'Credit system error.' });
-                }
-
-                if (!success) {
-                    return res.status(402).json({ error: 'Insufficient credits. Parse & Extract costs 1 credit.' });
-                }
-            } else {
-                const { data: allowed, error: rpcError } = await supabaseAdmin.rpc('consume_daily_credit', {
-                    p_user_id: user.id
-                });
-
-                if (rpcError) {
-                    console.error('[Parse] consume_daily_credit RPC error:', rpcError.message);
-                    return res.status(500).json({ error: 'Credit system error.' });
-                }
-
-                if (allowed === false) {
-                    const cap = tier === 'premium' ? 50 : 40;
-                    return res.status(429).json({ error: `Daily limit reached (${cap} parses/day).` });
-                }
-            }
-        }
-        // ═══ End Credit Gate ═══
 
         if (!text || text.trim() === '') {
             return res.status(400).json({ error: 'No text provided for parsing.' });

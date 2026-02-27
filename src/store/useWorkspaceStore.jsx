@@ -67,7 +67,7 @@ const useWorkspaceStore = create((set, get) => ({
             if (data) {
                 set({
                     creditBalance: data.current_credit_balance,
-                    userTier: data.tier || data.plan_tier || 'base',
+                    userTier: data.plan_tier || data.tier || 'base',
                     planLockedUntil: data.plan_locked_until || null
                 });
             }
@@ -85,7 +85,7 @@ const useWorkspaceStore = create((set, get) => ({
         // Standard/Premium: governed by daily cap in analyze.js — skip balance gate.
         const isBaseUser = userTier === 'base';
 
-        if (isBaseUser && creditBalance < 3) {
+        if (isBaseUser && creditBalance < 1) {
             import('../components/ui/Toast').then(({ toast }) => {
                 toast.error(
                     <div className="flex flex-col">
@@ -124,8 +124,18 @@ const useWorkspaceStore = create((set, get) => ({
                 return; // Credits untouched, history not written
             }
 
-            // Sync balance after success
-            await get().fetchCreditBalance(session?.user?.id);
+            // C-2 / TASK-03 FIX: Only deduct base credit AFTER confirmed success.
+            // Standard/Premium are gated by daily cap in analyze.js — no balance deduction.
+            if (isBaseUser) {
+                const { data: rpcSuccess, error: rpcError } = await supabase.rpc('decrement_credits', { deduct_amount: 1 });
+
+                if (rpcError || !rpcSuccess) {
+                    // Log but don't block — analysis already succeeded. Balance will re-sync on next fetch.
+                    console.error("Credit deduction RPC error (analysis already completed):", rpcError?.message);
+                } else {
+                    set({ creditBalance: creditBalance - 1 });
+                }
+            }
 
             // Build enriched result
             const enrichedData = {
