@@ -60,6 +60,10 @@ export default async function handler(req, res) {
                 usageData = { type: 'daily', used: (profile.daily_credits_used || 0) + 1, cap: tier === 'premium' ? 50 : 40 };
             } else {
                 usageData = { type: 'balance', remaining: profile?.current_credit_balance || 0 };
+                // Ensure base user has at least 3 credits
+                if ((profile?.current_credit_balance || 0) < 3) {
+                    return res.status(402).json({ error: 'Insufficient credits. Deep Analysis costs 3 credits. Please top up.' });
+                }
             }
         }
         // ═══ End Credit Gate ═══

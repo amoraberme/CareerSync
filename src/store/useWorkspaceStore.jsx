@@ -85,22 +85,41 @@ const useWorkspaceStore = create((set, get) => ({
         // Base tier: governed by balance — gate here.
         // Standard/Premium: governed by daily cap in analyze.js — skip balance gate.
         const isBaseUser = userTier === 'base';
+        const cost = 3; // "Deep Analysis" = Cost: 3 Credits
 
-        if (isBaseUser && creditBalance < 1) {
-            import('../components/ui/Toast').then(({ toast }) => {
-                toast.error(
-                    <div className="flex flex-col">
-                        <strong className="font-bold text-lg mb-1">Insufficient Credits</strong>
-                        <span className="opacity-90">Please top up your account or upgrade your tier to continue analyzing.</span>
-                    </div>,
-                    {
-                        action: "Upgrade Plan",
-                        onAction: () => { if (navigateToBilling) navigateToBilling(); }
-                    }
-                );
+        if (isBaseUser) {
+            if (creditBalance < cost) {
+                import('../components/ui/Toast').then(({ toast }) => {
+                    toast.error(
+                        <div className="flex flex-col">
+                            <strong className="font-bold text-lg mb-1">Insufficient Credits</strong>
+                            <span className="opacity-90">Please top up your account or upgrade your tier to continue analyzing. (Cost: {cost} cr)</span>
+                        </div>,
+                        {
+                            action: "Upgrade Plan",
+                            onAction: () => { if (navigateToBilling) navigateToBilling(); }
+                        }
+                    );
+                });
+                set({ isAnalyzing: false });
+                return;
+            }
+
+            // Deduct credits BEFORE executing the task
+            const { data: rpcSuccess, error: rpcError } = await supabase.rpc('decrement_credits', {
+                deduct_amount: cost,
+                p_description: `Deep Analysis: ${jobTitle}`,
+                p_type: 'Analyze'
             });
-            set({ isAnalyzing: false });
-            return;
+
+            if (rpcError || !rpcSuccess) {
+                import('../components/ui/Toast').then(({ toast }) => toast.error('Credit deduction failed. Please try again.'));
+                set({ isAnalyzing: false });
+                return;
+            }
+
+            // Update local balance immediately for visual feedback
+            await get().fetchCreditBalance(session?.user?.id);
         }
 
         try {
@@ -125,21 +144,7 @@ const useWorkspaceStore = create((set, get) => ({
                 return; // Credits untouched, history not written
             }
 
-            // C-2 / TASK-03 FIX: Only deduct base credit AFTER confirmed success.
-            // Standard/Premium are gated by daily cap in analyze.js — no balance deduction.
-            if (isBaseUser) {
-                const { data: rpcSuccess, error: rpcError } = await supabase.rpc('decrement_credits', {
-                    deduct_amount: 1,
-                    p_description: `Analyze: ${jobTitle}`,
-                    p_type: 'Analyze'
-                });
-
-                if (rpcError || !rpcSuccess) {
-                    console.error("Credit deduction RPC error (analysis already completed):", rpcError?.message);
-                }
-            }
-
-            // Sync balance from server state after every successful AI call
+            // Sync balance again to be sure
             await get().fetchCreditBalance(session?.user?.id);
 
             // Build enriched result
@@ -181,9 +186,30 @@ const useWorkspaceStore = create((set, get) => ({
         if (!pastedText.trim()) return;
 
         const isBaseUser = userTier === 'base';
-        if (isBaseUser && creditBalance < 1) {
-            import('../components/ui/Toast').then(({ toast }) => toast.error('Insufficient credits for parsing.'));
-            return;
+        const cost = 1; // "Parse & Extract" = Cost: 1 Credit
+
+        if (isBaseUser) {
+            if (creditBalance < cost) {
+                import('../components/ui/Toast').then(({ toast }) => toast.error('Insufficient credits for parsing.'));
+                set({ isParsing: false });
+                return;
+            }
+
+            // Deduct credits BEFORE executing the task
+            const { data: rpcSuccess, error: rpcError } = await supabase.rpc('decrement_credits', {
+                deduct_amount: cost,
+                p_description: 'Parse & Extract Job Description',
+                p_type: 'Parse'
+            });
+
+            if (rpcError || !rpcSuccess) {
+                import('../components/ui/Toast').then(({ toast }) => toast.error('Credit deduction failed.'));
+                set({ isParsing: false });
+                return;
+            }
+
+            // Update local balance immediately
+            await get().fetchCreditBalance(session?.user?.id);
         }
 
         try {
@@ -202,15 +228,6 @@ const useWorkspaceStore = create((set, get) => ({
             if (!response.ok) {
                 import('../components/ui/Toast').then(({ toast }) => toast.error(data.error || 'Failed to parse text.'));
                 return;
-            }
-
-            // If base user, deduct credits for parsing too
-            if (isBaseUser) {
-                await supabase.rpc('decrement_credits', {
-                    deduct_amount: 1,
-                    p_description: 'Parse Job Description',
-                    p_type: 'Parse'
-                });
             }
 
             // Sync profile
