@@ -7,9 +7,10 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 export async function callGeminiWithCascade(apiKey, { systemInstruction, contents, generationConfig }) {
     // Defined hierarchy of models
     const modelRotation = [
+        'models/gemini-2.5-flash',
+        'models/gemini-flash-latest',
         'gemini-2.0-flash',
-        'gemini-1.5-flash',
-        'gemini-1.5-flash-8b'
+        'gemini-1.5-flash'
     ];
 
     let lastError = null;
