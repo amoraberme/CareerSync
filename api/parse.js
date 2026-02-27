@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { verifyAuth } from './_lib/authMiddleware.js';
+import { createClient } from '@supabase/supabase-js';
 import { applyCors } from './_lib/corsHelper.js';
 
 export default async function handler(req, res) {
