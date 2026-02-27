@@ -18,44 +18,28 @@ export default async function handler(req, res) {
     try {
         const { jobTitle, industry, description, resumeText, resumeData } = req.body;
 
-        // ═══ Daily Credit Gate ═══
-        // Base: governed by credit balance (decrement_credits in store) — skip daily cap.
-        // Standard: 40 analyses/day | Premium: 50 analyses/day — enforced here.
+        // ═══ Strict Credit Gate ═══
+        // All tiers cost 3 credits. Sever-side enforcement to prevent bypass.
         const supabaseUrl = process.env.VITE_SUPABASE_URL;
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
         if (supabaseUrl && serviceKey) {
             const supabaseAdmin = createClient(supabaseUrl, serviceKey);
 
-            const { data: profile } = await supabaseAdmin
-                .from('user_profiles')
-                .select('tier, daily_credits_used, daily_credits_reset_at')
-                .eq('id', user.id)
-                .single();
+            const { data: allowed, error: rpcError } = await supabaseAdmin
+                .rpc('decrement_credits', {
+                    deduct_amount: 3,
+                    p_description: 'Deep Analysis',
+                    p_type: 'Analyze',
+                    p_user_id: user.id
+                });
 
-            const tier = profile?.tier || 'base';
+            if (rpcError) {
+                console.error('[Analyze] strict credit RPC error:', rpcError.message);
+                return res.status(500).json({ error: 'Credit system error. Please try again.' });
+            }
 
-            if (tier !== 'base') {
-                // C-2 FIX: consume_daily_credit is now FATAL — if it fails, block the analysis.
-                // This prevents premium users from getting unlimited free analyses on RPC error.
-                const { data: allowed, error: rpcError } = await supabaseAdmin
-                    .rpc('consume_daily_credit', { p_user_id: user.id });
-
-                if (rpcError) {
-                    console.error('[Analyze] consume_daily_credit RPC error:', rpcError.message);
-                    return res.status(500).json({ error: 'Credit system error. Please try again.' });
-                }
-
-                if (allowed === false) {
-                    const cap = tier === 'premium' ? 50 : 40;
-                    const resetAt = profile?.daily_credits_reset_at
-                        ? new Date(new Date(profile.daily_credits_reset_at).getTime() + 24 * 60 * 60 * 1000)
-                        : new Date(Date.now() + 24 * 60 * 60 * 1000);
-                    return res.status(429).json({
-                        error: `Daily limit reached. Your ${tier} plan includes ${cap} analyses per day.`,
-                        daily_cap: cap,
-                        resets_at: resetAt.toISOString(),
-                    });
-                }
+            if (allowed === false) {
+                return res.status(402).json({ error: '[ERROR: INSUFFICIENT FUNDS]' });
             }
         }
         // ═══ End Credit Gate ═══

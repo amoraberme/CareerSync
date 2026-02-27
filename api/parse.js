@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { verifyAuth } from './_lib/authMiddleware.js';
 import { applyCors } from './_lib/corsHelper.js';
+import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
     if (applyCors(req, res)) return;
@@ -24,6 +25,32 @@ export default async function handler(req, res) {
         if (text.length > 20000) {
             return res.status(400).json({ error: 'Input too large. Please paste a shorter job listing (max 20,000 characters).' });
         }
+
+        // ═══ Strict Credit Gate ═══
+        // All tiers cost 1 credit. Sever-side enforcement to prevent bypass.
+        const supabaseUrl = process.env.VITE_SUPABASE_URL;
+        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        if (supabaseUrl && serviceKey) {
+            const supabaseAdmin = createClient(supabaseUrl, serviceKey);
+
+            const { data: allowed, error: rpcError } = await supabaseAdmin
+                .rpc('decrement_credits', {
+                    deduct_amount: 1,
+                    p_description: 'AI Parse & Extract',
+                    p_type: 'Parse',
+                    p_user_id: user.id
+                });
+
+            if (rpcError) {
+                console.error('[Parse] strict credit RPC error:', rpcError.message);
+                return res.status(500).json({ error: 'Credit system error. Please try again.' });
+            }
+
+            if (allowed === false) {
+                return res.status(402).json({ error: '[ERROR: INSUFFICIENT FUNDS]' });
+            }
+        }
+        // ═══ End Credit Gate ═══
 
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {

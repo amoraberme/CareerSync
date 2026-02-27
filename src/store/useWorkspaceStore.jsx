@@ -82,17 +82,15 @@ const useWorkspaceStore = create((set, get) => ({
         const { jobTitle, industry, description, resumeData, creditBalance, userTier } = get();
 
         // ─── C-3 / TASK-03 FIX: Credit system reworked ───
-        // Base tier: governed by balance — gate here.
-        // Standard/Premium: governed by daily cap in analyze.js — skip balance gate.
-        const isBaseUser = userTier === 'base';
+        // All tiers cost 3 credits. Real deduction happens safely on backend.
         const cost = 3;
 
-        if (isBaseUser && creditBalance < cost) {
+        if (creditBalance < cost) {
             import('../components/ui/Toast').then(({ toast }) => {
                 toast.error(
                     <div className="flex flex-col">
                         <strong className="font-bold text-lg mb-1">[ERROR: INSUFFICIENT FUNDS]</strong>
-                        <span className="opacity-90">Please top up your account or upgrade your tier to continue analyzing. (Cost: {cost} Credits)</span>
+                        <span className="opacity-90">Please top up your account to continue analyzing. (Cost: {cost} Credits)</span>
                     </div>,
                     {
                         action: "Upgrade Plan",
@@ -107,29 +105,8 @@ const useWorkspaceStore = create((set, get) => ({
         try {
             const accessToken = session?.access_token;
 
-            // Deduct credits BEFORE executing the task
-            if (isBaseUser) {
-                const { data: rpcSuccess, error: rpcError } = await supabase.rpc('decrement_credits', {
-                    deduct_amount: cost,
-                    p_description: 'Deep Analysis Analysis',
-                    p_type: 'Analyze'
-                });
-
-                if (rpcError || !rpcSuccess) {
-                    import('../components/ui/Toast').then(({ toast }) => {
-                        toast.error(
-                            <div className="flex flex-col">
-                                <strong className="font-bold text-lg mb-1">[ERROR: INSUFFICIENT FUNDS]</strong>
-                                <span className="opacity-90">Deduction failed or balance too low. Please top up.</span>
-                            </div>
-                        );
-                    });
-                    set({ isAnalyzing: false });
-                    return;
-                }
-                // Update local balance immediately
-                set({ creditBalance: creditBalance - cost });
-            }
+            // Optimistic UI update before actual backend deduction
+            set({ creditBalance: creditBalance - cost });
 
             const response = await fetch('/api/analyze', {
                 method: 'POST',
@@ -190,10 +167,10 @@ const useWorkspaceStore = create((set, get) => ({
         const { pastedText, creditBalance, userTier } = get();
         if (!pastedText.trim()) return;
 
-        const isBaseUser = userTier === 'base';
+        // All tiers cost 1 credit for Parsing. Real deduction happens safely on backend.
         const cost = 1;
 
-        if (isBaseUser && creditBalance < cost) {
+        if (creditBalance < cost) {
             import('../components/ui/Toast').then(({ toast }) => {
                 toast.error(
                     <div className="flex flex-col">
@@ -210,21 +187,8 @@ const useWorkspaceStore = create((set, get) => ({
             const { data: { session: currentSession } } = await supabase.auth.getSession();
             const accessToken = currentSession?.access_token || session?.access_token;
 
-            // Deduct credits BEFORE
-            if (isBaseUser) {
-                const { data: rpcSuccess, error: rpcError } = await supabase.rpc('decrement_credits', {
-                    deduct_amount: cost,
-                    p_description: 'AI Parse & Extract',
-                    p_type: 'Parse'
-                });
-
-                if (rpcError || !rpcSuccess) {
-                    import('../components/ui/Toast').then(({ toast }) => toast.error('[ERROR: INSUFFICIENT FUNDS]'));
-                    set({ isParsing: false });
-                    return false;
-                }
-                set({ creditBalance: creditBalance - cost });
-            }
+            // Optimistic UI update before backend deduction
+            set({ creditBalance: creditBalance - cost });
 
             const response = await fetch('/api/parse', {
                 method: 'POST',
