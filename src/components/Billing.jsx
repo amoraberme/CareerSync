@@ -946,7 +946,6 @@ export default function Billing({ session, onPaymentModalChange }) {
                                     <thead>
                                         <tr className="border-b border-obsidian/8 dark:border-darkText/8">
                                             <th className="text-left text-xs font-semibold text-slate dark:text-darkText/50 uppercase tracking-wider pb-3">Date & Time</th>
-                                            <th className="text-left text-xs font-semibold text-slate dark:text-darkText/50 uppercase tracking-wider pb-3">Tier</th>
                                             <th className="text-right text-xs font-semibold text-slate dark:text-darkText/50 uppercase tracking-wider pb-3">Amount</th>
                                             <th className="text-right text-xs font-semibold text-slate dark:text-darkText/50 uppercase tracking-wider pb-3">Credits</th>
                                         </tr>
@@ -969,11 +968,7 @@ export default function Billing({ session, onPaymentModalChange }) {
                                                             {date.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' })}
                                                         </div>
                                                     </td>
-                                                    <td className="py-4">
-                                                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${tierColors[row.tier] || tierColors.base}`}>
-                                                            {row.tier}
-                                                        </span>
-                                                    </td>
+
                                                     <td className="py-4 text-right font-mono font-semibold text-obsidian dark:text-darkText">
                                                         {row.amount_display}
                                                     </td>
