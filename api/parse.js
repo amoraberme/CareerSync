@@ -1,4 +1,4 @@
-import { callGeminiWithCascade, safeParseJSON } from './_lib/geminiRouter.js';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { verifyAuth } from './_lib/authMiddleware.js';
 import { createClient } from '@supabase/supabase-js';
 import { applyCors } from './_lib/corsHelper.js';
@@ -90,21 +90,25 @@ You MUST respond ONLY with a raw JSON object matching this exact schema:
         // 3. User content — strictly separated
         const userContent = `Parse the following job listing text:\n\n${userInputText}`;
 
-        // 4. Call Gemini with Cascade Router
-        const { text, modelUsed } = await callGeminiWithCascade(apiKey, {
-            systemInstruction: systemPrompt,
+        // 4. Call Gemini
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({
+            model: 'models/gemini-2.5-flash', // Using verified working model
+            systemInstruction: systemPrompt
+        });
+
+        const result = await model.generateContent({
             contents: [{ role: "user", parts: [{ text: userContent }] }],
             generationConfig: {
                 responseMimeType: "application/json"
             }
         });
 
-        // Use safeParseJSON for robustness
-        const parsedData = safeParseJSON(text);
+        const responseText = result.response.text();
+        const parsedData = JSON.parse(responseText);
 
         return res.status(200).json({
             ...parsedData,
-            _routing: { model: modelUsed },
             _usage: usageData
         });
     } catch (error) {
