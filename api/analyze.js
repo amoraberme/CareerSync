@@ -19,11 +19,10 @@ export default async function handler(req, res) {
         const { jobTitle, industry, description, resumeText, resumeData } = req.body;
 
         // ═══ Daily Credit Gate ═══
-        const supabaseUrl = process.env.VITE_SUPABASE_URL;
-        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-        let usageData = { type: 'base' };
         // Base: governed by credit balance (decrement_credits in store) — skip daily cap.
         // Standard: 40 analyses/day | Premium: 50 analyses/day — enforced here.
+        const supabaseUrl = process.env.VITE_SUPABASE_URL;
+        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
         if (supabaseUrl && serviceKey) {
             const supabaseAdmin = createClient(supabaseUrl, serviceKey);
 
@@ -56,13 +55,6 @@ export default async function handler(req, res) {
                         daily_cap: cap,
                         resets_at: resetAt.toISOString(),
                     });
-                }
-                usageData = { type: 'daily', used: (profile.daily_credits_used || 0) + 1, cap: tier === 'premium' ? 50 : 40 };
-            } else {
-                usageData = { type: 'balance', remaining: profile?.current_credit_balance || 0 };
-                // Ensure base user has at least 3 credits
-                if ((profile?.current_credit_balance || 0) < 3) {
-                    return res.status(402).json({ error: 'Insufficient credits. Deep Analysis costs 3 credits. Please top up.' });
                 }
             }
         }
@@ -114,10 +106,10 @@ Do not include any extra fields or text.`;
             parts[0].text = userContent;
         }
 
-        // 4. Call Gemini
+        // 4. Call Gemini with separated roles
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: 'models/gemini-2.5-flash', // Using verified working model
+            model: 'models/gemini-flash-latest',  // Verified working model
             systemInstruction: systemPrompt
         });
 
@@ -131,10 +123,7 @@ Do not include any extra fields or text.`;
         const text = result.response.text();
         const parsedData = JSON.parse(text);
 
-        return res.status(200).json({
-            ...parsedData,
-            _usage: usageData
-        });
+        return res.status(200).json(parsedData);
     } catch (error) {
         console.error("AI Analysis Error:", error);
 

@@ -18,29 +18,45 @@ CREATE TABLE IF NOT EXISTS credit_ledger (
 -- 2. Enable RLS
 ALTER TABLE credit_ledger ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users read own ledger"
-    ON credit_ledger FOR SELECT
-    USING (auth.uid() = user_id);
+-- Idempotent Policy Creation
+DO $$
+BEGIN
+    DROP POLICY IF EXISTS "Users read own ledger" ON credit_ledger;
+    CREATE POLICY "Users read own ledger"
+        ON credit_ledger FOR SELECT
+        USING (auth.uid() = user_id);
 
-CREATE POLICY "Service role manages ledger"
-    ON credit_ledger FOR ALL
-    USING (true)
-    WITH CHECK (true);
+    DROP POLICY IF EXISTS "Service role manages ledger" ON credit_ledger;
+    CREATE POLICY "Service role manages ledger"
+        ON credit_ledger FOR ALL
+        USING (true)
+        WITH CHECK (true);
+END
+$$;
 
 -- 3. Update decrement_credits RPC to log usage
 CREATE OR REPLACE FUNCTION decrement_credits(
     deduct_amount   integer,
     p_description   text    DEFAULT 'AI Usage',
-    p_type          text    DEFAULT 'Analyze'
+    p_type          text    DEFAULT 'Analyze',
+    p_user_id       uuid    DEFAULT NULL
 )
 returns boolean as $$
 declare
     v_current_balance integer;
+    v_target_user_id  uuid;
 begin
+    -- Determine target user: priority to parameter, then auth context
+    v_target_user_id := coalesce(p_user_id, auth.uid());
+    
+    if v_target_user_id is null then
+        return false;
+    end if;
+
     -- Get current balance with lock
     select current_credit_balance into v_current_balance
     from user_profiles
-    where id = auth.uid()
+    where id = v_target_user_id
     for update;
 
     -- Gate
@@ -51,11 +67,11 @@ begin
     -- Deduct
     update user_profiles
     set current_credit_balance = current_credit_balance - deduct_amount
-    where id = auth.uid();
+    where id = v_target_user_id;
 
     -- Log to ledger
     insert into credit_ledger (user_id, description, transaction_type, credits_changed)
-    values (auth.uid(), p_description, p_type, -deduct_amount);
+    values (v_target_user_id, p_description, p_type, -deduct_amount);
 
     return true;
 end;
@@ -86,6 +102,8 @@ END;
 $$;
 
 -- 5. Backfill: Migrate existing paid payment_sessions to credit_ledger
+-- Using ON CONFLICT (if unique index exists) or just check for existence
+-- For simplicity in this script, we'll just insert what targets the schema
 INSERT INTO credit_ledger (user_id, description, transaction_type, credits_changed, amount_display, created_at)
 SELECT 
     user_id, 
@@ -96,4 +114,8 @@ SELECT
     paid_at
 FROM payment_sessions
 WHERE status = 'paid'
-ON CONFLICT DO NOTHING;
+AND NOT EXISTS (
+    SELECT 1 FROM credit_ledger cl 
+    WHERE cl.user_id = payment_sessions.user_id 
+    AND cl.created_at = payment_sessions.paid_at
+);
