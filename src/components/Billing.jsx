@@ -29,21 +29,14 @@ export default function Billing({ session, onPaymentModalChange }) {
     const [paymentConfirmed, setPaymentConfirmed] = useState(false);
 
 
-    // Invoice / Payment History state
-    const [showInvoice, setShowInvoice] = useState(false);
-    const [invoiceLoading, setInvoiceLoading] = useState(false);
-    const [invoiceError, setInvoiceError] = useState('');
-    const [invoiceHistory, setInvoiceHistory] = useState([]);
-
-
-    const fetchCreditBalance = useWorkspaceStore(state => state.fetchCreditBalance);
-    const userTier = useWorkspaceStore(state => state.userTier);
-    const planLockedUntil = useWorkspaceStore(state => state.planLockedUntil);
-
     // Notify parent (App.jsx) when QR modal opens/closes so Navbar can hide
     useEffect(() => {
         onPaymentModalChange?.(showQrModal);
     }, [showQrModal, onPaymentModalChange]);
+
+    const fetchCreditBalance = useWorkspaceStore(state => state.fetchCreditBalance);
+    const userTier = useWorkspaceStore(state => state.userTier);
+    const planLockedUntil = useWorkspaceStore(state => state.planLockedUntil);
 
     // ─── Cleanup refs ───
     const realtimeChannelRef = useRef(null);
@@ -394,28 +387,6 @@ export default function Billing({ session, onPaymentModalChange }) {
         return () => ctx.revert();
     }, []);
 
-    // ─── Fetch invoice history from backend ───
-    const fetchInvoiceHistory = async () => {
-        setShowInvoice(true);
-        setInvoiceLoading(true);
-        setInvoiceError('');
-        try {
-            const { data: { session: currentSession } } = await supabase.auth.getSession();
-            const response = await fetch('/api/payment-history', {
-                method: 'GET',
-                headers: {
-                    ...(currentSession?.access_token && { 'Authorization': `Bearer ${currentSession.access_token}` })
-                }
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || 'Failed to load history.');
-            setInvoiceHistory(data.history || []);
-        } catch (err) {
-            setInvoiceError(err.message);
-        } finally {
-            setInvoiceLoading(false);
-        }
-    };
 
     return (
         <div ref={containerRef} className="max-w-7xl mx-auto py-12 px-6">
@@ -891,123 +862,6 @@ export default function Billing({ session, onPaymentModalChange }) {
                                     Credits are granted automatically after payment is confirmed.
                                 </p>
                             </>
-                        )}
-                    </div>
-                </div>
-            )}
-            {/* ════════════════════════════════════════════════════
-                Invoice / Payment History Modal
-               ════════════════════════════════════════════════════ */}
-            {showInvoice && (
-                <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-white/70 dark:bg-darkBg/70 backdrop-blur-md" onClick={() => setShowInvoice(false)} />
-
-                    <div className="relative bg-white dark:bg-darkBg border border-obsidian/10 dark:border-darkText/10 rounded-[2rem] w-full max-w-2xl shadow-2xl flex flex-col max-h-[85vh]">
-
-                        {/* Header */}
-                        <div className="flex items-center justify-between px-8 pt-7 pb-4 border-b border-obsidian/8 dark:border-darkText/8 shrink-0">
-                            <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-xl bg-champagne/10 flex items-center justify-center">
-                                    <Receipt className="w-5 h-5 text-champagne" />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-obsidian dark:text-darkText">Invoice History</h3>
-                                    <p className="text-xs text-slate dark:text-darkText/50">All your past credit purchases</p>
-                                </div>
-                            </div>
-                            <button onClick={() => setShowInvoice(false)} className="text-slate/50 hover:text-obsidian dark:hover:text-darkText transition-colors">
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        {/* Body */}
-                        <div className="overflow-y-auto flex-1 px-8 py-6">
-                            {invoiceLoading && (
-                                <div className="flex flex-col items-center justify-center py-16">
-                                    <Loader2 className="w-8 h-8 text-champagne animate-spin mb-3" />
-                                    <p className="text-sm text-slate dark:text-darkText/50">Loading your history...</p>
-                                </div>
-                            )}
-                            {invoiceError && !invoiceLoading && (
-                                <div className="flex flex-col items-center justify-center py-16">
-                                    <AlertCircle className="w-8 h-8 text-[#EA4335] mb-3" />
-                                    <p className="text-sm text-slate dark:text-darkText/50">{invoiceError}</p>
-                                </div>
-                            )}
-                            {!invoiceLoading && !invoiceError && invoiceHistory.length === 0 && (
-                                <div className="flex flex-col items-center justify-center py-16">
-                                    <FileText className="w-10 h-10 text-obsidian/15 dark:text-darkText/15 mb-4" />
-                                    <p className="text-sm font-semibold text-obsidian dark:text-darkText mb-1">No payments yet</p>
-                                    <p className="text-xs text-slate dark:text-darkText/50">Your payment history will appear here after your first purchase.</p>
-                                </div>
-                            )}
-                            {!invoiceLoading && !invoiceError && invoiceHistory.length > 0 && (
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="border-b border-obsidian/8 dark:border-darkText/8">
-                                            <th className="text-left text-xs font-semibold text-slate dark:text-darkText/50 uppercase tracking-wider pb-3">Description</th>
-                                            <th className="text-right text-xs font-semibold text-slate dark:text-darkText/50 uppercase tracking-wider pb-3">Amount</th>
-                                            <th className="text-right text-xs font-semibold text-slate dark:text-darkText/50 uppercase tracking-wider pb-3">Credits</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {invoiceHistory.map((row, i) => {
-                                            const date = new Date(row.date);
-                                            const tierColors = {
-                                                base: 'bg-slate/10 text-slate dark:bg-darkText/10 dark:text-darkText/70',
-                                                standard: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-                                                premium: 'bg-champagne/15 text-champagne',
-                                            };
-                                            return (
-                                                <tr key={row.id} className="border-b border-obsidian/5 dark:border-darkText/5 hover:bg-obsidian/2 dark:hover:bg-darkText/2 transition-colors">
-                                                    <td className="py-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="flex flex-col">
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${row.type === 'Bought' || row.type === 'Receive'
-                                                                            ? 'bg-champagne/15 text-champagne'
-                                                                            : 'bg-slate/10 text-slate dark:text-darkText/50'
-                                                                        }`}>
-                                                                        {row.type}
-                                                                    </span>
-                                                                    <span className="font-medium text-obsidian dark:text-darkText">
-                                                                        {row.description}
-                                                                    </span>
-                                                                </div>
-                                                                <div className="text-[10px] text-slate dark:text-darkText/40 mt-1">
-                                                                    {date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })} · {date.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' })}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-
-                                                    <td className="py-4 text-right font-mono font-bold text-obsidian dark:text-darkText">
-                                                        {row.amount_display || '—'}
-                                                    </td>
-                                                    <td className="py-4 text-right">
-                                                        <span className={`font-bold ${row.credits_gained > 0 ? 'text-champagne' : 'text-[#EA4335]'}`}>
-                                                            {row.credits_gained > 0 ? '+' : ''}{row.credits_gained.toLocaleString()}
-                                                        </span>
-                                                        <span className="text-[10px] text-slate dark:text-darkText/40 ml-1 uppercase">cr</span>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            )}
-                        </div>
-
-                        {/* Footer summary */}
-                        {!invoiceLoading && invoiceHistory.length > 0 && (
-                            <div className="px-8 py-5 border-t border-obsidian/8 dark:border-darkText/8 flex items-center justify-between shrink-0">
-                                <p className="text-xs text-slate dark:text-darkText/40">
-                                    {invoiceHistory.length} transaction{invoiceHistory.length !== 1 ? 's' : ''}
-                                </p>
-                                <p className="text-xs font-semibold text-champagne">
-                                    {invoiceHistory.reduce((sum, r) => sum + r.credits_gained, 0).toLocaleString()} total credits purchased
-                                </p>
-                            </div>
                         )}
                     </div>
                 </div>
