@@ -8,8 +8,8 @@ import useWorkspaceStore from '../store/useWorkspaceStore';
 export default function CoreEngine({ session, setCurrentView }) {
     const [showPasteModal, setShowPasteModal] = useState(false);
     const {
-        jobTitle, industry, experienceLevel, requiredSkills, description, pastedText,
-        resumeUploaded, resumeData, resumeFileName, resumeFileSize,
+        jobTitle, industry, experienceLevel, requiredSkills, experienceText, qualifications, roleDo, pastedText,
+        resumeUploaded, resumeData, resumeFileName, resumeFileSize, coverLetterTone,
         isAnalyzing, isParsing, updateField, runAnalysis, runParse
     } = useWorkspaceStore();
 
@@ -109,12 +109,38 @@ export default function CoreEngine({ session, setCurrentView }) {
                                 <input value={requiredSkills.join(', ')} onChange={(e) => updateField('requiredSkills', e.target.value.split(', '))} type="text" placeholder="React, Node..." title="Comma separated" className="w-full bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors" />
                             </div>
                         </div>
-                        <div className="flex-grow flex flex-col">
-                            <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-1 block">Full Description</label>
-                            <textarea value={description} onChange={(e) => updateField('description', e.target.value)} placeholder="Paste full job description here..." className="w-full flex-grow min-h-[160px] bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors resize-none"></textarea>
-                            <p className="text-xs text-slate/70 dark:text-darkText/40 mt-1.5 ml-1 leading-relaxed">
-                                We use this description to generate your Match Score and identify skill gaps. Our system uses strict safeguards to ensure the AI only evaluates your fit and cannot be manipulated by outside instructions.
-                            </p>
+                        <div className="flex-grow flex flex-col gap-4">
+                            <div>
+                                <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-1 block">Experience</label>
+                                <textarea value={experienceText} onChange={(e) => updateField('experienceText', e.target.value)} placeholder="Required prior experience..." className="w-full min-h-[80px] bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors resize-none"></textarea>
+                            </div>
+                            <div>
+                                <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-1 block">Qualifications</label>
+                                <textarea value={qualifications} onChange={(e) => updateField('qualifications', e.target.value)} placeholder="Educational or technical degrees/certifications..." className="w-full min-h-[80px] bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors resize-none"></textarea>
+                            </div>
+                            <div>
+                                <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-1 block">What You'll Do in the Role</label>
+                                <textarea value={roleDo} onChange={(e) => updateField('roleDo', e.target.value)} placeholder="Day-to-day responsibilities..." className="w-full min-h-[80px] bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors resize-none"></textarea>
+                            </div>
+
+                            {/* Tone Selector */}
+                            <div className="mt-2">
+                                <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-2 block">Cover Letter Mood</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {['Professional', 'Confident', 'Enthusiastic', 'Creative', 'Direct'].map((tone) => (
+                                        <button
+                                            key={tone}
+                                            onClick={() => updateField('coverLetterTone', tone)}
+                                            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-300 ${coverLetterTone === tone
+                                                ? 'bg-champagne text-white shadow-md'
+                                                : 'bg-white dark:bg-darkText/5 text-slate dark:text-darkText/70 border border-obsidian/10 dark:border-darkText/10 hover:border-champagne/50'
+                                                }`}
+                                        >
+                                            {tone}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -166,17 +192,20 @@ export default function CoreEngine({ session, setCurrentView }) {
                         <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-surface/5 rounded-full blur-3xl opacity-50 group-hover:bg-champagne/10 transition-colors duration-500 pointer-events-none"></div>
                     </div>
 
-                    <button
-                        onClick={() => runAnalysis(session, () => setCurrentView('billing'))}
-                        disabled={!jobTitle || !resumeUploaded || isAnalyzing}
-                        className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg ${jobTitle && resumeUploaded && !isAnalyzing
-                            ? 'bg-obsidian dark:bg-darkText text-background dark:text-darkBg hover:bg-obsidian/90 dark:hover:bg-darkText/90 hover:scale-[1.02] active:scale-[0.98] btn-magnetic cursor-pointer'
-                            : 'bg-obsidian/5 dark:bg-darkText/5 text-obsidian/30 dark:text-darkText/30 cursor-not-allowed border border-obsidian/5 dark:border-darkText/5'
-                            }`}
-                    >
-                        <span>{isAnalyzing ? 'Running AI Parsing Model...' : 'Run Deep Analysis'}</span>
-                        {!isAnalyzing && <ArrowRight className="w-5 h-5" />}
-                    </button>
+                    <div className="relative group/btn w-full">
+                        <Tooltip align="center" text="Cost: 3 Credits. Deep analysis strictly checks AI matches and provides detailed career guidance." />
+                        <button
+                            onClick={() => runAnalysis(session, () => setCurrentView('billing'))}
+                            disabled={!jobTitle || !resumeUploaded || isAnalyzing}
+                            className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg ${jobTitle && resumeUploaded && !isAnalyzing
+                                ? 'bg-obsidian dark:bg-darkText text-background dark:text-darkBg hover:bg-obsidian/90 dark:hover:bg-darkText/90 hover:scale-[1.02] active:scale-[0.98] btn-magnetic cursor-pointer'
+                                : 'bg-obsidian/5 dark:bg-darkText/5 text-obsidian/30 dark:text-darkText/30 cursor-not-allowed border border-obsidian/5 dark:border-darkText/5'
+                                }`}
+                        >
+                            <span>{isAnalyzing ? 'Running AI Parsing Model...' : 'Run Deep Analysis'}</span>
+                            {!isAnalyzing && <ArrowRight className="w-5 h-5" />}
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -203,9 +232,12 @@ export default function CoreEngine({ session, setCurrentView }) {
                                 <button type="button" onClick={() => setShowPasteModal(false)} className="px-6 py-2 rounded-full text-sm font-medium text-slate hover:text-obsidian transition-colors" disabled={isParsing}>
                                     Cancel
                                 </button>
-                                <button type="submit" className="bg-obsidian text-white px-6 py-2 rounded-full text-sm font-bold shadow-md hover:bg-obsidian/90 transition-transform hover:scale-105 active:scale-95 flex items-center" disabled={isParsing}>
-                                    {isParsing ? 'Extracting...' : 'Parse & Extract'}
-                                </button>
+                                <div className="relative group/parse">
+                                    <Tooltip align="right" text="Cost: 1 Credit. Auto-fills your setup using the job description." />
+                                    <button type="submit" className="bg-obsidian text-white px-6 py-2 rounded-full text-sm font-bold shadow-md hover:bg-obsidian/90 transition-transform hover:scale-105 active:scale-95 flex items-center" disabled={isParsing}>
+                                        {isParsing ? 'Extracting...' : 'Parse & Extract'}
+                                    </button>
+                                </div>
                             </div>
                         </form>
                     </div>

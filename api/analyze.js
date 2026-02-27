@@ -16,7 +16,7 @@ export default async function handler(req, res) {
     if (!user) return;
 
     try {
-        const { jobTitle, industry, description, resumeText, resumeData } = req.body;
+        const { jobTitle, industry, experienceText, qualifications, roleDo, resumeText, resumeData, coverLetterTone } = req.body;
 
         // ═══ Strict Credit Gate ═══
         // All tiers cost 3 credits. Sever-side enforcement to prevent bypass.
@@ -75,7 +75,7 @@ Step 3: Deep Fit & Transferable Skill Analysis
 - Transferable Skill Mapping (Descriptive): When a core JD requirement is missing, aggressively scan the resume for adjacent experiences. Write a deep, descriptive paragraph explaining exactly how the candidate's existing background translates to the missing requirement, giving them the rhetorical ammunition to bridge the gap.
 
 Step 4: Draft & Critique (Adversarial Validation)
-- Draft 1: Write a modern, zero-fluff cover letter. Hook the reader with a quantifiable metric.
+- Draft 1: Write a modern, zero-fluff cover letter. Hook the reader with a quantifiable metric. Adopt a strictly ${coverLetterTone || 'Professional'} tone throughout the letter.
 - Internal Critique (Red Team): Adopt the persona of a skeptical, ruthless Hiring Manager. Review Draft 1. Is there generic filler? Does it hallucinate experience?
 - Draft 2 (Final): Rewrite the letter based on the Red Team critique. Output ONLY Draft 2.
 
@@ -102,7 +102,7 @@ Format your evaluation internally as needed, BUT your final output MUST be a str
 Do not include any extra fields or text.`;
 
         // 3. User content — strictly separated
-        let userContent = `Job Title: ${jobTitle}\nIndustry: ${industry}\nJob Description: ${description}`;
+        let userContent = `Job Title: ${jobTitle}\nIndustry: ${industry}\nExperience Required: ${experienceText}\nQualifications Required: ${qualifications}\nCore Responsibilities (What You'll Do): ${roleDo}`;
 
         const parts = [{ text: userContent }];
 

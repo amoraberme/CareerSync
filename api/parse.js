@@ -68,7 +68,9 @@ You MUST respond ONLY with a raw JSON object matching this exact schema:
   "industry": "Extracted Industry or Company Name",
   "experienceLevel": "Entry / Mid / Senior / Lead",
   "requiredSkills": ["Skill 1", "Skill 2"],
-  "cleanDescription": "A concise, grammatically clean 3-4 sentence paragraph summarizing the core responsibilities of this role."
+  "experience": "A concise block of text summarizing ALL required prior experience (e.g., years required, previous roles).",
+  "qualifications": "A concise block of text summarizing ALL required educational or technical qualifications/certifications.",
+  "roleDo": "A concise block of text summarizing exactly what this candidate will DO on a day-to-day basis in this role."
 }`;
 
         // 3. User content — strictly separated

@@ -7,8 +7,13 @@ const useWorkspaceStore = create((set, get) => ({
     industry: '',
     experienceLevel: '',
     requiredSkills: [],
-    description: '',
+    experienceText: '',
+    qualifications: '',
+    roleDo: '',
     pastedText: '',
+
+    // Tone Selector
+    coverLetterTone: 'Professional',
 
     // Resume Context
     resumeUploaded: false,
@@ -79,7 +84,7 @@ const useWorkspaceStore = create((set, get) => ({
 
     runAnalysis: async (session, navigateToBilling) => {
         set({ isAnalyzing: true, analysisData: null });
-        const { jobTitle, industry, description, resumeData, creditBalance, userTier } = get();
+        const { jobTitle, industry, experienceText, qualifications, roleDo, resumeData, creditBalance, userTier, coverLetterTone } = get();
 
         // ─── C-3 / TASK-03 FIX: Credit system reworked ───
         // All tiers cost 3 credits. Real deduction happens safely on backend.
@@ -114,7 +119,7 @@ const useWorkspaceStore = create((set, get) => ({
                     'Content-Type': 'application/json',
                     ...(accessToken && { 'Authorization': `Bearer ${accessToken}` })
                 },
-                body: JSON.stringify({ jobTitle, industry, description, resumeData })
+                body: JSON.stringify({ jobTitle, industry, experienceText, qualifications, roleDo, resumeData, coverLetterTone })
             });
 
             const data = await response.json();
@@ -212,7 +217,9 @@ const useWorkspaceStore = create((set, get) => ({
                 industry: data.industry || '',
                 experienceLevel: data.experienceLevel || '',
                 requiredSkills: Array.isArray(data.requiredSkills) ? data.requiredSkills : [],
-                description: data.cleanDescription || pastedText,
+                experienceText: data.experience || '',
+                qualifications: data.qualifications || '',
+                roleDo: data.roleDo || '',
                 pastedText: ''
             });
 
@@ -231,8 +238,11 @@ const useWorkspaceStore = create((set, get) => ({
         industry: '',
         experienceLevel: '',
         requiredSkills: [],
-        description: '',
+        experienceText: '',
+        qualifications: '',
+        roleDo: '',
         pastedText: '',
+        coverLetterTone: 'Professional',
         resumeUploaded: false,
         resumeData: null,
         resumeFileName: '',
