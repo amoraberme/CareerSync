@@ -15,6 +15,7 @@ export default function AnalysisTabs({ session, setCurrentView }) {
     const containerRef = useRef(null);
     const exportRef = useRef(null);
     const scoreOffset = Math.max(0, 283 - (283 * (analysisData?.matchScore || 0) / 100));
+    const projectedOffset = Math.max(0, 283 - (283 * (analysisData?.projectedScore || 0) / 100));
 
     useEffect(() => {
         let ctx = gsap.context(() => {
@@ -83,25 +84,45 @@ export default function AnalysisTabs({ session, setCurrentView }) {
 
             <div ref={exportRef} className="export-container bg-background dark:bg-darkBg text-obsidian dark:text-darkText p-2 rounded-3xl">
                 {/* Hero Overview */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-                    {/* Score Card */}
-                    <div className="bg-white/70 dark:bg-darkCard/40 backdrop-blur-xl border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-[2rem] p-6 md:p-8 flex flex-col items-center justify-center text-center">
-                        <div className="relative w-24 h-24 md:w-32 md:h-32 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-12">
+                    {/* Score Card: Baseline */}
+                    <div className="bg-white/70 dark:bg-darkCard/40 backdrop-blur-xl border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-[2rem] p-6 flex flex-col items-center justify-center text-center">
+                        <div className="relative w-24 h-24 md:w-28 md:h-28 mb-4">
                             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                                 <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(17,17,17,0.05)" strokeWidth="8" />
                                 <circle
-                                    cx="50" cy="50" r="45" fill="none" stroke="#C9A84C" strokeWidth="8"
+                                    cx="50" cy="50" r="45" fill="none" stroke="#EA4335" strokeWidth="8"
                                     strokeLinecap="round"
                                     className="score-ring"
                                     style={{ strokeDasharray: 283, strokeDashoffset: scoreOffset }}
                                 />
                             </svg>
                             <div className="absolute inset-0 flex items-center justify-center score-text">
-                                <span className="text-3xl md:text-4xl font-sans font-bold text-obsidian dark:text-darkText">{analysisData?.matchScore || 0}<span className="text-lg md:text-xl text-slate dark:text-darkText/70">%</span></span>
+                                <span className="text-3xl font-sans font-bold text-obsidian dark:text-darkText">{analysisData?.matchScore || 0}<span className="text-lg text-slate dark:text-darkText/70">%</span></span>
                             </div>
                         </div>
-                        <h3 className="text-lg font-medium text-obsidian dark:text-darkText">Match Processed</h3>
-                        <p className="text-xs font-mono text-champagne mt-2 uppercase tracking-wide">AI Evaluation</p>
+                        <h3 className="text-sm font-semibold text-obsidian dark:text-darkText">Baseline ATS Score</h3>
+                        <p className="text-[10px] font-mono text-slate dark:text-darkText/50 mt-1 uppercase tracking-wide">Current Match</p>
+                    </div>
+
+                    {/* Score Card: Projected */}
+                    <div className="bg-white/70 dark:bg-darkCard/40 backdrop-blur-xl border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-[2rem] p-6 flex flex-col items-center justify-center text-center">
+                        <div className="relative w-24 h-24 md:w-28 md:h-28 mb-4">
+                            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(17,17,17,0.05)" strokeWidth="8" />
+                                <circle
+                                    cx="50" cy="50" r="45" fill="none" stroke="#34A853" strokeWidth="8"
+                                    strokeLinecap="round"
+                                    className="score-ring"
+                                    style={{ strokeDasharray: 283, strokeDashoffset: projectedOffset }}
+                                />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center score-text">
+                                <span className="text-3xl font-sans font-bold text-obsidian dark:text-darkText">{analysisData?.projectedScore || analysisData?.matchScore || 0}<span className="text-lg text-slate dark:text-darkText/70">%</span></span>
+                            </div>
+                        </div>
+                        <h3 className="text-sm font-semibold text-obsidian dark:text-darkText">Projected Potential</h3>
+                        <p className="text-[10px] font-mono text-champagne mt-1 uppercase tracking-wide">Post-Optimization</p>
                     </div>
 
                     {/* Summary Card */}
@@ -169,6 +190,29 @@ export default function AnalysisTabs({ session, setCurrentView }) {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Deep Transferable Skills Mapping */}
+                            {analysisData?.transferableSkills && analysisData.transferableSkills.length > 0 && (
+                                <div className="mt-12 pt-8 border-t border-obsidian/5 dark:border-darkText/5">
+                                    <h3 className="text-xl font-sans font-semibold text-obsidian dark:text-darkText mb-6 flex items-center">
+                                        <Activity className="w-5 h-5 mr-3 text-champagne" />
+                                        Transferable Skill Bridges
+                                    </h3>
+                                    <p className="text-slate dark:text-darkText/70 text-sm mb-6">Deep alignments identified by the AI to rhetorically overcome missing technical requirements.</p>
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        {analysisData.transferableSkills.map((ts, idx) => (
+                                            <div key={idx} className="bg-white/40 dark:bg-darkCard/40 border border-obsidian/10 dark:border-darkText/10 rounded-2xl p-6 shadow-sm">
+                                                <div className="inline-block px-3 py-1 bg-obsidian/5 dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 text-xs font-mono uppercase tracking-widest rounded-full mb-4">
+                                                    Bridging Gap: <span className="font-bold text-obsidian dark:text-darkText">{ts.missingSkill}</span>
+                                                </div>
+                                                <p className="text-obsidian/80 dark:text-darkText/80 leading-relaxed text-sm">
+                                                    {ts.bridgeAmmunition}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
 
