@@ -8,8 +8,8 @@ export async function callGeminiWithCascade(apiKey, { systemInstruction, content
     // Defined hierarchy of models
     const modelRotation = [
         'gemini-2.0-flash',
-        'models/gemini-2.5-flash',
-        'models/gemini-flash-latest'
+        'gemini-1.5-flash',
+        'gemini-1.5-flash-8b'
     ];
 
     let lastError = null;
@@ -39,22 +39,60 @@ export async function callGeminiWithCascade(apiKey, { systemInstruction, content
             console.error(`[Router] Failure with ${modelName}:`, error.message);
             lastError = error;
 
-            // If it's a 429 (Rate Limit) or 5xx, we cascade. 
-            // 400 (Bad Request) or 401 (Unauthorized) might not benefit from rotation.
-            if (error.status === 429 || (error.status >= 500 && error.status < 600)) {
+            // If it's a 429 (Rate Limit) or 5xx, or if it's a 404 (Model Not Found) - which might happen if names change
+            if (error.status === 429 || error.status === 404 || (error.status >= 500 && error.status < 600)) {
                 console.log(`[Router] Cascading to next model due to status ${error.status}...`);
                 continue;
             }
 
             // For other errors, we might stop or continue depending on preference.
-            // Here we continue unless it's a fatal config error.
             if (error.message.includes("API_KEY_INVALID") || error.status === 401) {
                 throw error;
             }
 
-            console.log("[Router] Unknown error, attempting next model fallback...");
+            console.log("[Router] Unexpected error, attempting next model fallback...");
         }
     }
 
     throw lastError || new Error("All models in rotation failed.");
+}
+
+/**
+ * Robustly extracts and parses JSON from AI responses. 
+ * Handles cases where the AI wraps the JSON in markdown blocks or adds extra text.
+ */
+export function safeParseJSON(text) {
+    if (!text) return null;
+
+    // 1. Try direct parse first
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        // Continue to extraction logic
+    }
+
+    // 2. Try to find JSON block: ```json ... ``` or ``` ... ```
+    const jsonBlockRegex = /```(?:json)?\s*([\s\S]*?)\s*```/;
+    const match = text.match(jsonBlockRegex);
+    if (match && match[1]) {
+        try {
+            return JSON.parse(match[1]);
+        } catch (e) {
+            // Continue
+        }
+    }
+
+    // 3. Try to find the first '{' and last '}'
+    const firstBrace = text.indexOf('{');
+    const lastBrace = text.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        const potentialJson = text.substring(firstBrace, lastBrace + 1);
+        try {
+            return JSON.parse(potentialJson);
+        } catch (e) {
+            // Continue
+        }
+    }
+
+    throw new Error("Failed to extract valid JSON from AI response.");
 }

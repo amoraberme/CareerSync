@@ -1,4 +1,4 @@
-import { callGeminiWithCascade } from './_lib/geminiRouter.js';
+import { callGeminiWithCascade, safeParseJSON } from './_lib/geminiRouter.js';
 import { verifyAuth } from './_lib/authMiddleware.js';
 import { createClient } from '@supabase/supabase-js';
 import { applyCors } from './_lib/corsHelper.js';
@@ -99,7 +99,8 @@ You MUST respond ONLY with a raw JSON object matching this exact schema:
             }
         });
 
-        const parsedData = JSON.parse(text);
+        // Use safeParseJSON for robustness
+        const parsedData = safeParseJSON(text);
 
         return res.status(200).json({
             ...parsedData,
