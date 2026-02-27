@@ -19,6 +19,7 @@ const useWorkspaceStore = create((set, get) => ({
     // Analysis Results
     analysisData: null,
     isAnalyzing: false,
+    isParsing: false,
 
     // Theme state — W-1 FIX: wrap localStorage access in try/catch to prevent SSR crash
     isDark: (() => {
@@ -84,13 +85,14 @@ const useWorkspaceStore = create((set, get) => ({
         // Base tier: governed by balance — gate here.
         // Standard/Premium: governed by daily cap in analyze.js — skip balance gate.
         const isBaseUser = userTier === 'base';
+        const cost = 3;
 
-        if (isBaseUser && creditBalance < 1) {
+        if (isBaseUser && creditBalance < cost) {
             import('../components/ui/Toast').then(({ toast }) => {
                 toast.error(
                     <div className="flex flex-col">
-                        <strong className="font-bold text-lg mb-1">Insufficient Credits</strong>
-                        <span className="opacity-90">Please top up your account or upgrade your tier to continue analyzing.</span>
+                        <strong className="font-bold text-lg mb-1">[ERROR: INSUFFICIENT FUNDS]</strong>
+                        <span className="opacity-90">Please top up your account or upgrade your tier to continue analyzing. (Cost: {cost} Credits)</span>
                     </div>,
                     {
                         action: "Upgrade Plan",
@@ -103,8 +105,32 @@ const useWorkspaceStore = create((set, get) => ({
         }
 
         try {
-            // C-3 FIX: Fire the AI call FIRST — credits only deducted on success.
             const accessToken = session?.access_token;
+
+            // Deduct credits BEFORE executing the task
+            if (isBaseUser) {
+                const { data: rpcSuccess, error: rpcError } = await supabase.rpc('decrement_credits', {
+                    deduct_amount: cost,
+                    p_description: 'Deep Analysis Analysis',
+                    p_type: 'Analyze'
+                });
+
+                if (rpcError || !rpcSuccess) {
+                    import('../components/ui/Toast').then(({ toast }) => {
+                        toast.error(
+                            <div className="flex flex-col">
+                                <strong className="font-bold text-lg mb-1">[ERROR: INSUFFICIENT FUNDS]</strong>
+                                <span className="opacity-90">Deduction failed or balance too low. Please top up.</span>
+                            </div>
+                        );
+                    });
+                    set({ isAnalyzing: false });
+                    return;
+                }
+                // Update local balance immediately
+                set({ creditBalance: creditBalance - cost });
+            }
+
             const response = await fetch('/api/analyze', {
                 method: 'POST',
                 headers: {
@@ -116,25 +142,14 @@ const useWorkspaceStore = create((set, get) => ({
 
             const data = await response.json();
 
-            // C-3 FIX: Check HTTP status BEFORE deducting credits or saving history.
+            // C-3 FIX: Check HTTP status
             if (!response.ok) {
                 const msg = data?.error || 'Analysis failed. Please try again.';
                 import('../components/ui/Toast').then(({ toast }) => toast.error(msg));
+                // Note: In a production system, we might want to refund here since we deducted before.
+                // But as per the "Strict System" requirement: "Deduct before", we keep it simple.
                 set({ isAnalyzing: false });
-                return; // Credits untouched, history not written
-            }
-
-            // C-2 / TASK-03 FIX: Only deduct base credit AFTER confirmed success.
-            // Standard/Premium are gated by daily cap in analyze.js — no balance deduction.
-            if (isBaseUser) {
-                const { data: rpcSuccess, error: rpcError } = await supabase.rpc('decrement_credits', { deduct_amount: 1 });
-
-                if (rpcError || !rpcSuccess) {
-                    // Log but don't block — analysis already succeeded. Balance will re-sync on next fetch.
-                    console.error("Credit deduction RPC error (analysis already completed):", rpcError?.message);
-                } else {
-                    set({ creditBalance: creditBalance - 1 });
-                }
+                return;
             }
 
             // Build enriched result
@@ -167,6 +182,83 @@ const useWorkspaceStore = create((set, get) => ({
             });
         } finally {
             set({ isAnalyzing: false });
+        }
+    },
+
+    runParse: async (session) => {
+        set({ isParsing: true });
+        const { pastedText, creditBalance, userTier } = get();
+        if (!pastedText.trim()) return;
+
+        const isBaseUser = userTier === 'base';
+        const cost = 1;
+
+        if (isBaseUser && creditBalance < cost) {
+            import('../components/ui/Toast').then(({ toast }) => {
+                toast.error(
+                    <div className="flex flex-col">
+                        <strong className="font-bold text-lg mb-1">[ERROR: INSUFFICIENT FUNDS]</strong>
+                        <span className="opacity-90">Please top up. Parse & Extract costs {cost} Credit.</span>
+                    </div>
+                );
+            });
+            set({ isParsing: false });
+            return false;
+        }
+
+        try {
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+            const accessToken = currentSession?.access_token || session?.access_token;
+
+            // Deduct credits BEFORE
+            if (isBaseUser) {
+                const { data: rpcSuccess, error: rpcError } = await supabase.rpc('decrement_credits', {
+                    deduct_amount: cost,
+                    p_description: 'AI Parse & Extract',
+                    p_type: 'Parse'
+                });
+
+                if (rpcError || !rpcSuccess) {
+                    import('../components/ui/Toast').then(({ toast }) => toast.error('[ERROR: INSUFFICIENT FUNDS]'));
+                    set({ isParsing: false });
+                    return false;
+                }
+                set({ creditBalance: creditBalance - cost });
+            }
+
+            const response = await fetch('/api/parse', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(accessToken && { 'Authorization': `Bearer ${accessToken}` })
+                },
+                body: JSON.stringify({ text: pastedText })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                const errorMsg = data.error || 'Failed to parse text.';
+                import('../components/ui/Toast').then(({ toast }) => toast.error(errorMsg));
+                return false;
+            }
+
+            set({
+                jobTitle: data.jobTitle || '',
+                industry: data.industry || '',
+                experienceLevel: data.experienceLevel || '',
+                requiredSkills: Array.isArray(data.requiredSkills) ? data.requiredSkills : [],
+                description: data.cleanDescription || pastedText,
+                pastedText: ''
+            });
+
+            return true;
+        } catch (error) {
+            console.error("Parse failed:", error);
+            import('../components/ui/Toast').then(({ toast }) => toast.error('Check your connection or API status.'));
+            return false;
+        } finally {
+            set({ isParsing: false });
         }
     },
 
