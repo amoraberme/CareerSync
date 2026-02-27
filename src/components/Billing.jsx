@@ -945,7 +945,7 @@ export default function Billing({ session, onPaymentModalChange }) {
                                 <table className="w-full text-sm">
                                     <thead>
                                         <tr className="border-b border-obsidian/8 dark:border-darkText/8">
-                                            <th className="text-left text-xs font-semibold text-slate dark:text-darkText/50 uppercase tracking-wider pb-3">Date & Time</th>
+                                            <th className="text-left text-xs font-semibold text-slate dark:text-darkText/50 uppercase tracking-wider pb-3">Description</th>
                                             <th className="text-right text-xs font-semibold text-slate dark:text-darkText/50 uppercase tracking-wider pb-3">Amount</th>
                                             <th className="text-right text-xs font-semibold text-slate dark:text-darkText/50 uppercase tracking-wider pb-3">Credits</th>
                                         </tr>
@@ -961,20 +961,34 @@ export default function Billing({ session, onPaymentModalChange }) {
                                             return (
                                                 <tr key={row.id} className="border-b border-obsidian/5 dark:border-darkText/5 hover:bg-obsidian/2 dark:hover:bg-darkText/2 transition-colors">
                                                     <td className="py-4">
-                                                        <div className="font-medium text-obsidian dark:text-darkText">
-                                                            {date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })}
-                                                        </div>
-                                                        <div className="text-xs text-slate dark:text-darkText/40">
-                                                            {date.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' })}
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="flex flex-col">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${row.type === 'Bought' || row.type === 'Receive'
+                                                                            ? 'bg-champagne/15 text-champagne'
+                                                                            : 'bg-slate/10 text-slate dark:text-darkText/50'
+                                                                        }`}>
+                                                                        {row.type}
+                                                                    </span>
+                                                                    <span className="font-medium text-obsidian dark:text-darkText">
+                                                                        {row.description}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="text-[10px] text-slate dark:text-darkText/40 mt-1">
+                                                                    {date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })} · {date.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' })}
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </td>
 
-                                                    <td className="py-4 text-right font-mono font-semibold text-obsidian dark:text-darkText">
-                                                        {row.amount_display}
+                                                    <td className="py-4 text-right font-mono font-bold text-obsidian dark:text-darkText">
+                                                        {row.amount_display || '—'}
                                                     </td>
                                                     <td className="py-4 text-right">
-                                                        <span className="font-bold text-champagne">+{row.credits_gained.toLocaleString()}</span>
-                                                        <span className="text-xs text-slate dark:text-darkText/40 ml-1">cr</span>
+                                                        <span className={`font-bold ${row.credits_gained > 0 ? 'text-champagne' : 'text-[#EA4335]'}`}>
+                                                            {row.credits_gained > 0 ? '+' : ''}{row.credits_gained.toLocaleString()}
+                                                        </span>
+                                                        <span className="text-[10px] text-slate dark:text-darkText/40 ml-1 uppercase">cr</span>
                                                     </td>
                                                 </tr>
                                             );

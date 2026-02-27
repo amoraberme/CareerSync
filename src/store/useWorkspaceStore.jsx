@@ -81,14 +81,17 @@ const useWorkspaceStore = create((set, get) => ({
         set({ isAnalyzing: true, analysisData: null });
         const { jobTitle, industry, description, resumeData, creditBalance, userTier } = get();
 
-        const ANALYSIS_COST = 3;
+        // ─── C-3 / TASK-03 FIX: Credit system reworked ───
+        // Base tier: governed by balance — gate here.
+        // Standard/Premium: governed by daily cap in analyze.js — skip balance gate.
+        const isBaseUser = userTier === 'base';
 
-        if (isBaseUser && creditBalance < ANALYSIS_COST) {
+        if (isBaseUser && creditBalance < 1) {
             import('../components/ui/Toast').then(({ toast }) => {
                 toast.error(
                     <div className="flex flex-col">
                         <strong className="font-bold text-lg mb-1">Insufficient Credits</strong>
-                        <span className="opacity-90">Please top up your account or upgrade your tier to continue analyzing (Costs {ANALYSIS_COST} credits).</span>
+                        <span className="opacity-90">Please top up your account or upgrade your tier to continue analyzing.</span>
                     </div>,
                     {
                         action: "Upgrade Plan",
@@ -101,18 +104,7 @@ const useWorkspaceStore = create((set, get) => ({
         }
 
         try {
-            // Deduct credits BEFORE the AI call for immediate feedback
-            if (isBaseUser) {
-                const { data: rpcSuccess, error: rpcError } = await supabase.rpc('decrement_credits', { deduct_amount: ANALYSIS_COST });
-                if (rpcError || !rpcSuccess) {
-                    import('../components/ui/Toast').then(({ toast }) => toast.error('Credit deduction failed. Please try again.'));
-                    set({ isAnalyzing: false });
-                    return;
-                }
-                // Sync balance immediately for visible feedback
-                await get().fetchCreditBalance(session?.user?.id);
-            }
-
+            // C-3 FIX: Fire the AI call FIRST — credits only deducted on success.
             const accessToken = session?.access_token;
             const response = await fetch('/api/analyze', {
                 method: 'POST',
@@ -123,19 +115,31 @@ const useWorkspaceStore = create((set, get) => ({
                 body: JSON.stringify({ jobTitle, industry, description, resumeData })
             });
 
-            // Credits already deducted pre-fetch
             const data = await response.json();
 
-            // Check HTTP status. Note: credits are NOT refunded if the external AI service fails
-            // as the platform has already initiated the request processing.
+            // C-3 FIX: Check HTTP status BEFORE deducting credits or saving history.
             if (!response.ok) {
                 const msg = data?.error || 'Analysis failed. Please try again.';
                 import('../components/ui/Toast').then(({ toast }) => toast.error(msg));
                 set({ isAnalyzing: false });
-                return;
+                return; // Credits untouched, history not written
             }
 
-            // Sync balance from server state after every successful AI call (redundant but safe)
+            // C-2 / TASK-03 FIX: Only deduct base credit AFTER confirmed success.
+            // Standard/Premium are gated by daily cap in analyze.js — no balance deduction.
+            if (isBaseUser) {
+                const { data: rpcSuccess, error: rpcError } = await supabase.rpc('decrement_credits', {
+                    deduct_amount: 1,
+                    p_description: `Analyze: ${jobTitle}`,
+                    p_type: 'Analyze'
+                });
+
+                if (rpcError || !rpcSuccess) {
+                    console.error("Credit deduction RPC error (analysis already completed):", rpcError?.message);
+                }
+            }
+
+            // Sync balance from server state after every successful AI call
             await get().fetchCreditBalance(session?.user?.id);
 
             // Build enriched result
@@ -176,27 +180,13 @@ const useWorkspaceStore = create((set, get) => ({
         const { pastedText, creditBalance, userTier } = get();
         if (!pastedText.trim()) return;
 
-        const PARSE_COST = 1;
         const isBaseUser = userTier === 'base';
-        if (isBaseUser && creditBalance < PARSE_COST) {
-            import('../components/ui/Toast').then(({ toast }) => toast.error(`Insufficient credits for parsing (Costs ${PARSE_COST} credit).`));
-            set({ isParsing: false });
+        if (isBaseUser && creditBalance < 1) {
+            import('../components/ui/Toast').then(({ toast }) => toast.error('Insufficient credits for parsing.'));
             return;
         }
 
         try {
-            // Deduct credits BEFORE the AI call for immediate feedback
-            if (isBaseUser) {
-                const { data: rpcSuccess, error: rpcError } = await supabase.rpc('decrement_credits', { deduct_amount: PARSE_COST });
-                if (rpcError || !rpcSuccess) {
-                    import('../components/ui/Toast').then(({ toast }) => toast.error('Credit deduction failed.'));
-                    set({ isParsing: false });
-                    return;
-                }
-                // Sync profile immediately
-                await get().fetchCreditBalance(session?.user?.id);
-            }
-
             const accessToken = session?.access_token;
             const response = await fetch('/api/parse', {
                 method: 'POST',
@@ -214,7 +204,16 @@ const useWorkspaceStore = create((set, get) => ({
                 return;
             }
 
-            // Sync profile (redundant but safe)
+            // If base user, deduct credits for parsing too
+            if (isBaseUser) {
+                await supabase.rpc('decrement_credits', {
+                    deduct_amount: 1,
+                    p_description: 'Parse Job Description',
+                    p_type: 'Parse'
+                });
+            }
+
+            // Sync profile
             await get().fetchCreditBalance(session?.user?.id);
 
             set({

@@ -22,26 +22,25 @@ export default async function handler(req, res) {
     try {
         const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
-        // Fetch all paid sessions for this user, newest first
+        // Fetch unified credit history, newest first
         const { data, error } = await supabaseAdmin
-            .from('payment_sessions')
-            .select('id, tier, exact_amount_due, credits_to_grant, paid_at, created_at')
+            .from('credit_ledger')
+            .select('*')
             .eq('user_id', user.id)
-            .eq('status', 'paid')
-            .order('paid_at', { ascending: false });
+            .order('created_at', { ascending: false });
 
         if (error) {
             console.error('[PaymentHistory] Query error:', error.message);
-            return res.status(500).json({ error: 'Failed to fetch payment history.' });
+            return res.status(500).json({ error: 'Failed to fetch credit history.' });
         }
 
         const history = (data || []).map(row => ({
             id: row.id,
-            date: row.paid_at || row.created_at,
-            tier: row.tier,
-            amount_centavos: row.exact_amount_due,
-            amount_display: `₱${Math.floor(row.exact_amount_due / 100)}.${(row.exact_amount_due % 100).toString().padStart(2, '0')}`,
-            credits_gained: row.credits_to_grant,
+            date: row.created_at,
+            description: row.description,
+            type: row.transaction_type,
+            amount_display: row.amount_display || '',
+            credits_gained: row.credits_changed,
         }));
 
         return res.status(200).json({ history });
