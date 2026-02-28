@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import useWorkspaceStore from '../store/useWorkspaceStore';
-import { User, Lock, Mail, Fingerprint, Award, Coins, Key, ShieldCheck, AlertTriangle, Trash2 } from 'lucide-react';
+import { User, Lock, Mail, Fingerprint, Award, Coins, Key, ShieldCheck, AlertTriangle, Trash2, MessageSquare } from 'lucide-react';
+import ContactModal from './ContactModal';
 
 export default function Profile({ session, setCurrentView }) {
     const [profileData, setProfileData] = useState(null);
@@ -15,6 +16,9 @@ export default function Profile({ session, setCurrentView }) {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteConfirmText, setDeleteConfirmText] = useState('');
     const [isDeleting, setIsDeleting] = useState(false);
+
+    // Contact modal state
+    const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
     useEffect(() => {
         async function fetchProfile() {
@@ -252,6 +256,17 @@ export default function Profile({ session, setCurrentView }) {
                         </button>
                     </form>
 
+                    {/* Support / Contact Us */}
+                    <div className="mt-8 pt-6 border-t border-obsidian/10 dark:border-darkText/10">
+                        <button
+                            onClick={() => setIsContactModalOpen(true)}
+                            className="w-full flex items-center justify-center space-x-2 py-3 px-6 rounded-2xl bg-zinc-950 dark:bg-zinc-800 text-white font-medium text-sm hover:bg-zinc-900 dark:hover:bg-zinc-700 transition-all active:scale-[0.98]"
+                        >
+                            <MessageSquare className="w-4 h-4" />
+                            <span>Contact Support</span>
+                        </button>
+                    </div>
+
                     {/* Danger Zone: Delete Account */}
                     <div className="mt-8 pt-6 border-t border-[#EA4335]/20">
                         <button
@@ -337,6 +352,11 @@ export default function Profile({ session, setCurrentView }) {
                     </div>
                 </div>
             )}
+
+            <ContactModal
+                isOpen={isContactModalOpen}
+                onClose={() => setIsContactModalOpen(false)}
+            />
         </div>
     );
 }

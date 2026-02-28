@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import useWorkspaceStore from '../store/useWorkspaceStore';
-import { Settings, User, Moon, Sun, LogOut, Menu, X, Receipt } from 'lucide-react';
+import { Settings, User, Moon, Sun, LogOut, Menu, X, Receipt, MessageSquare } from 'lucide-react';
+import ContactModal from './ContactModal';
 
 export default function Navbar({ currentView, setCurrentView, onLogout, onOpenInvoice, onNavigate }) {
     const [scrolled, setScrolled] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isContactModalOpen, setIsContactModalOpen] = useState(false);
     const dropdownRef = useRef(null);
 
     const creditBalance = useWorkspaceStore(state => state.creditBalance);
@@ -75,6 +77,12 @@ export default function Navbar({ currentView, setCurrentView, onLogout, onOpenIn
                                 {view.label}
                             </button>
                         ))}
+                        <button
+                            onClick={() => setIsContactModalOpen(true)}
+                            className="px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 text-slate dark:text-darkText/70 hover:text-obsidian dark:hover:text-darkText"
+                        >
+                            Contact Us
+                        </button>
                     </div>
 
                     {/* Right Side: Credits + Settings (desktop) + Hamburger (mobile) */}
@@ -199,6 +207,12 @@ export default function Navbar({ currentView, setCurrentView, onLogout, onOpenIn
                                     {view.label}
                                 </button>
                             ))}
+                            <button
+                                onClick={() => { setIsContactModalOpen(true); setIsMobileMenuOpen(false); }}
+                                className="w-full text-left px-6 py-4 rounded-2xl text-lg font-medium transition-all duration-200 text-obsidian dark:text-darkText hover:bg-obsidian/5 dark:hover:bg-darkText/5"
+                            >
+                                Contact Us
+                            </button>
                         </div>
 
                         {/* Bottom Actions */}
@@ -227,6 +241,11 @@ export default function Navbar({ currentView, setCurrentView, onLogout, onOpenIn
                     </div>
                 </div>
             )}
+
+            <ContactModal
+                isOpen={isContactModalOpen}
+                onClose={() => setIsContactModalOpen(false)}
+            />
         </>
     );
 }
