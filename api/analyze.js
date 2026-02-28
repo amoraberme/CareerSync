@@ -173,25 +173,6 @@ Do not include any extra fields or text.`;
     } catch (error) {
         console.error("AI Analysis Error:", error);
 
-        // ═══ INJECT REFUND LOGIC ═══
-        // The user was already deducted 3 credits before the API call. Refund them on failure.
-        const supabaseUrl = process.env.VITE_SUPABASE_URL;
-        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-        if (supabaseUrl && serviceKey && user?.id) {
-            try {
-                const supabaseAdmin = createClient(supabaseUrl, serviceKey);
-                await supabaseAdmin.rpc('increment_credits', {
-                    target_user_id: user.id,
-                    add_amount: 3,
-                    p_description: 'Refund (Analysis Failed)',
-                    p_type: 'Refund'
-                });
-            } catch (refundErr) {
-                console.error('[Refund Error]', refundErr);
-            }
-        }
-        // ═══ END REFUND LOGIC ═══
-
         // Handle specific Gemini error types (like 429)
         if (error.status === 429) {
             return res.status(429).json({
