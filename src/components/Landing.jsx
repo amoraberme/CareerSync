@@ -1,13 +1,15 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Check, ArrowRight, Shield, Zap, Target, FileText } from 'lucide-react';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
 import Simulation from './Simulation';
+import ContactModal from './ContactModal';
 
 gsap.registerPlugin(ScrollToPlugin);
 
 const Landing = ({ onNavigate }) => {
     const landingRef = useRef(null);
+    const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -43,6 +45,7 @@ const Landing = ({ onNavigate }) => {
                         <button onClick={scrollToPricing} className="text-sm font-medium hover:text-champagne transition-colors">Plans</button>
                         <button onClick={() => onNavigate('terms')} className="text-sm font-medium hover:text-champagne transition-colors">Terms</button>
                         <button onClick={() => onNavigate('privacy')} className="text-sm font-medium hover:text-champagne transition-colors">Privacy</button>
+                        <button onClick={() => setIsContactModalOpen(true)} className="text-sm font-medium hover:text-champagne transition-colors">Contact</button>
                     </div>
 
                     {/* CTA */}
@@ -294,6 +297,11 @@ const Landing = ({ onNavigate }) => {
 
                 </div>
             </footer>
+
+            <ContactModal
+                isOpen={isContactModalOpen}
+                onClose={() => setIsContactModalOpen(false)}
+            />
         </div>
     );
 };
