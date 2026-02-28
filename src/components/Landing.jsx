@@ -102,29 +102,52 @@ const Landing = ({ onNavigate }) => {
                     <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate/40 dark:text-darkText/30 mb-12 italic">
                         The ultimate analytical companion for career growth
                     </p>
-                    <div className="flex flex-wrap justify-center items-center gap-12 md:gap-20 opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
+                    <div className="flex flex-wrap justify-center items-center gap-12 md:gap-20 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
                         {/* GitHub */}
-                        <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" /></svg>
-
-                        {/* Supabase */}
-                        <svg className="w-12 h-12" viewBox="0 0 24 24" fill="currentColor"><path d="M21.362 9.354H12V.341L2.638 14.646H12v9.013z" /></svg>
-
-                        {/* Google Cloud */}
-                        <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" /></svg>
-
-                        {/* Vercel */}
-                        <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M24 22.525H0l12-21.05z" /></svg>
-
-                        {/* AntiGravity */}
-                        <div className="flex flex-col items-center">
-                            <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z" /></svg>
-                            <span className="text-[10px] font-bold tracking-tighter mt-1">ANTIGRAVITY</span>
+                        <div className="relative flex flex-col items-center group cursor-pointer hover:-translate-y-1 transition-transform">
+                            <svg className="w-10 h-10 text-obsidian dark:text-darkText hover:text-obsidian dark:hover:text-darkText transition-colors" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+                            </svg>
+                            <div className="absolute -bottom-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none bg-obsidian dark:bg-darkText text-white dark:text-darkBg text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full shadow-lg whitespace-nowrap z-50">GitHub</div>
                         </div>
 
-                        {/* Gemini */}
-                        <div className="flex flex-col items-center">
-                            <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l-3 9H2l7 5-3 9 6-6 6 6-3-9 7-5h-7z" /></svg>
-                            <span className="text-[10px] font-bold tracking-tighter mt-1">GEMINI AI</span>
+                        {/* Supabase */}
+                        <div className="relative flex flex-col items-center group cursor-pointer hover:-translate-y-1 transition-transform">
+                            <svg className="w-10 h-10 text-obsidian dark:text-darkText hover:text-[#3ECF8E] transition-colors" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M21.362 9.354H12V.341L2.638 14.646H12v9.013z" />
+                            </svg>
+                            <div className="absolute -bottom-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none bg-obsidian dark:bg-darkText text-white dark:text-darkBg text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full shadow-lg whitespace-nowrap z-50">Supabase</div>
+                        </div>
+
+                        {/* Google Cloud */}
+                        <div className="relative flex flex-col items-center group cursor-pointer hover:-translate-y-1 transition-transform">
+                            <svg className="w-10 h-10 text-obsidian dark:text-darkText hover:text-[#4285F4] transition-colors" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12.02 0l-5.63 3.24v9.03l5.63 3.25 5.62-3.25V3.24L12.02 0zm0 14.36l-4.48-2.58V6.6l4.48-2.58 4.47 2.58v5.18l-4.47 2.58z" />
+                            </svg>
+                            <div className="absolute -bottom-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none bg-obsidian dark:bg-darkText text-white dark:text-darkBg text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full shadow-lg whitespace-nowrap z-50">Google Cloud</div>
+                        </div>
+
+                        {/* Vercel */}
+                        <div className="relative flex flex-col items-center group cursor-pointer hover:-translate-y-1 transition-transform">
+                            <svg className="w-10 h-10 text-obsidian dark:text-darkText hover:text-black dark:hover:text-white transition-colors" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M24 22.525H0l12-21.05z" />
+                            </svg>
+                            <div className="absolute -bottom-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none bg-obsidian dark:bg-darkText text-white dark:text-darkBg text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full shadow-lg whitespace-nowrap z-50">Vercel</div>
+                        </div>
+
+                        {/* Antigravity */}
+                        <div className="relative flex flex-col items-center group cursor-pointer hover:-translate-y-1 transition-transform">
+                            <svg id="antigravity-placeholder" className="w-10 h-10 text-obsidian dark:text-darkText hover:text-[#FF5722] transition-colors" viewBox="0 0 24 24" fill="currentColor"></svg>
+                            <div className="absolute -bottom-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none bg-obsidian dark:bg-darkText text-white dark:text-darkBg text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full shadow-lg whitespace-nowrap z-50">Antigravity</div>
+                        </div>
+
+                        {/* Gemini AI */}
+                        <div className="relative flex flex-col items-center group cursor-pointer hover:-translate-y-1 transition-transform">
+                            <svg className="w-10 h-10 text-obsidian dark:text-darkText hover:text-[#8E75FF] transition-colors" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 0c-1.35 6.77-5.23 10.65-12 12 6.77 1.35 10.65 5.23 12 12 1.35-6.77 5.23-10.65 12-12-6.77-1.35-10.65-5.23-12-12z" />
+                                <path d="M19 2c-.67 3.38-2.62 5.33-6 6 3.38.67 5.33 2.62 6 6 .67-3.38 2.62-5.33 6-6-3.38-.67-5.33-2.62-6-6z" />
+                            </svg>
+                            <div className="absolute -bottom-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none bg-obsidian dark:bg-darkText text-white dark:text-darkBg text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full shadow-lg whitespace-nowrap z-50">Gemini AI</div>
                         </div>
                     </div>
                 </div>

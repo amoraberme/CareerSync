@@ -247,7 +247,7 @@ export default function Simulation() {
                                 {/* Match Ring Simulation */}
                                 <div className="flex items-center gap-6 mb-8 bg-white dark:bg-darkBg border border-obsidian/5 rounded-2xl p-6">
                                     <div className="relative w-24 h-24 flex items-center justify-center">
-                                        <svg className="w-full h-full transform -rotate-90">
+                                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 96 96" overflow="visible">
                                             <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate/20" />
                                             <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-[#34A853] drop-shadow-md" strokeDasharray="251.2" strokeDashoffset="20.096" style={{ transition: 'stroke-dashoffset 2s ease-out' }} />
                                         </svg>
