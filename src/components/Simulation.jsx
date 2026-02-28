@@ -43,7 +43,7 @@ export default function Simulation() {
         setProgress(0);
 
         // Reset cursor position to start, absolute relative to container
-        gsap.set(cursorRef.current, { x: '50%', y: '120%', opacity: 0 });
+        gsap.set(cursorRef.current, { x: 50, y: 500, opacity: 0 });
     };
 
     const playSimulation = () => {
@@ -222,7 +222,7 @@ export default function Simulation() {
                     </div>
                 </div>
 
-                <div className="p-8 grid grid-cols-1 lg:grid-cols-2 gap-8 relative min-h-[500px]">
+                <div className="p-8 grid grid-cols-1 lg:grid-cols-2 gap-8 relative min-h-[600px] sm:min-h-[650px]">
 
                     {/* Input Phase (Left Side generally, but spans full if results not shown) */}
                     <div className={`flex flex-col gap-6 transition-all duration-700 ${showResults ? 'opacity-30 blur-sm scale-95 pointer-events-none' : 'opacity-100'}`}>
