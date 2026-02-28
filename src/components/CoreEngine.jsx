@@ -155,7 +155,7 @@ export default function CoreEngine({ session, setCurrentView }) {
                 </div>
 
                 {/* Right Column: Resume Upload */}
-                <div className="engine-element flex flex-col gap-6">
+                <div className="engine-element flex flex-col gap-6 h-full">
                     <input
                         type="file"
                         ref={fileInputRef}
@@ -164,7 +164,7 @@ export default function CoreEngine({ session, setCurrentView }) {
                         accept=".pdf,.txt,.doc,.docx"
                     />
                     <div
-                        className={`flex-grow border-2 border-dashed ${resumeUploaded ? 'border-champagne/50 bg-champagne/5' : 'border-obsidian/10 dark:border-darkText/20 hover:border-obsidian/30 dark:hover:border-darkText/40 bg-white dark:bg-darkCard/20 hover:bg-surface dark:hover:bg-darkCard/30'} rounded-[2rem] transition-all duration-300 flex flex-col items-center justify-center p-12 cursor-pointer relative overflow-hidden group shadow-sm`}
+                        className={`border-2 border-dashed ${resumeUploaded ? 'border-champagne/50 bg-champagne/5' : 'border-obsidian/10 dark:border-darkText/20 hover:border-obsidian/30 dark:hover:border-darkText/40 bg-white dark:bg-darkCard/20 hover:bg-surface dark:hover:bg-darkCard/30'} rounded-[2rem] transition-all duration-300 flex flex-col items-center justify-center py-16 px-12 cursor-pointer relative overflow-hidden group shadow-sm`}
                         onClick={() => fileInputRef.current?.click()}
                     >
                         {resumeUploaded ? (
@@ -201,7 +201,7 @@ export default function CoreEngine({ session, setCurrentView }) {
                         <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-surface/5 rounded-full blur-3xl opacity-50 group-hover:bg-champagne/10 transition-colors duration-500 pointer-events-none"></div>
                     </div>
 
-                    <div className="relative group/btn w-full">
+                    <div className="relative group/btn w-full mt-auto">
                         <Tooltip align="center" text="Cost: 3 Credits. Deep analysis strictly checks AI matches and provides detailed career guidance." />
                         <button
                             onClick={() => runAnalysis(session, () => setCurrentView('billing'))}

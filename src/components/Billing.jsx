@@ -451,9 +451,12 @@ export default function Billing({ session, onPaymentModalChange }) {
 
                     {/* Price */}
                     <div className="mb-6">
-                        <span className="text-5xl font-sans font-bold text-obsidian dark:text-darkText">₱1</span>
-                        <span className="text-sm text-slate dark:text-darkText/50 ml-1">/ top-up</span>
-                        <p className="text-xs text-slate dark:text-darkText/40 mt-1">~₱1.XX unique amount per session</p>
+                        <div className="flex items-baseline mb-1">
+                            <span className="text-2xl font-bold text-obsidian dark:text-darkText mr-1">₱</span>
+                            <span className="text-5xl font-sans font-bold text-obsidian dark:text-darkText tracking-tight">1</span>
+                            <span className="text-sm text-slate dark:text-darkText/50 ml-2">/ top-up</span>
+                        </div>
+                        <p className="text-xs text-slate dark:text-darkText/40">~₱1.XX unique amount per session</p>
                     </div>
 
                     {/* Features */}
@@ -530,10 +533,13 @@ export default function Billing({ session, onPaymentModalChange }) {
                     </div>
 
                     {/* Price */}
-                    <div className="mb-6 text-center">
-                        <span className="text-6xl font-sans font-bold text-obsidian dark:text-darkText">₱3</span>
-                        <span className="text-base text-slate dark:text-darkText/50 ml-1">/ month</span>
-                        <p className="text-xs text-slate dark:text-darkText/40 mt-1">~₱3.XX unique amount per session</p>
+                    <div className="mb-6">
+                        <div className="flex justify-center items-baseline mb-1">
+                            <span className="text-2xl font-bold text-obsidian dark:text-darkText mr-1">₱</span>
+                            <span className="text-6xl font-sans font-bold text-obsidian dark:text-darkText tracking-tight">3</span>
+                            <span className="text-base text-slate dark:text-darkText/50 ml-2">/ month</span>
+                        </div>
+                        <p className="text-xs text-center text-slate dark:text-darkText/40">~₱3.XX unique amount per session</p>
                     </div>
 
                     {/* Divider */}
@@ -606,9 +612,12 @@ export default function Billing({ session, onPaymentModalChange }) {
 
                     {/* Price */}
                     <div className="mb-6">
-                        <span className="text-5xl font-sans font-bold text-obsidian dark:text-darkText">₱2</span>
-                        <span className="text-sm text-slate dark:text-darkText/50 ml-1">/ month</span>
-                        <p className="text-xs text-slate dark:text-darkText/40 mt-1">~₱2.XX unique amount per session</p>
+                        <div className="flex items-baseline mb-1">
+                            <span className="text-2xl font-bold text-obsidian dark:text-darkText mr-1">₱</span>
+                            <span className="text-5xl font-sans font-bold text-obsidian dark:text-darkText tracking-tight">2</span>
+                            <span className="text-sm text-slate dark:text-darkText/50 ml-2">/ month</span>
+                        </div>
+                        <p className="text-xs text-slate dark:text-darkText/40">~₱2.XX unique amount per session</p>
                     </div>
 
                     {/* Features */}

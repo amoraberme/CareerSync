@@ -116,10 +116,12 @@ export default function HistoryDashboard({ session, setCurrentView }) {
                 <div>
                     <h2 className="text-4xl font-sans tracking-tight text-obsidian dark:text-darkText mb-2 font-semibold flex items-center gap-2">
                         Application <span className="font-drama italic text-champagne font-normal">History</span>
-                        <Tooltip
-                            align="left"
-                            text="Your analysis history is stored securely using row-level security, meaning only you can access these records. You can delete any entry at any time."
-                        />
+                        <span className="relative top-[-2px]">
+                            <Tooltip
+                                align="left"
+                                text="Your analysis history is stored securely using row-level security, meaning only you can access these records. You can delete any entry at any time."
+                            />
+                        </span>
                     </h2>
                     <p className="text-slate dark:text-darkText/70 text-lg">
                         {historyLimit === Infinity ? 'Unlimited history access.' : `Showing ${Math.min(historyLimit, filteredApplications.length)} most recent analyses.`}

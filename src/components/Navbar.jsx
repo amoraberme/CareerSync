@@ -85,17 +85,17 @@ export default function Navbar({ currentView, setCurrentView, onLogout, onOpenIn
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-champagne opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-champagne"></span>
                             </span>
-                            <span className="text-xs font-mono text-slate uppercase tracking-widest">{creditBalance} Credits</span>
+                            <span className="text-xs font-mono text-slate uppercase tracking-widest relative top-[1px]">{creditBalance} Credits</span>
                         </div>
 
                         {/* Invoice History — desktop only */}
                         <button
                             onClick={onOpenInvoice}
                             title="Invoice History"
-                            className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold text-slate dark:text-darkText/60 hover:text-champagne dark:hover:text-champagne bg-obsidian/5 dark:bg-darkText/5 border border-obsidian/8 dark:border-darkText/8 hover:bg-champagne/5 transition-all"
+                            className="hidden md:flex p-2.5 rounded-full transition-colors items-center justify-center transform active:scale-95 border bg-obsidian/5 dark:bg-darkText/5 hover:bg-obsidian/10 dark:hover:bg-darkText/10 border-obsidian/10 dark:border-darkText/10"
+                            aria-label="Invoice History"
                         >
-                            <Receipt className="w-3.5 h-3.5" />
-                            Invoices
+                            <Receipt className="w-5 h-5 text-obsidian dark:text-darkText" />
                         </button>
 
                         {/* Settings Dropdown — desktop only */}

@@ -296,7 +296,7 @@ export default function Auth({ onLogin, onNavigate }) {
                     </div>
 
                     {/* Legal Footer */}
-                    <p className="mt-8 text-[11px] text-slate/60 dark:text-darkText/40 text-center leading-relaxed">
+                    <p className="mt-8 mb-6 pb-2 text-[11px] text-slate/60 dark:text-darkText/40 text-center leading-relaxed">
                         By continuing, you agree to CareerSync's{' '}
                         <button
                             onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('terms'); }}
