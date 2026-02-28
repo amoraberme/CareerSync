@@ -10,7 +10,7 @@ export default function CoreEngine({ session, setCurrentView }) {
     const {
         jobTitle, industry, experienceLevel, requiredSkills, experienceText, qualifications, roleDo, pastedText,
         resumeUploaded, resumeData, resumeFileName, resumeFileSize, coverLetterTone,
-        isAnalyzing, isParsing, updateField, runAnalysis, runParse
+        isAnalyzing, isParsing, updateField, runAnalysis, runParse, userTier
     } = useWorkspaceStore();
 
     const containerRef = useRef(null);
@@ -81,13 +81,22 @@ export default function CoreEngine({ session, setCurrentView }) {
                 <div className="engine-element bg-white/70 dark:bg-darkCard/40 backdrop-blur-xl border border-obsidian/10 dark:border-darkText/10 rounded-[2rem] p-8 shadow-sm flex flex-col">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="text-xl font-sans font-medium text-obsidian dark:text-darkText">Job Specifications</h3>
-                        <button
-                            onClick={() => setShowPasteModal(true)}
-                            className="group flex items-center space-x-2 bg-champagne/10 text-champagne px-4 py-2 rounded-full text-sm font-medium hover:bg-champagne/20 transition-colors"
-                        >
-                            <Wand2 className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-                            <span>Paste Listing</span>
-                        </button>
+                        <div className="relative group/pastebtn">
+                            {userTier === 'base' && (
+                                <Tooltip align="right" text="Available only in Premium/Standard Plans" />
+                            )}
+                            <button
+                                onClick={() => userTier !== 'base' && setShowPasteModal(true)}
+                                disabled={userTier === 'base'}
+                                className={`flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${userTier === 'base'
+                                    ? 'bg-slate/10 text-slate/50 cursor-not-allowed border border-obsidian/5 dark:border-darkText/5'
+                                    : 'bg-champagne/10 text-champagne hover:bg-champagne/20 group-hover/pastebtn:rotate-2 group-hover/pastebtn:scale-105'
+                                    }`}
+                            >
+                                <Wand2 className="w-4 h-4" />
+                                <span>Paste Listing</span>
+                            </button>
+                        </div>
                     </div>
 
                     <div className="space-y-5 flex-grow">

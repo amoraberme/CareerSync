@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Check, ArrowRight, Shield, Zap, Target, FileText } from 'lucide-react';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
+import Simulation from './Simulation';
 
 gsap.registerPlugin(ScrollToPlugin);
 
@@ -127,6 +128,11 @@ const Landing = ({ onNavigate }) => {
                         </div>
                     </div>
                 </div>
+            </section>
+
+            {/* ═══ PRODUCT SIMULATION ═══ */}
+            <section className="relative z-20 mb-20">
+                <Simulation />
             </section>
 
             {/* ═══ PRICING SECTION ═══ */}
