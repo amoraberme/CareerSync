@@ -3,66 +3,16 @@ import { Quote } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const reviews = [
-    {
-        quote: "The deep parsing engine identified experience gaps I had no idea were holding me back. I implemented the strategy and landed three interviews in a week.",
-        handle: "@alex_design",
-        name: "Alex M.",
-        role: "Senior UX Designer"
-    },
-    {
-        quote: "Unlike generic resume tools, this actually aligned my achievements with the hidden requirements of the target roles. It feels like having an insider at the company.",
-        handle: "@sarah_pm",
-        name: "Sarah T.",
-        role: "Product Manager"
-    },
-    {
-        quote: "The 1:1 theme parity and dark mode design made my late-night focus sessions incredibly smooth. Truly a masterclass in UX.",
-        handle: "@davidcodes",
-        name: "David K.",
-        role: "Frontend Engineer"
-    },
-    {
-        quote: "I was struggling with ATS systems for months. After using CareerSync's targeted phrasing corrections, my application went straight to the hiring manager.",
-        handle: "@emily_mktg",
-        name: "Emily R.",
-        role: "Marketing Director"
-    },
-    {
-        quote: "The instant feedback loop on my resume match score gave me the confidence to apply for roles I thought were out of reach.",
-        handle: "@michael_data",
-        name: "Michael B.",
-        role: "Data Scientist"
-    },
-    {
-        quote: "A game-changer for career pivoting. It broke down complex job descriptions into actionable steps, guiding my entire interview prep.",
-        handle: "@jess_ops",
-        name: "Jessica L.",
-        role: "Operations Lead"
-    },
-    {
-        quote: "Enterprise-grade security meets consumer-grade aesthetics. I trust this platform with my data as much as I rely on its career insights.",
-        handle: "@james_sec",
-        name: "James N.",
-        role: "Security Analyst"
-    },
-    {
-        quote: "It's not just a resume scanner; it's a strategic blueprint. The AI doesn't just tell you what's wrong, it shows you exactly how to fix it.",
-        handle: "@elena_arch",
-        name: "Elena G.",
-        role: "Software Architect"
-    },
-    {
-        quote: "The market demand benchmarking is uncannily accurate. It helped me negotiate a 20% higher base salary by proving my skill alignment.",
-        handle: "@ryan_biz",
-        name: "Ryan C.",
-        role: "Business Analyst"
-    },
-    {
-        quote: "Flawless execution. The automated strategy saved me hours of manual tailoring for each application. Essential for any serious job seeker.",
-        handle: "@olivia_growth",
-        name: "Olivia W.",
-        role: "Growth Strategy"
-    }
+    { handle: "@shifty_shifter", text: "finally a tool na di sabaw. shifting careers is hard af pero the resume optimization helped me highlight my transferable skills. got an offer ✨" },
+    { handle: "@korpo_slave", text: "omg tbh umiyak ako ng slight bc the ai generated a better summary than what i wrote in 3 days 💀 seryoso use this if pagod na kayo mag isip" },
+    { handle: "@it_gurl01", text: "the ats checker is insane?? parang nalaman ko bakit puro auto-reject ako dati lol. tweaked my cv here & got 2 hr calls today. 🚀" },
+    { handle: "@juan_dela_cruz", text: "tbh akala ko scam na naman tong mga ai ai na to but it actually works. it matched my exp with the job desc perfectly. galing" },
+    { handle: "@mktg_baddie", text: "saved me so much time w the cover letter generation 😭 just edited a few lines para mas tunog ako but the structure is 10/10. applying rn!!" },
+    { handle: "@jobless_nomore", text: "super helpful nito promise. nakaka drain mag apply everyday pero this platform made tweaking resumes per company so much easier 🙏" },
+    { handle: "@z_gen_ceee", text: "this site is my roman empire rn. why did nobody tell me about this sooner?? my cv looks so professional na i would hire myself tbh 💅" },
+    { handle: "@paolo_hustles", text: "solid tool. medyo nahirapan lang ako sa ui nung una pero the scoring feature is top tier. dami kong natutunan sa keywords lang 😅" },
+    { handle: "@cpa_dreams", text: "literally the ultimate cheat code for job hunting. ung ats score ko went from 45% to 89% in mins. sana makapasa na dis 🥺🤞" },
+    { handle: "@burntout_peon", text: "as someone na laging ghosted ng hr, the ats optimization here is pretty accurate. saves u from being filtered out. go try it out guys!!" }
 ];
 
 export default function AuthSocialProof() {
@@ -93,7 +43,7 @@ export default function AuthSocialProof() {
             {/* Content centered */}
             <AnimatePresence>
                 <motion.div
-                    key={review.name}
+                    key={review.handle}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
@@ -102,19 +52,13 @@ export default function AuthSocialProof() {
                     <Quote className="w-10 h-10 text-champagne mb-8 opacity-80" />
 
                     <p className="text-2xl md:text-3xl font-sans tracking-tight text-obsidian dark:text-darkText leading-relaxed mb-10 font-medium">
-                        "{review.quote}"
+                        "{review.text}"
                     </p>
 
                     <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-champagne/80 to-champagne/40 flex items-center justify-center text-obsidian font-bold text-lg shadow-sm border border-obsidian/5 dark:border-darkText/10">
-                            {review.name.charAt(0)}
-                        </div>
                         <div>
-                            <p className="font-bold text-obsidian dark:text-darkText text-base">
-                                {review.name}
-                            </p>
-                            <p className="text-sm font-mono text-slate dark:text-darkText/50 tracking-tight">
-                                {review.role} <span className="opacity-50 mx-1">•</span> {review.handle}
+                            <p className="text-sm font-mono text-slate dark:text-darkText/50 tracking-tight font-bold">
+                                {review.handle}
                             </p>
                         </div>
                     </div>
