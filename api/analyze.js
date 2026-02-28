@@ -18,13 +18,21 @@ export default async function handler(req, res) {
     try {
         const { jobTitle, industry, experienceText, qualifications, roleDo, resumeText, resumeData, coverLetterTone } = req.body;
 
+        // Normalize resumeData for length validation (it can be a string from paste, or an object from file upload)
+        let resumeString = '';
+        if (typeof resumeData === 'string') {
+            resumeString = resumeData;
+        } else if (resumeData && typeof resumeData === 'object' && resumeData.data) {
+            resumeString = resumeData.data;
+        }
+
         // ═══ Server-Side Validation ═══
-        if (!resumeData || typeof resumeData !== 'string' || resumeData.trim().length === 0) {
+        if (!resumeString || resumeString.trim().length === 0) {
             return res.status(400).json({ error: 'Valid Resume Data is required.' });
         }
 
-        if (resumeData.length > 50000) {
-            return res.status(400).json({ error: 'Resume payload too large (max 50,000 chars).' });
+        if (resumeString.length > 3000000) { // Bumped limit safely to accommodate base64 encoded PDFs (up to ~2.2MB safely)
+            return res.status(400).json({ error: 'Resume payload too large. Please upload a smaller file.' });
         }
 
         if (!jobTitle || typeof jobTitle !== 'string' || jobTitle.trim().length === 0) {
