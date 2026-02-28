@@ -166,13 +166,13 @@ export default function Simulation() {
 
                 {/* Overlay to intercept clicks and show Play button initially */}
                 {!isPlaying && !showResults && (
-                    <div className="absolute inset-0 z-50 bg-background/60 dark:bg-darkBg/60 backdrop-blur-sm flex items-center justify-center cursor-pointer transition-opacity hover:bg-background/50" onClick={playSimulation}>
+                    <div className="absolute inset-0 z-50 bg-background/10 dark:bg-darkBg/10 flex items-center justify-center cursor-pointer transition-opacity hover:bg-background/20" onClick={playSimulation}>
                         <div className="bg-obsidian dark:bg-darkText text-white dark:text-darkBg px-8 py-4 rounded-full font-bold flex items-center gap-3 shadow-2xl hover:scale-105 transition-transform">
                             <span className="relative flex h-3 w-3">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-champagne opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-3 w-3 bg-champagne"></span>
                             </span>
-                            Play Sandbox Simulation
+                            Play
                         </div>
                     </div>
                 )}
