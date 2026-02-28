@@ -182,9 +182,22 @@ async function processAmountMatch(supabaseAdmin, amount, res) {
     console.log(`[Webhook] ✅ CLAIMED! Amount ${amount} → User ${matchedUserId}, tier: ${matchedTier}, granting ${matchedCredits} credits`);
 
     // ─── Step 1: Grant credits ───
+    let txType = 'Bought';
+    let txDesc = 'Credit Purchase';
+
+    if (matchedTier === 'standard' || matchedTier === 'premium') {
+        txType = 'TIER_PURCHASE';
+        txDesc = `Purchased ${matchedTier.charAt(0).toUpperCase() + matchedTier.slice(1)} Tier - Initial Credits`;
+    } else if (matchedTier === 'base') {
+        txType = 'BASIC_TOKEN_BUY';
+        txDesc = 'Purchased Basic Tokens';
+    }
+
     const { error: creditError } = await supabaseAdmin.rpc('increment_credits', {
         target_user_id: matchedUserId,
-        add_amount: matchedCredits
+        add_amount: matchedCredits,
+        p_type: txType,
+        p_description: txDesc
     });
 
     if (creditError) {

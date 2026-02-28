@@ -386,19 +386,38 @@ function App() {
                     <tbody>
                       {invoiceHistory.map((row) => {
                         const date = new Date(row.date);
+
+                        // User-friendly text mapping
+                        let displayDesc = row.description;
+                        let displayBadge = row.type;
+                        let badgeColor = 'bg-slate/10 text-slate dark:text-darkText/50';
+
+                        if (row.type === 'TIER_PURCHASE') {
+                          displayBadge = 'TIER PURCHASE';
+                          displayDesc = row.description; // Webhook saves "Purchased [Tier] - Initial Credits"
+                          badgeColor = 'bg-champagne/15 text-champagne';
+                        } else if (row.type === 'DAILY_REFILL') {
+                          displayBadge = 'DAILY REFILL';
+                          displayDesc = 'Earned from Daily Refill';
+                          badgeColor = 'bg-[#34A853]/15 text-[#34A853]';
+                        } else if (row.type === 'BASIC_TOKEN_BUY') {
+                          displayBadge = 'BASIC TOKEN BUY';
+                          displayDesc = 'Purchased Basic Tokens';
+                          badgeColor = 'bg-champagne/15 text-champagne';
+                        } else if (row.type === 'Bought' || row.type === 'Receive') {
+                          badgeColor = 'bg-champagne/15 text-champagne';
+                        }
+
                         return (
                           <tr key={row.id} className="border-b border-obsidian/5 dark:border-darkText/5 hover:bg-obsidian/2 dark:hover:bg-darkText/2 transition-colors">
                             <td className="py-4">
                               <div className="flex flex-col">
                                 <div className="flex items-center gap-2 mb-1">
-                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${row.type === 'Bought' || row.type === 'Receive'
-                                    ? 'bg-champagne/15 text-champagne'
-                                    : 'bg-slate/10 text-slate dark:text-darkText/50'
-                                    }`}>
-                                    {row.type}
+                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${badgeColor}`}>
+                                    {displayBadge}
                                   </span>
                                   <span className="font-medium text-obsidian dark:text-darkText">
-                                    {row.description}
+                                    {displayDesc}
                                   </span>
                                 </div>
                                 <div className="text-[10px] text-slate dark:text-darkText/40 leading-none">
