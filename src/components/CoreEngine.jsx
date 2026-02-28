@@ -164,7 +164,7 @@ export default function CoreEngine({ session, setCurrentView }) {
                         accept=".pdf,.txt,.doc,.docx"
                     />
                     <div
-                        className={`border-2 border-dashed ${resumeUploaded ? 'border-champagne/50 bg-champagne/5' : 'border-obsidian/10 dark:border-darkText/20 hover:border-obsidian/30 dark:hover:border-darkText/40 bg-white dark:bg-darkCard/20 hover:bg-surface dark:hover:bg-darkCard/30'} rounded-[2rem] transition-all duration-300 flex flex-col items-center justify-center py-16 px-12 cursor-pointer relative overflow-hidden group shadow-sm`}
+                        className={`border-2 border-dashed ${resumeUploaded ? 'border-champagne/50 bg-champagne/5' : 'border-obsidian/10 dark:border-darkText/20 hover:border-obsidian/30 dark:hover:border-darkText/40 bg-white dark:bg-darkCard/20 hover:bg-surface dark:hover:bg-darkCard/30'} rounded-[2rem] transition-all duration-300 flex flex-col items-center justify-center p-10 xl:p-12 cursor-pointer relative overflow-hidden group shadow-sm`}
                         onClick={() => fileInputRef.current?.click()}
                     >
                         {resumeUploaded ? (
@@ -201,12 +201,12 @@ export default function CoreEngine({ session, setCurrentView }) {
                         <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-surface/5 rounded-full blur-3xl opacity-50 group-hover:bg-champagne/10 transition-colors duration-500 pointer-events-none"></div>
                     </div>
 
-                    <div className="w-full">
+                    <div className="w-full flex-grow flex flex-col">
                         <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-1 block">Full Job Description</label>
-                        <textarea value={fullJobDescription} onChange={(e) => updateField('fullJobDescription', e.target.value)} placeholder="Paste full job description here..." className="w-full min-h-[160px] bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors resize-none flex-grow" style={{ minHeight: '160px' }}></textarea>
+                        <textarea value={fullJobDescription} onChange={(e) => updateField('fullJobDescription', e.target.value)} placeholder="Paste full job description here..." className="w-full flex-grow bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors resize-none"></textarea>
                     </div>
 
-                    <div className="relative group/btn w-full mt-auto">
+                    <div className="relative group/btn w-full mt-2">
                         <Tooltip align="center" text="Cost: 3 Credits. Deep analysis strictly checks AI matches and provides detailed career guidance." />
                         <button
                             onClick={() => runAnalysis(session, () => setCurrentView('billing'))}
