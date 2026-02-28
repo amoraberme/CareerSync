@@ -488,6 +488,12 @@ export default function Billing({ session, onPaymentModalChange }) {
                             <span className="w-5 h-5 rounded-full bg-slate/8 flex items-center justify-center shrink-0 mt-0.5">
                                 <span className="text-slate/50 text-[10px] font-bold leading-none">✕</span>
                             </span>
+                            <span className="text-slate/50 dark:text-darkText/30 text-xs">No Advanced Parsing (Paste Listing)</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                            <span className="w-5 h-5 rounded-full bg-slate/8 flex items-center justify-center shrink-0 mt-0.5">
+                                <span className="text-slate/50 text-[10px] font-bold leading-none">✕</span>
+                            </span>
                             <span className="text-slate/50 dark:text-darkText/30 text-xs">No PDF export</span>
                         </li>
                         <li className="flex items-start gap-3">
@@ -543,6 +549,12 @@ export default function Billing({ session, onPaymentModalChange }) {
                                 <strong className="text-champagne">50 Premium Credits</strong>
                                 <span className="text-xs text-slate dark:text-darkText/50 ml-1">— refills daily</span>
                             </span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                            <span className="w-5 h-5 rounded-full bg-champagne/15 flex items-center justify-center shrink-0 mt-0.5">
+                                <Check className="w-3 h-3 text-champagne" />
+                            </span>
+                            <span className="text-obsidian dark:text-darkText"><strong className="font-semibold text-champagne">Advanced Parsing</strong> (Paste Listing)</span>
                         </li>
                         <li className="flex items-start gap-3">
                             <span className="w-5 h-5 rounded-full bg-champagne/15 flex items-center justify-center shrink-0 mt-0.5">
@@ -609,6 +621,12 @@ export default function Billing({ session, onPaymentModalChange }) {
                                 <strong className="font-semibold text-obsidian dark:text-darkText">40 Premium Credits</strong>
                                 <span className="text-xs text-slate dark:text-darkText/50 ml-1">— refills daily</span>
                             </span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                            <span className="w-5 h-5 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                                <Check className="w-3 h-3 text-blue-500" />
+                            </span>
+                            <span className="text-obsidian/90 dark:text-darkText/90"><strong className="font-semibold">Advanced Parsing</strong> (Paste Listing)</span>
                         </li>
                         <li className="flex items-start gap-3">
                             <span className="w-5 h-5 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 mt-0.5">

@@ -35,7 +35,7 @@ export default function HistoryDashboard({ session, setCurrentView }) {
                     date: new Date(item.analysis_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
                     role: item.job_title,
                     company: item.company || 'Unknown',
-                    score: item.match_score,
+                    score: item.report_data?.projectedScore || item.match_score,
                     status: 'Analyzed',
                     report_data: item.report_data
                 })));
@@ -145,7 +145,7 @@ export default function HistoryDashboard({ session, setCurrentView }) {
                 <div className="hidden lg:grid grid-cols-6 gap-4 p-6 border-b border-obsidian/5 dark:border-darkText/5 text-xs font-mono uppercase tracking-widest text-slate dark:text-darkText/70">
                     <div className="col-span-2">Target Role & Company</div>
                     <div>Date</div>
-                    <div>Match Score</div>
+                    <div>Projected Score</div>
                     <div>Status</div>
                     <div className="text-right">Actions</div>
                 </div>

@@ -26,6 +26,27 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Input too large. Please paste a shorter job listing (max 20,000 characters).' });
         }
 
+        // ═══ Feature Gating ═══
+        if (!user.user_metadata?.tier || user.user_metadata?.tier === 'base') {
+            // Need to check the database tier properly
+            const supabaseUrl = process.env.VITE_SUPABASE_URL;
+            const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+            if (supabaseUrl && serviceKey) {
+                const supabaseAdmin = createClient(supabaseUrl, serviceKey);
+                const { data: profile } = await supabaseAdmin
+                    .from('user_profiles')
+                    .select('tier')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profile?.tier === 'base' || !profile?.tier) {
+                    return res.status(403).json({ error: 'Upgrade Required. Paste Listing feature is exclusive to Standard and Premium tier users.' });
+                }
+            }
+        }
+        // ═══ End Feature Gating ═══
+
         // ═══ Strict Credit Gate ═══
         // All tiers cost 1 credit. Sever-side enforcement to prevent bypass.
         const supabaseUrl = process.env.VITE_SUPABASE_URL;
