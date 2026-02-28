@@ -131,10 +131,6 @@ export default function CoreEngine({ session, setCurrentView }) {
                                 <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-1 block">What You'll Do in the Role</label>
                                 <textarea value={roleDo} onChange={(e) => updateField('roleDo', e.target.value)} placeholder="Day-to-day responsibilities..." className="w-full min-h-[80px] bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors resize-none"></textarea>
                             </div>
-                            <div>
-                                <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-1 block">Full Job Description</label>
-                                <textarea value={fullJobDescription} onChange={(e) => updateField('fullJobDescription', e.target.value)} placeholder="Paste full job description here..." className="w-full min-h-[120px] bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors resize-none"></textarea>
-                            </div>
 
                             {/* Tone Selector */}
                             <div className="mt-2">
@@ -203,6 +199,11 @@ export default function CoreEngine({ session, setCurrentView }) {
 
                         {/* Background decorative blob */}
                         <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-surface/5 rounded-full blur-3xl opacity-50 group-hover:bg-champagne/10 transition-colors duration-500 pointer-events-none"></div>
+                    </div>
+
+                    <div className="w-full">
+                        <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-1 block">Full Job Description</label>
+                        <textarea value={fullJobDescription} onChange={(e) => updateField('fullJobDescription', e.target.value)} placeholder="Paste full job description here..." className="w-full min-h-[160px] bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors resize-none flex-grow" style={{ minHeight: '160px' }}></textarea>
                     </div>
 
                     <div className="relative group/btn w-full mt-auto">

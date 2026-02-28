@@ -103,9 +103,13 @@ Step 4: Draft & Critique (Adversarial Validation)
 - Tone Calibration: Adopt the ${coverLetterTone || 'Professional'} mood entirely. If "Direct," use punchy, high-impact sentences. If "Creative," open with a compelling narrative hook. If "Professional," maintain a highly polished, authoritative executive presence.
 - Evidence Integration: Do not summarize the resume. Instead, select the top 2-3 most powerful points from the candidate's verified strengths and weave them into a narrative that proves why the candidate solves the core problems outlined in the JD.
 - The Anti-Fluff Protocol: Strictly prohibit standard AI openings (e.g., "I am writing to express my interest," "I was thrilled to see," "As a highly motivated professional"). Open with a high-impact statement about the value the candidate brings to the specific company.
-- Draft 1: Write the cover letter based on the above rules.
-- Internal Critique (Red Team): Adopt the persona of a skeptical, ruthless Hiring Manager. Review Draft 1. Is there generic filler? Does it hallucinate experience? Are there standard AI openings?
-- Draft 2 (Final): Rewrite the letter based on the Red Team critique. Output ONLY the text of the cover letter. Do not include introductory pleasantries or [Bracketed] placeholders unless it is for the date or the hiring manager's name.
+- Strict Format Requirement: The final output MUST strictly adhere to this exact 4-paragraph structure:
+  1. High-impact hook targeting the specific company and role, integrating top metrics/skills.
+  2. Experience proof paragraph detailing how past environments translate directly to the new role requirements.
+  3. Technical readiness and efficiency paragraph proving immediate capability to perform the role.
+  4. Strong closing statement expressing readiness to convert skills into results, followed by "Best Regards," and the candidate's name (if inferable, otherwise blank).
+- Internal Critique (Red Team): Adopt the persona of a skeptical, ruthless Hiring Manager. Review your draft. Is there generic filler? Does it hallucinate experience? Are there standard AI openings? Is the 4-paragraph structure perfectly followed?
+- Draft 2 (Final): Rewrite the letter based on the Red Team critique. Output ONLY the text of the cover letter. Do not include introductory pleasantries or [Bracketed] placeholders unless it is for the date or the hiring manager's name (e.g. "Dear Hiring Manager," is acceptable).
 
 Step 5: Optimization Directives
 Provide high-impact, actionable edits the user must make to the resume to achieve the Projected Post-Optimization Score.
