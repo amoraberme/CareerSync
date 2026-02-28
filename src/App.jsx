@@ -167,15 +167,18 @@ function App() {
         setCurrentView('privacy');
       } else {
         // Enforce Authentication Middleware for Protected Routes
-        const protectedViews = ['history', 'plans', 'profile', 'workspace'];
-        const viewFromUrl = window.history.state?.view || prev;
+        const protectedViews = ['history', 'plans', 'profile'];
 
-        if (!session && protectedViews.includes(viewFromUrl)) {
-          return 'auth'; // Force unauthenticated users back to login
-        }
+        setCurrentView(prev => {
+          const viewFromUrl = window.history.state?.view || prev;
 
-        // If not a legal page and session is valid, default to workspace or previous view
-        return (prev === 'terms' || prev === 'privacy') ? 'workspace' : prev;
+          if (!session && protectedViews.includes(viewFromUrl)) {
+            return 'auth'; // Force unauthenticated users back to login
+          }
+
+          // If not a legal page, default to workspace or previous view
+          return (prev === 'terms' || prev === 'privacy') ? 'workspace' : prev;
+        });
       }
     };
 
@@ -264,8 +267,9 @@ function App() {
 
   if (!session) {
     // ═══ Global Authentication Middleware Gatekeeper ═══
-    // If an unauthenticated user somehow triggers a protected view state, intercept and force auth.
-    const protectedViews = ['history', 'plans', 'profile', 'workspace'];
+    // Only intercept explicitly protected sub-views. 'workspace' is the default state
+    // and should safely fall through to render <Landing /> if the user isn't logged in.
+    const protectedViews = ['history', 'plans', 'profile'];
     if (protectedViews.includes(currentView)) {
       return <Auth onNavigate={navigateTo} />;
     }
