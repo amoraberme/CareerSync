@@ -121,9 +121,7 @@ const Landing = ({ onNavigate }) => {
 
                         {/* Google Cloud */}
                         <div className="relative flex flex-col items-center group cursor-pointer hover:-translate-y-1 transition-transform">
-                            <svg className="w-10 h-10 text-obsidian dark:text-darkText hover:text-[#4285F4] transition-colors" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12.02 0l-5.63 3.24v9.03l5.63 3.25 5.62-3.25V3.24L12.02 0zm0 14.36l-4.48-2.58V6.6l4.48-2.58 4.47 2.58v5.18l-4.47 2.58z" />
-                            </svg>
+                            <img src="/google-cloud-logo.svg" alt="Google Cloud" className="w-10 h-10 object-contain drop-shadow-sm transition-all duration-300" />
                             <div className="absolute -bottom-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none bg-obsidian dark:bg-darkText text-white dark:text-darkBg text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full shadow-lg whitespace-nowrap z-50">Google Cloud</div>
                         </div>
 
@@ -137,7 +135,7 @@ const Landing = ({ onNavigate }) => {
 
                         {/* Antigravity */}
                         <div className="relative flex flex-col items-center group cursor-pointer hover:-translate-y-1 transition-transform">
-                            <svg id="antigravity-placeholder" className="w-10 h-10 text-obsidian dark:text-darkText hover:text-[#FF5722] transition-colors" viewBox="0 0 24 24" fill="currentColor"></svg>
+                            <img src="/antigravity-logo.svg" alt="Antigravity" className="w-10 h-10 object-contain drop-shadow-sm transition-all duration-300" />
                             <div className="absolute -bottom-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none bg-obsidian dark:bg-darkText text-white dark:text-darkBg text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full shadow-lg whitespace-nowrap z-50">Antigravity</div>
                         </div>
 

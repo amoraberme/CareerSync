@@ -2,45 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Mail, ChevronRight, Github, Eye, EyeOff, ArrowLeft, AlertTriangle, ExternalLink } from 'lucide-react';
 import gsap from 'gsap';
 import { supabase } from '../supabaseClient';
-import { ReviewCard } from './ui/card-1';
-
-const features = [
-    {
-        name: "Deep AI Parsing",
-        handle: "Core Capability",
-        review: "Instantly extracts 50+ key requirements from raw job descriptions, including hidden technical prerequisites, soft skills, and strategic imperatives.",
-        rating: 5.0,
-        imageUrl: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&auto=format&fit=crop&q=60"
-    },
-    {
-        name: "Automated Strategy",
-        handle: "Core Capability",
-        review: "Generates step-by-step interview blueprints, exact phrasing corrections, and identifies specific experience gaps holding you back.",
-        rating: 5.0,
-        imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=60"
-    },
-    {
-        name: "1:1 Theme Parity",
-        handle: "Design System",
-        review: "Impeccable visual harmony across true dark and light modes. Snow White Luxe meets Obsidian. Built for extended focus sessions.",
-        rating: 5.0,
-        imageUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&auto=format&fit=crop&q=60"
-    },
-    {
-        name: "Secure Ecosystem",
-        handle: "Infrastructure",
-        review: "Enterprise-grade row level security with strict tier validation, encrypted workflows, and resilient Postgres architecture.",
-        rating: 5.0,
-        imageUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=60"
-    },
-    {
-        name: "Instant Feedback",
-        handle: "Core Capability",
-        review: "Real-time match scoring algorithm instantly benchmarks your current resume against the specific market demands of the target role.",
-        rating: 5.0,
-        imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=60"
-    }
-];
+import AuthSocialProof from './AuthSocialProof';
 
 export default function Auth({ onLogin, onNavigate }) {
     const containerRef = useRef(null);
@@ -50,8 +12,6 @@ export default function Auth({ onLogin, onNavigate }) {
     const [error, setError] = useState('');
     const [successMsg, setSuccessMsg] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [activeIndex, setActiveIndex] = useState(0);
-    const [isHovered, setIsHovered] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup' | 'forgot'
@@ -78,13 +38,7 @@ export default function Auth({ onLogin, onNavigate }) {
         return () => ctx.revert();
     }, []);
 
-    useEffect(() => {
-        if (isHovered) return;
-        const interval = setInterval(() => {
-            setActiveIndex((prev) => (prev + 1) % features.length);
-        }, 4000);
-        return () => clearInterval(interval);
-    }, [isHovered]);
+
 
     const handleForgotPassword = async (e) => {
         e.preventDefault();
@@ -167,76 +121,9 @@ export default function Auth({ onLogin, onNavigate }) {
     return (
         <div ref={containerRef} className="min-h-screen bg-background dark:bg-darkBg flex w-full relative z-10 overflow-hidden font-sans">
 
-            {/* Left Column: Vertical Ticker (Hidden on smaller screens) */}
+            {/* Left Column: Auth Social Proof */}
             <div className="hidden lg:flex flex-col flex-1 relative bg-surface dark:bg-darkCard/20 overflow-hidden border-r border-obsidian/10 dark:border-darkText/10">
-                {/* Decorative gradients */}
-                <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-surface dark:from-darkBg to-transparent z-10 pointer-events-none"></div>
-                <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-surface dark:from-darkBg to-transparent z-10 pointer-events-none"></div>
-
-                <div
-                    className="h-full w-full flex flex-col items-center justify-center relative overflow-hidden"
-                >
-                    {features.map((feature, idx) => {
-                        let diff = idx - (activeIndex % features.length);
-                        if (diff < 0) diff += features.length;
-
-                        const isExiting = diff === features.length - 1;
-
-                        let y = 0;
-                        let scale = 1;
-                        let opacity = 1;
-                        let zIndex = 50;
-                        let filter = "blur(0px)";
-
-                        if (diff === 0) {
-                            y = 0;
-                            scale = 1;
-                            opacity = 1;
-                            zIndex = 50;
-                        } else if (diff === 1) {
-                            y = 20;
-                            scale = 0.95;
-                            opacity = 0.8;
-                            zIndex = 40;
-                        } else if (diff === 2) {
-                            y = 40;
-                            scale = 0.9;
-                            opacity = 0.5;
-                            zIndex = 30;
-                        } else if (isExiting) {
-                            y = -100;
-                            scale = 1.05;
-                            opacity = 0;
-                            filter = "blur(10px)";
-                            zIndex = 60; // Exiting card flies over the front card
-                        } else {
-                            // hidden in back
-                            y = 60;
-                            scale = 0.85;
-                            opacity = 0;
-                            filter = "blur(4px)";
-                            zIndex = 10;
-                        }
-
-                        return (
-                            <ReviewCard
-                                key={`feature-${idx}`}
-                                {...feature}
-                                animate={{ y, scale, opacity, filter, zIndex }}
-                                transition={{ duration: 1, ease: "easeInOut" }}
-                                className="absolute"
-                                onMouseEnter={() => setIsHovered(true)}
-                                onMouseLeave={() => setIsHovered(false)}
-                            />
-                        );
-                    })}
-                </div>
-
-                <div className="absolute top-10 left-12 z-20">
-                    <h1 className="text-obsidian dark:text-darkText font-bold text-3xl tracking-tighter shadow-sm">
-                        Career<span className="font-drama italic font-normal text-champagne ml-1">Sync.</span>
-                    </h1>
-                </div>
+                <AuthSocialProof />
             </div>
 
             {/* Right Column: Auth Form */}
