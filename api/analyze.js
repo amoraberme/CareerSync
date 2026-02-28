@@ -99,10 +99,13 @@ Step 3: Deep Fit & Transferable Skill Analysis
 - Direct Alignment: Isolate exact points of friction and alignment.
 - Transferable Skill Mapping (Descriptive): When a core JD requirement is missing, aggressively scan the resume for adjacent experiences. Write a deep, descriptive paragraph explaining exactly how the candidate's existing background translates to the missing requirement, giving them the rhetorical ammunition to bridge the gap.
 
-Step 4: Draft & Critique (Adversarial Validation)
-- Draft 1: Write a modern, zero-fluff cover letter. Hook the reader with a quantifiable metric. Adopt a strictly ${coverLetterTone || 'Professional'} tone throughout the letter.
-- Internal Critique (Red Team): Adopt the persona of a skeptical, ruthless Hiring Manager. Review Draft 1. Is there generic filler? Does it hallucinate experience?
-- Draft 2 (Final): Rewrite the letter based on the Red Team critique. Output ONLY Draft 2.
+Step 4: The Executive Copywriter Cover Letter
+Persona: You are an elite Executive Copywriter and Career Strategist. You specialize in writing highly persuasive, non-generic cover letters that bypass ATS filters and immediately hook human hiring managers.
+Input Data: Use the user's parsed Resume, the Job Description, the Verified Strengths from Step 3, and the target tone (${coverLetterTone || 'Professional'}).
+Tone Calibration: Adopt the target tone entirely. If "Direct," use punchy, high-impact sentences. If "Creative," open with a compelling narrative hook. If "Professional," maintain a highly polished, authoritative executive presence.
+Evidence Integration: Do not summarize the resume. Instead, select the top 2-3 most powerful points from the Verified Strengths and weave them into a narrative that proves why the candidate solves the core problems outlined in the Job Description.
+The Anti-Fluff Protocol: Strictly prohibit standard AI openings (e.g., "I am writing to express my interest," "I was thrilled to see," "As a highly motivated professional"). Open with a high-impact statement about the value the candidate brings to the specific company.
+Drafting Constraints: Output ONLY the text of the cover letter. Do not include introductory pleasantries or placeholders unless it is for the date or the hiring manager's name. Format with clear, scannable paragraphs. Keep the length strictly under 350 words. Output this directly into the "coverLetter" JSON field.
 
 Step 5: Optimization Directives
 Provide high-impact, actionable edits the user must make to the resume to achieve the Projected Post-Optimization Score.
