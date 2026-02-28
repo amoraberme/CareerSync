@@ -42,8 +42,8 @@ export default function Simulation() {
         setShowResults(false);
         setProgress(0);
 
-        // Reset cursor position to start
-        gsap.set(cursorRef.current, { x: 50, y: window.innerHeight - 200, opacity: 0 });
+        // Reset cursor position to start, absolute relative to container
+        gsap.set(cursorRef.current, { x: '50%', y: '120%', opacity: 0 });
     };
 
     const playSimulation = () => {
@@ -62,8 +62,16 @@ export default function Simulation() {
 
             // 2. Move to Job Input
             .to(cursorRef.current, {
-                x: () => { const el = document.getElementById('sim-job-input'); return el ? el.getBoundingClientRect().left + 40 : 200; },
-                y: () => { const el = document.getElementById('sim-job-input'); return el ? el.getBoundingClientRect().top + 20 : 200; },
+                x: () => {
+                    const container = containerRef.current?.getBoundingClientRect();
+                    const el = document.getElementById('sim-job-input')?.getBoundingClientRect();
+                    return el && container ? (el.left - container.left) + 40 : 200;
+                },
+                y: () => {
+                    const container = containerRef.current?.getBoundingClientRect();
+                    const el = document.getElementById('sim-job-input')?.getBoundingClientRect();
+                    return el && container ? (el.top - container.top) + 20 : 200;
+                },
                 duration: CURSOR_MOVE_DURATION,
                 ease: "power2.inOut"
             }, `+=${DELAY_START}`)
@@ -83,8 +91,16 @@ export default function Simulation() {
 
             // 3. Move to Resume Input
             .to(cursorRef.current, {
-                x: () => { const el = document.getElementById('sim-resume-input'); return el ? el.getBoundingClientRect().left + 40 : 200; },
-                y: () => { const el = document.getElementById('sim-resume-input'); return el ? el.getBoundingClientRect().top + 20 : 300; },
+                x: () => {
+                    const container = containerRef.current?.getBoundingClientRect();
+                    const el = document.getElementById('sim-resume-input')?.getBoundingClientRect();
+                    return el && container ? (el.left - container.left) + 40 : 200;
+                },
+                y: () => {
+                    const container = containerRef.current?.getBoundingClientRect();
+                    const el = document.getElementById('sim-resume-input')?.getBoundingClientRect();
+                    return el && container ? (el.top - container.top) + 20 : 300;
+                },
                 duration: CURSOR_MOVE_DURATION,
                 ease: "power2.inOut"
             }, `+=${PAUSE_BETWEEN_STEPS}`)
@@ -98,8 +114,16 @@ export default function Simulation() {
 
             // 4. Move to Tone Selector
             .to(cursorRef.current, {
-                x: () => { const el = document.getElementById('sim-tone-professional'); return el ? el.getBoundingClientRect().left + 20 : 300; },
-                y: () => { const el = document.getElementById('sim-tone-professional'); return el ? el.getBoundingClientRect().top + 10 : 400; },
+                x: () => {
+                    const container = containerRef.current?.getBoundingClientRect();
+                    const el = document.getElementById('sim-tone-professional')?.getBoundingClientRect();
+                    return el && container ? (el.left - container.left) + 20 : 300;
+                },
+                y: () => {
+                    const container = containerRef.current?.getBoundingClientRect();
+                    const el = document.getElementById('sim-tone-professional')?.getBoundingClientRect();
+                    return el && container ? (el.top - container.top) + 10 : 400;
+                },
                 duration: CURSOR_MOVE_DURATION,
                 ease: "power2.inOut"
             })
@@ -109,8 +133,16 @@ export default function Simulation() {
 
             // 5. Move to Analyze Button
             .to(cursorRef.current, {
-                x: () => { const el = document.getElementById('sim-analyze-btn'); return el ? el.getBoundingClientRect().left + window.innerWidth * 0.1 : 400; },
-                y: () => { const el = document.getElementById('sim-analyze-btn'); return el ? el.getBoundingClientRect().top + 20 : 500; },
+                x: () => {
+                    const container = containerRef.current?.getBoundingClientRect();
+                    const el = document.getElementById('sim-analyze-btn')?.getBoundingClientRect();
+                    return el && container ? (el.left - container.left) + (el.width / 2) : 400;
+                },
+                y: () => {
+                    const container = containerRef.current?.getBoundingClientRect();
+                    const el = document.getElementById('sim-analyze-btn')?.getBoundingClientRect();
+                    return el && container ? (el.top - container.top) + 20 : 500;
+                },
                 duration: CURSOR_MOVE_DURATION,
                 ease: "power2.inOut"
             }, `+=${PAUSE_BETWEEN_STEPS}`)
@@ -137,8 +169,8 @@ export default function Simulation() {
 
             // Move cursor out of the way
             .to(cursorRef.current, {
-                x: window.innerWidth - 100,
-                y: window.innerHeight - 100,
+                x: '100%',
+                y: '100%',
                 duration: CURSOR_MOVE_DURATION,
                 ease: "power2.inOut",
                 opacity: 0
@@ -151,18 +183,18 @@ export default function Simulation() {
     }, []);
 
     return (
-        <div ref={containerRef} className="relative w-full max-w-5xl mx-auto my-24 perspective-1000">
+        <div ref={containerRef} className="relative w-full max-w-5xl mx-auto my-24 perspective-1000 overflow-hidden rounded-[2rem]">
             {/* The Cursor */}
             <div
                 ref={cursorRef}
-                className="fixed top-0 left-0 z-[200] pointer-events-none text-obsidian drop-shadow-lg"
+                className="absolute top-0 left-0 z-[200] pointer-events-none text-obsidian drop-shadow-lg"
                 style={{ filter: "drop-shadow(2px 4px 6px rgba(0,0,0,0.3))" }}
             >
                 <MousePointer2 className="w-8 h-8 fill-obsidian stroke-white stroke-2" />
             </div>
 
             {/* Main Application Container */}
-            <div className={`relative bg-background dark:bg-darkBg border border-obsidian/10 dark:border-darkText/10 rounded-[2rem] shadow-2xl overflow-hidden transition-all duration-1000 transform ${showResults ? 'scale-100' : 'scale-[0.98]'}`}>
+            <div className={`relative bg-background dark:bg-darkBg border border-obsidian/10 dark:border-darkText/10 rounded-[2rem] shadow-2xl transition-all duration-1000 transform ${showResults ? 'scale-100' : 'scale-[0.98]'}`}>
 
                 {/* Overlay to intercept clicks and show Play button initially */}
                 {!isPlaying && !showResults && (
@@ -273,7 +305,7 @@ export default function Simulation() {
                                 </div>
 
                                 <button onClick={resetSimulation} className="mt-6 w-full py-3 rounded-full border border-obsidian/20 text-sm font-bold hover:bg-obsidian/5 transition-colors">
-                                    Reset Simulation
+                                    Play Again
                                 </button>
                             </div>
                         )}
