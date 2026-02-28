@@ -166,9 +166,16 @@ function App() {
       } else if (path === '/privacy') {
         setCurrentView('privacy');
       } else {
-        // If not a legal page, default to workspace or previous view
-        // Only reset if we are currently on a legal page view
-        setCurrentView(prev => (prev === 'terms' || prev === 'privacy') ? 'workspace' : prev);
+        // Enforce Authentication Middleware for Protected Routes
+        const protectedViews = ['history', 'plans', 'profile', 'workspace'];
+        const viewFromUrl = window.history.state?.view || prev;
+
+        if (!session && protectedViews.includes(viewFromUrl)) {
+          return 'auth'; // Force unauthenticated users back to login
+        }
+
+        // If not a legal page and session is valid, default to workspace or previous view
+        return (prev === 'terms' || prev === 'privacy') ? 'workspace' : prev;
       }
     };
 
@@ -256,6 +263,13 @@ function App() {
   }
 
   if (!session) {
+    // ═══ Global Authentication Middleware Gatekeeper ═══
+    // If an unauthenticated user somehow triggers a protected view state, intercept and force auth.
+    const protectedViews = ['history', 'plans', 'profile', 'workspace'];
+    if (protectedViews.includes(currentView)) {
+      return <Auth onNavigate={navigateTo} />;
+    }
+
     if (currentView === 'auth') {
       return <Auth onNavigate={navigateTo} />;
     }

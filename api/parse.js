@@ -17,14 +17,16 @@ export default async function handler(req, res) {
     try {
         const { text } = req.body;
 
-        if (!text || text.trim() === '') {
-            return res.status(400).json({ error: 'No text provided for parsing.' });
+        // ═══ Server-Side Validation ═══
+        if (!text || typeof text !== 'string' || text.trim() === '') {
+            return res.status(400).json({ error: 'Valid text payload is required for parsing.' });
         }
 
         // W-3: Enforce input size limit (prevent massive payloads crashing the serverless fn)
         if (text.length > 20000) {
             return res.status(400).json({ error: 'Input too large. Please paste a shorter job listing (max 20,000 characters).' });
         }
+        // ═══ End Server-Side Validation ═══
 
         // ═══ Feature Gating ═══
         if (!user.user_metadata?.tier || user.user_metadata?.tier === 'base') {

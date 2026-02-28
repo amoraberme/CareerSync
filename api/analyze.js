@@ -18,6 +18,23 @@ export default async function handler(req, res) {
     try {
         const { jobTitle, industry, experienceText, qualifications, roleDo, resumeText, resumeData, coverLetterTone } = req.body;
 
+        // ═══ Server-Side Validation ═══
+        if (!resumeData || typeof resumeData !== 'string' || resumeData.trim().length === 0) {
+            return res.status(400).json({ error: 'Valid Resume Data is required.' });
+        }
+
+        if (resumeData.length > 50000) {
+            return res.status(400).json({ error: 'Resume payload too large (max 50,000 chars).' });
+        }
+
+        if (!jobTitle || typeof jobTitle !== 'string' || jobTitle.trim().length === 0) {
+            return res.status(400).json({ error: 'Job Title is required.' });
+        }
+
+        const allowedTones = ['Professional', 'Confident', 'Creative', 'Direct'];
+        const validatedTone = allowedTones.includes(coverLetterTone) ? coverLetterTone : 'Professional';
+        // ═══ End Server-Side Validation ═══
+
         // ═══ Strict Credit Gate ═══
         // All tiers cost 3 credits. Sever-side enforcement to prevent bypass.
         const supabaseUrl = process.env.VITE_SUPABASE_URL;
