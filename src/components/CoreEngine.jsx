@@ -8,7 +8,7 @@ import useWorkspaceStore from '../store/useWorkspaceStore';
 export default function CoreEngine({ session, setCurrentView }) {
     const [showPasteModal, setShowPasteModal] = useState(false);
     const {
-        jobTitle, industry, experienceLevel, requiredSkills, experienceText, qualifications, roleDo, pastedText,
+        jobTitle, industry, experienceLevel, requiredSkills, experienceText, qualifications, roleDo, fullJobDescription, pastedText,
         resumeUploaded, resumeData, resumeFileName, resumeFileSize, coverLetterTone,
         isAnalyzing, isParsing, updateField, runAnalysis, runParse, userTier
     } = useWorkspaceStore();
@@ -130,6 +130,10 @@ export default function CoreEngine({ session, setCurrentView }) {
                             <div>
                                 <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-1 block">What You'll Do in the Role</label>
                                 <textarea value={roleDo} onChange={(e) => updateField('roleDo', e.target.value)} placeholder="Day-to-day responsibilities..." className="w-full min-h-[80px] bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors resize-none"></textarea>
+                            </div>
+                            <div>
+                                <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-1 block">Full Job Description</label>
+                                <textarea value={fullJobDescription} onChange={(e) => updateField('fullJobDescription', e.target.value)} placeholder="Paste full job description here..." className="w-full min-h-[120px] bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors resize-none"></textarea>
                             </div>
 
                             {/* Tone Selector */}

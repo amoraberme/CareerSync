@@ -16,7 +16,7 @@ export default async function handler(req, res) {
     if (!user) return;
 
     try {
-        const { jobTitle, industry, experienceText, qualifications, roleDo, resumeText, resumeData, coverLetterTone } = req.body;
+        const { jobTitle, industry, experienceText, qualifications, roleDo, fullJobDescription, resumeText, resumeData, coverLetterTone } = req.body;
 
         // Normalize resumeData for length validation (it can be a string from paste, or an object from file upload)
         let resumeString = '';
@@ -99,13 +99,13 @@ Step 3: Deep Fit & Transferable Skill Analysis
 - Direct Alignment: Isolate exact points of friction and alignment.
 - Transferable Skill Mapping (Descriptive): When a core JD requirement is missing, aggressively scan the resume for adjacent experiences. Write a deep, descriptive paragraph explaining exactly how the candidate's existing background translates to the missing requirement, giving them the rhetorical ammunition to bridge the gap.
 
-Step 4: The Executive Copywriter Cover Letter
-Persona: You are an elite Executive Copywriter and Career Strategist. You specialize in writing highly persuasive, non-generic cover letters that bypass ATS filters and immediately hook human hiring managers.
-Input Data: Use the user's parsed Resume, the Job Description, the Verified Strengths from Step 3, and the target tone (${coverLetterTone || 'Professional'}).
-Tone Calibration: Adopt the target tone entirely. If "Direct," use punchy, high-impact sentences. If "Creative," open with a compelling narrative hook. If "Professional," maintain a highly polished, authoritative executive presence.
-Evidence Integration: Do not summarize the resume. Instead, select the top 2-3 most powerful points from the Verified Strengths and weave them into a narrative that proves why the candidate solves the core problems outlined in the Job Description.
-The Anti-Fluff Protocol: Strictly prohibit standard AI openings (e.g., "I am writing to express my interest," "I was thrilled to see," "As a highly motivated professional"). Open with a high-impact statement about the value the candidate brings to the specific company.
-Drafting Constraints: Output ONLY the text of the cover letter. Do not include introductory pleasantries or placeholders unless it is for the date or the hiring manager's name. Format with clear, scannable paragraphs. Keep the length strictly under 350 words. Output this directly into the "coverLetter" JSON field.
+Step 4: Draft & Critique (Adversarial Validation)
+- Tone Calibration: Adopt the ${coverLetterTone || 'Professional'} mood entirely. If "Direct," use punchy, high-impact sentences. If "Creative," open with a compelling narrative hook. If "Professional," maintain a highly polished, authoritative executive presence.
+- Evidence Integration: Do not summarize the resume. Instead, select the top 2-3 most powerful points from the candidate's verified strengths and weave them into a narrative that proves why the candidate solves the core problems outlined in the JD.
+- The Anti-Fluff Protocol: Strictly prohibit standard AI openings (e.g., "I am writing to express my interest," "I was thrilled to see," "As a highly motivated professional"). Open with a high-impact statement about the value the candidate brings to the specific company.
+- Draft 1: Write the cover letter based on the above rules.
+- Internal Critique (Red Team): Adopt the persona of a skeptical, ruthless Hiring Manager. Review Draft 1. Is there generic filler? Does it hallucinate experience? Are there standard AI openings?
+- Draft 2 (Final): Rewrite the letter based on the Red Team critique. Output ONLY the text of the cover letter. Do not include introductory pleasantries or [Bracketed] placeholders unless it is for the date or the hiring manager's name.
 
 Step 5: Optimization Directives
 Provide high-impact, actionable edits the user must make to the resume to achieve the Projected Post-Optimization Score.
@@ -131,6 +131,9 @@ Do not include any extra fields or text.`;
 
         // 3. User content — strictly separated
         let userContent = `Job Title: ${jobTitle}\nIndustry: ${industry}\nExperience Required: ${experienceText}\nQualifications Required: ${qualifications}\nCore Responsibilities (What You'll Do): ${roleDo}`;
+        if (fullJobDescription && fullJobDescription.trim().length > 0) {
+            userContent += `\nFull Job Description: ${fullJobDescription}`;
+        }
 
         const parts = [{ text: userContent }];
 
