@@ -4,8 +4,9 @@ import jsPDF from 'jspdf';
  * Generates a clean, plain-text A4 PDF from the Analysis Data JSON object.
  * @param {Object} analysisData - The structured JSON object containing the AI output.
  * @param {string} filename - The desired name for the downloaded PDF.
+ * @param {string} userTier - The user's tier to determine what to render.
  */
-export const exportElementToPDF = async (analysisData, filename = 'CareerSync_Report.pdf') => {
+export const exportElementToPDF = async (analysisData, filename = 'CareerSync_Report.pdf', userTier = 'base') => {
     if (!analysisData) {
         console.error("Analysis data not provided for PDF generation.");
         return;
@@ -98,40 +99,56 @@ export const exportElementToPDF = async (analysisData, filename = 'CareerSync_Re
         }
         yPos += 6;
 
-        // 4. Optimization
-        addText('Optimization', 16, true, { bottomMargin: 6 });
-
-        // Strategic Advice
-        addText('Strategic Advice:', 14, true, { bottomMargin: 4 });
-        if (analysisData.optimization?.strategicAdvice && analysisData.optimization.strategicAdvice.length > 0) {
-            analysisData.optimization.strategicAdvice.forEach(advice => {
-                addText(`• ${advice}`, 11, false, { bottomMargin: 4 });
+        // 4. Transferable Skill Bridges (Feature Mapping)
+        if (analysisData.transferableSkills && analysisData.transferableSkills.length > 0) {
+            addText('Transferable Skill Bridges', 16, true, { bottomMargin: 6 });
+            analysisData.transferableSkills.forEach(ts => {
+                addText(`Bridging Gap: ${ts.missingSkill}`, 12, true, { bottomMargin: 2 });
+                addText(ts.bridgeAmmunition, 11, false, { bottomMargin: 6 });
             });
-        } else {
-            addText('• N/A', 11, false, { bottomMargin: 4 });
+            yPos += 6;
         }
-        yPos += 4;
 
-        // ATS Keywords
-        addText('ATS Injection Keywords:', 14, true, { bottomMargin: 4 });
-        if (analysisData.optimization?.atsKeywords && analysisData.optimization.atsKeywords.length > 0) {
-            const keywords = analysisData.optimization.atsKeywords.join(', ');
-            addText(keywords, 11, false, { bottomMargin: 4 });
-        } else {
-            addText('N/A', 11, false, { bottomMargin: 4 });
-        }
-        yPos += 4;
+        // 5. Optimization (Premium Only)
+        if (userTier === 'premium') {
+            addText('Optimization', 16, true, { bottomMargin: 6 });
 
-        // Structural Edits
-        addText('Structural Edits:', 14, true, { bottomMargin: 4 });
-        if (analysisData.optimization?.structuralEdits && analysisData.optimization.structuralEdits.length > 0) {
-            analysisData.optimization.structuralEdits.forEach((edit, index) => {
-                addText(`Edit ${index + 1}:`, 12, true, { bottomMargin: 2 });
-                addText(`Original: ${edit.before}`, 11, false, { bottomMargin: 2 });
-                addText(`Revised:  ${edit.after}`, 11, false, { bottomMargin: 6 });
-            });
+            // Strategic Advice
+            addText('Strategic Advice:', 14, true, { bottomMargin: 4 });
+            if (analysisData.optimization?.strategicAdvice && analysisData.optimization.strategicAdvice.length > 0) {
+                analysisData.optimization.strategicAdvice.forEach(advice => {
+                    addText(`• ${advice}`, 11, false, { bottomMargin: 4 });
+                });
+            } else {
+                addText('• N/A', 11, false, { bottomMargin: 4 });
+            }
+            yPos += 4;
+
+            // ATS Keywords
+            addText('ATS Injection Keywords:', 14, true, { bottomMargin: 4 });
+            if (analysisData.optimization?.atsKeywords && analysisData.optimization.atsKeywords.length > 0) {
+                const keywords = analysisData.optimization.atsKeywords.join(', ');
+                addText(keywords, 11, false, { bottomMargin: 4 });
+            } else {
+                addText('N/A', 11, false, { bottomMargin: 4 });
+            }
+            yPos += 4;
+
+            // Structural Edits
+            addText('Structural Edits:', 14, true, { bottomMargin: 4 });
+            if (analysisData.optimization?.structuralEdits && analysisData.optimization.structuralEdits.length > 0) {
+                analysisData.optimization.structuralEdits.forEach((edit, index) => {
+                    addText(`Edit ${index + 1}:`, 12, true, { bottomMargin: 2 });
+                    addText(`Original: ${edit.before}`, 11, false, { bottomMargin: 2 });
+                    addText(`Revised:  ${edit.after}`, 11, false, { bottomMargin: 6 });
+                });
+            } else {
+                addText('• N/A', 11, false, { bottomMargin: 4 });
+            }
         } else {
-            addText('• N/A', 11, false, { bottomMargin: 4 });
+            // Redacted state for non-premium
+            addText('Optimization (Premium Only)', 16, true, { bottomMargin: 6 });
+            addText('Detailed Structural Edits and Injection Keywords are locked to Premium Tier users.', 11, false, { bottomMargin: 6 });
         }
 
         // Save the Document

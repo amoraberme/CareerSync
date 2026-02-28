@@ -53,7 +53,7 @@ export default function AnalysisTabs({ session, setCurrentView }) {
         const fileName = `${safeTitle}_-_${safeCompany}_-_${safeDate}.pdf`;
 
         // We now pass the raw JSON object instead of the DOM reference
-        await exportElementToPDF(analysisData, fileName);
+        await exportElementToPDF(analysisData, fileName, userTier);
         setIsExporting(false);
     };
 
