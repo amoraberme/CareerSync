@@ -54,7 +54,7 @@ export default function Navbar({ currentView, setCurrentView, onLogout, onOpenIn
                     {/* Brand */}
                     <div className="flex items-center space-x-2 cursor-pointer" onClick={() => onNavigate ? onNavigate('workspace') : setCurrentView('workspace')}>
                         <img src="/logo.png" alt="CareerSync Logo" className="w-8 h-8 object-contain" />
-                        <span className="font-sans font-bold text-xl tracking-tightest text-obsidian dark:text-darkText">CareerSync</span>
+                        <span className="font-sans font-bold text-xl tracking-tightest text-obsidian dark:text-darkText">Career<span className="font-drama italic font-normal text-champagne">Sync.</span></span>
                     </div>
 
                     {/* Right Side: Credits + Settings (desktop) + Hamburger (mobile) */}
