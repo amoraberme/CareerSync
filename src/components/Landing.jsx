@@ -23,9 +23,13 @@ const Landing = ({ onNavigate }) => {
     });
 
     // The Physics: Map scrollYProgress (0 to 0.5) to visual effects
+    // Opacity hits 0.65 exactly at progress 0.175
     const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
     const heroScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.9]);
     const heroY = useTransform(scrollYProgress, [0, 0.5], [0, 50]);
+
+    // Simulation Entrance: Stays invisible until Hero opacity = 0.65 (progress 0.175)
+    const simulationOpacity = useTransform(scrollYProgress, [0, 0.175, 0.4], [0, 0, 1]);
 
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -117,13 +121,15 @@ const Landing = ({ onNavigate }) => {
 
                 {/* ═══ PRODUCT SIMULATION (Overlaps the sinking hero) ═══ */}
                 <section className="relative z-10 w-full mt-[100vh] pb-32">
-                    <Simulation />
+                    <motion.div style={{ opacity: simulationOpacity }}>
+                        <Simulation />
+                    </motion.div>
                 </section>
             </div>
 
             {/* ═══ TECH STACK RIBBON (INFINITE MARQUEE) ═══ */}
             <section className="py-20 border-y border-obsidian/5 dark:border-darkText/5">
-                <div className="max-w-6xl mx-auto px-6 text-center">
+                <div className="max-w-4xl w-[65%] mx-auto text-center">
                     <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate/40 dark:text-darkText/30 mb-12 italic">
                         The ultimate analytical companion for career growth
                     </p>
