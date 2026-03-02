@@ -442,17 +442,6 @@ function App() {
                 )}
               </div>
 
-              {/* Footer */}
-              {!invoiceLoading && invoiceHistory.length > 0 && (
-                <div className="px-8 py-5 border-t border-obsidian/8 dark:border-darkText/8 flex items-center justify-between shrink-0">
-                  <p className="text-xs text-slate dark:text-darkText/40">
-                    {invoiceHistory.length} transaction{invoiceHistory.length !== 1 ? 's' : ''}
-                  </p>
-                  <p className="text-xs font-semibold text-champagne">
-                    {invoiceHistory.reduce((sum, r) => sum + r.credits_gained, 0).toLocaleString()} total credits purchased
-                  </p>
-                </div>
-              )}
             </div>
           </div>
         )}

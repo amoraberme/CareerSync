@@ -65,7 +65,7 @@ export default function Navbar({ currentView, setCurrentView, onLogout, onOpenIn
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-champagne opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-champagne"></span>
                             </span>
-                            <span className="text-xs font-mono text-slate uppercase tracking-widest relative top-[1px]">{creditBalance} Credits</span>
+                            <span className="text-xs font-mono text-slate dark:text-darkText/70 uppercase tracking-widest relative top-[1px]">{creditBalance} Credits</span>
                         </div>
 
                         {/* Invoice History — desktop only */}
