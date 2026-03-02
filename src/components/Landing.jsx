@@ -4,6 +4,8 @@ import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
 import Simulation from './Simulation';
 import ContactModal from './ContactModal';
+import OriginButton from './animations/OriginButton';
+import SwipeLettersButton from './animations/SwipeLettersButton';
 
 gsap.registerPlugin(ScrollToPlugin);
 
@@ -78,13 +80,12 @@ const Landing = ({ onNavigate }) => {
                     </p>
 
                     <div className="hero-cta flex flex-col md:flex-row items-center justify-center gap-4">
-                        <button
-                            onClick={() => onNavigate('auth')}
-                            className="w-full md:w-auto px-8 py-4 bg-obsidian dark:bg-darkText text-background dark:text-darkBg rounded-2xl text-lg font-bold shadow-2xl hover:brightness-110 transition-all flex items-center justify-center gap-3 active:scale-[0.98] btn-shine group"
-                        >
-                            <span className="group-hover:translate-x-1 transition-transform duration-300 ease-physical">Start your journey</span>
-                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300 ease-physical" />
-                        </button>
+                        <div className="w-full md:w-64 h-16">
+                            <OriginButton
+                                onClick={() => onNavigate('auth')}
+                                className="h-full"
+                            />
+                        </div>
                         <button
                             onClick={scrollToPricing}
                             className="w-full md:w-auto px-8 py-4 bg-surface dark:bg-darkCard text-obsidian dark:text-darkText rounded-2xl text-lg font-bold hover:brightness-105 transition-all border border-obsidian/10 dark:border-darkText/10 active:scale-[0.98] btn-shine"
@@ -314,7 +315,18 @@ const Landing = ({ onNavigate }) => {
                     </div>
 
                     <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
-                        <button onClick={() => setIsContactModalOpen(true)} className="text-xs font-bold uppercase tracking-widest hover:text-champagne transition-colors">Contact Support</button>
+                        <div className="flex items-center">
+                            <SwipeLettersButton
+                                label="GET IN TOUCH"
+                                onClick={() => setIsContactModalOpen(true)}
+                                showBorder={false}
+                                defaultState={{ bgColor: "transparent", borderColor: "transparent", textColor: "var(--tw-colors-slate)" }}
+                                hoverState={{ bgColor: "transparent", borderColor: "transparent", textColor: "var(--tw-colors-champagne)" }}
+                                paddingX={0}
+                                paddingY={0}
+                                font={{ fontSize: "12px", variant: "700", letterSpacing: "1.5px", textAlign: "center", textTransform: "uppercase" }}
+                            />
+                        </div>
                         <button onClick={() => onNavigate('terms')} className="text-xs font-bold uppercase tracking-widest hover:text-champagne transition-colors">Terms of Service</button>
                         <button onClick={() => onNavigate('privacy')} className="text-xs font-bold uppercase tracking-widest hover:text-champagne transition-colors">Privacy Policy</button>
                         <a href="https://www.facebook.com/share/16xojXWFCn/" target="_blank" rel="noopener noreferrer" className="text-slate/60 hover:text-[#1877F2] dark:text-darkText/40 dark:hover:text-[#1877F2] transition-colors" title="Follow us on Facebook">

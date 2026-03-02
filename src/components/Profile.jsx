@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient';
 import useWorkspaceStore from '../store/useWorkspaceStore';
 import { User, Lock, Mail, Fingerprint, Award, Coins, Key, ShieldCheck, AlertTriangle, Trash2, MessageSquare, Sparkles } from 'lucide-react';
 import ContactModal from './ContactModal';
+import SwipeLettersButton from './animations/SwipeLettersButton';
 
 export default function Profile({ session, setCurrentView }) {
     const [profileData, setProfileData] = useState(null);
@@ -263,7 +264,15 @@ export default function Profile({ session, setCurrentView }) {
                             className="w-full flex items-center justify-center space-x-2 py-3 px-6 rounded-2xl bg-zinc-950 dark:bg-zinc-800 text-white font-medium text-sm hover:bg-zinc-900 dark:hover:bg-zinc-700 transition-all active:scale-[0.98]"
                         >
                             <MessageSquare className="w-4 h-4" />
-                            <span>Contact Support</span>
+                            <SwipeLettersButton
+                                label="GET IN TOUCH"
+                                showBorder={false}
+                                defaultState={{ bgColor: "transparent", borderColor: "transparent", textColor: "#FFFFFF" }}
+                                hoverState={{ bgColor: "transparent", borderColor: "transparent", textColor: "#FFFFFF" }}
+                                paddingX={4}
+                                paddingY={0}
+                                font={{ fontSize: "14px", variant: "500", letterSpacing: "0px", textAlign: "center", textTransform: "none" }}
+                            />
                         </button>
                     </div>
 

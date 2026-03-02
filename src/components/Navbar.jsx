@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import useWorkspaceStore from '../store/useWorkspaceStore';
-import { Settings, User, Moon, Sun, LogOut, Menu, X, Receipt, LayoutDashboard, History, CreditCard } from 'lucide-react';
-
+import { Settings, User, LogOut, Menu, X, Receipt, LayoutDashboard, History, CreditCard } from 'lucide-react';
+import ThemeToggleButton from './animations/ThemeToggleButton';
 export default function Navbar({ currentView, setCurrentView, onLogout, onOpenInvoice, onNavigate }) {
     const [scrolled, setScrolled] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -122,13 +122,10 @@ export default function Navbar({ currentView, setCurrentView, onLogout, onOpenIn
                                             >
                                                 <User className="w-4 h-4 mr-3 opacity-70" /> Profile
                                             </button>
-                                            <button
-                                                onClick={() => { toggleTheme(); }}
-                                                className="w-full text-left px-5 py-3 text-sm font-medium text-obsidian dark:text-darkText hover:bg-obsidian/5 dark:hover:bg-darkText/5 flex items-center transition-colors"
-                                            >
-                                                {isDark ? <Sun className="w-4 h-4 mr-3 opacity-70" /> : <Moon className="w-4 h-4 mr-3 opacity-70" />}
-                                                {isDark ? 'Light Mode' : 'Dark Mode'}
-                                            </button>
+                                            <div className="px-5 py-2 w-full flex items-center justify-between hover:bg-obsidian/5 dark:hover:bg-darkText/5 transition-colors">
+                                                <span className="text-sm font-medium text-obsidian dark:text-darkText">Appearance</span>
+                                                <ThemeToggleButton size={28} />
+                                            </div>
                                             <div className="border-t border-obsidian/5 dark:border-darkText/5 my-1 w-full"></div>
                                             <button
                                                 onClick={() => { setIsSettingsOpen(false); setTimeout(onLogout, 50); }}
@@ -208,13 +205,10 @@ export default function Navbar({ currentView, setCurrentView, onLogout, onOpenIn
                                 <Receipt className="w-5 h-5 mr-4 opacity-70" />
                                 Invoice History
                             </button>
-                            <button
-                                onClick={() => { toggleTheme(); }}
-                                className="w-full flex items-center px-6 py-4 rounded-2xl text-base font-medium text-obsidian dark:text-darkText hover:bg-obsidian/5 dark:hover:bg-darkText/5 transition-colors"
-                            >
-                                {isDark ? <Sun className="w-5 h-5 mr-4 opacity-70" /> : <Moon className="w-5 h-5 mr-4 opacity-70" />}
-                                {isDark ? 'Light Mode' : 'Dark Mode'}
-                            </button>
+                            <div className="w-full flex items-center justify-between px-6 py-4 rounded-2xl hover:bg-obsidian/5 dark:hover:bg-darkText/5 transition-colors cursor-pointer" onClick={(e) => { e.stopPropagation(); toggleTheme(); }}>
+                                <span className="text-base font-medium text-obsidian dark:text-darkText">Theme Settings</span>
+                                <ThemeToggleButton size={36} />
+                            </div>
                             <button
                                 onClick={() => { setIsMobileMenuOpen(false); setTimeout(onLogout, 50); }}
                                 className="w-full flex items-center px-6 py-4 rounded-2xl text-base font-medium text-[#EA4335] hover:bg-[#EA4335]/10 transition-colors"
