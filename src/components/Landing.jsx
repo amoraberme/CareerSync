@@ -42,19 +42,16 @@ const Landing = ({ onNavigate }) => {
 
                     {/* Links */}
                     <div className="hidden md:flex items-center gap-8">
-                        <button onClick={scrollToPricing} className="text-sm font-medium hover:text-champagne transition-colors">Plans</button>
-                        <button onClick={() => onNavigate('terms')} className="text-sm font-medium hover:text-champagne transition-colors">Terms</button>
-                        <button onClick={() => onNavigate('privacy')} className="text-sm font-medium hover:text-champagne transition-colors">Privacy</button>
-                        <button onClick={() => setIsContactModalOpen(true)} className="text-sm font-medium hover:text-champagne transition-colors">Contact</button>
+                        {/* Stripped for minimum friction navigation */}
                     </div>
 
                     {/* CTA */}
                     <button
                         onClick={() => onNavigate('auth')}
-                        className="px-6 py-2.5 bg-obsidian dark:bg-darkText text-background dark:text-darkBg rounded-full text-sm font-bold shadow-lg hover:scale-105 transition-transform flex items-center gap-2"
+                        className="px-6 py-2.5 bg-obsidian dark:bg-darkText text-background dark:text-darkBg rounded-full text-sm font-bold shadow-lg transition-transform flex items-center gap-2 active:scale-[0.98] btn-shine group"
                     >
-                        Sign In
-                        <ArrowRight className="w-4 h-4" />
+                        <span className="group-hover:translate-x-1 transition-transform duration-300 ease-physical">Sign In</span>
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300 ease-physical" />
                     </button>
                 </div>
             </nav>
@@ -83,14 +80,14 @@ const Landing = ({ onNavigate }) => {
                     <div className="hero-cta flex flex-col md:flex-row items-center justify-center gap-4">
                         <button
                             onClick={() => onNavigate('auth')}
-                            className="w-full md:w-auto px-8 py-4 bg-obsidian dark:bg-darkText text-background dark:text-darkBg rounded-2xl text-lg font-bold shadow-2xl hover:brightness-110 transition-all flex items-center justify-center gap-3"
+                            className="w-full md:w-auto px-8 py-4 bg-obsidian dark:bg-darkText text-background dark:text-darkBg rounded-2xl text-lg font-bold shadow-2xl hover:brightness-110 transition-all flex items-center justify-center gap-3 active:scale-[0.98] btn-shine group"
                         >
-                            Start your journey
-                            <ArrowRight className="w-5 h-5" />
+                            <span className="group-hover:translate-x-1 transition-transform duration-300 ease-physical">Start your journey</span>
+                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300 ease-physical" />
                         </button>
                         <button
                             onClick={scrollToPricing}
-                            className="w-full md:w-auto px-8 py-4 bg-surface dark:bg-darkCard text-obsidian dark:text-darkText rounded-2xl text-lg font-bold hover:brightness-105 transition-all border border-obsidian/10 dark:border-darkText/10"
+                            className="w-full md:w-auto px-8 py-4 bg-surface dark:bg-darkCard text-obsidian dark:text-darkText rounded-2xl text-lg font-bold hover:brightness-105 transition-all border border-obsidian/10 dark:border-darkText/10 active:scale-[0.98] btn-shine"
                         >
                             View Plans
                         </button>
@@ -173,8 +170,11 @@ const Landing = ({ onNavigate }) => {
                             </div>
 
                             <div className="mb-8">
-                                <span className="text-5xl font-bold">₱1</span>
-                                <span className="text-slate/60 text-sm ml-2">/ top-up</span>
+                                <div className="flex items-baseline mb-1">
+                                    <span className="text-3xl font-bold text-obsidian dark:text-darkText mr-1">₱</span>
+                                    <span className="text-7xl font-sans font-black text-obsidian dark:text-darkText tracking-tighter">1</span>
+                                    <span className="text-sm text-slate dark:text-darkText/50 ml-2">/ top-up</span>
+                                </div>
                             </div>
 
                             <button onClick={() => onNavigate('auth')} className="w-full py-4 rounded-2xl bg-obsidian dark:bg-darkText text-background dark:text-darkBg font-bold mb-8 transition-transform active:scale-95">
@@ -194,13 +194,25 @@ const Landing = ({ onNavigate }) => {
                                     <Check className="w-4 h-4 text-champagne shrink-0" />
                                     <span>Basic Cover Letter generation</span>
                                 </li>
+                                <li className="flex items-start gap-3 mt-1">
+                                    <span className="w-5 h-5 rounded-full bg-slate/8 flex items-center justify-center shrink-0 mt-0.5">
+                                        <span className="text-slate/40 text-[10px] font-bold leading-none">✕</span>
+                                    </span>
+                                    <span className="text-slate/40 dark:text-darkText/30 text-xs">No PDF export</span>
+                                </li>
+                                <li className="flex items-start gap-3 mt-1">
+                                    <span className="w-5 h-5 rounded-full bg-slate/8 flex items-center justify-center shrink-0 mt-0.5">
+                                        <span className="text-slate/40 text-[10px] font-bold leading-none">✕</span>
+                                    </span>
+                                    <span className="text-slate/40 dark:text-darkText/25 text-xs">No resume optimization</span>
+                                </li>
                             </ul>
 
                             <p className="text-[10px] text-slate/40 text-center uppercase tracking-widest font-bold">Base Analytics Only</p>
                         </div>
 
                         {/* PREMIUM TIER (Featured) */}
-                        <div className="relative bg-white dark:bg-darkCard border-4 border-champagne rounded-[2.5rem] p-8 flex flex-col shadow-2xl shadow-champagne/20 scale-105 z-10">
+                        <div className="relative bg-white dark:bg-darkCard border-[3px] border-champagne rounded-[2.5rem] p-10 md:py-16 flex flex-col shadow-2xl shadow-champagne/30 scale-100 lg:scale-110 z-10 -my-4 lg:-my-8 text-center order-first md:order-none">
                             <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-champagne text-obsidian px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg">
                                 Most Popular
                             </div>
@@ -211,8 +223,13 @@ const Landing = ({ onNavigate }) => {
                             </div>
 
                             <div className="mb-8">
-                                <span className="text-5xl font-bold">₱3</span>
-                                <span className="text-slate/60 text-sm ml-2">/ month</span>
+                                <div className="flex justify-center flex-col items-center mb-1">
+                                    <div className="flex items-baseline justify-center">
+                                        <span className="text-4xl font-bold text-obsidian dark:text-darkText mr-1">₱</span>
+                                        <span className="text-[120px] leading-[0.8] font-sans font-black text-obsidian dark:text-darkText tracking-tighter">3</span>
+                                    </div>
+                                    <span className="text-lg font-bold text-slate dark:text-darkText/50 mt-1">/ month</span>
+                                </div>
                             </div>
 
                             <button onClick={() => onNavigate('auth')} className="w-full py-4 rounded-2xl bg-champagne text-obsidian font-black mb-8 transition-transform active:scale-95 shadow-xl shadow-champagne/30">
@@ -249,8 +266,11 @@ const Landing = ({ onNavigate }) => {
                             </div>
 
                             <div className="mb-8">
-                                <span className="text-5xl font-bold">₱2</span>
-                                <span className="text-slate/60 text-sm ml-2">/ month</span>
+                                <div className="flex items-baseline mb-1">
+                                    <span className="text-3xl font-bold text-obsidian dark:text-darkText mr-1">₱</span>
+                                    <span className="text-7xl font-sans font-black text-obsidian dark:text-darkText tracking-tighter">2</span>
+                                    <span className="text-sm text-slate dark:text-darkText/50 ml-2">/ month</span>
+                                </div>
                             </div>
 
                             <button onClick={() => onNavigate('auth')} className="w-full py-4 rounded-2xl bg-obsidian dark:bg-darkText text-background dark:text-darkBg font-bold mb-8 transition-transform active:scale-95">
@@ -269,6 +289,12 @@ const Landing = ({ onNavigate }) => {
                                 <li className="flex gap-3 text-sm text-slate dark:text-darkText/70">
                                     <Shield className="w-4 h-4 text-champagne shrink-0" />
                                     <span>30-Day Plan Lock stability</span>
+                                </li>
+                                <li className="flex items-start gap-3 mt-1">
+                                    <span className="w-5 h-5 rounded-full bg-slate/8 flex items-center justify-center shrink-0 mt-0.5">
+                                        <span className="text-slate/40 text-[10px] font-bold leading-none">✕</span>
+                                    </span>
+                                    <span className="text-slate/40 dark:text-darkText/25 text-xs">No resume optimization</span>
                                 </li>
                             </ul>
 
@@ -290,9 +316,15 @@ const Landing = ({ onNavigate }) => {
                         <p className="text-xs text-slate/60 dark:text-darkText/40">© 2026 CareerSync. All rights reserved.</p>
                     </div>
 
-                    <div className="flex items-center gap-8">
+                    <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
+                        <button onClick={() => setIsContactModalOpen(true)} className="text-xs font-bold uppercase tracking-widest hover:text-champagne transition-colors">Contact Support</button>
                         <button onClick={() => onNavigate('terms')} className="text-xs font-bold uppercase tracking-widest hover:text-champagne transition-colors">Terms of Service</button>
                         <button onClick={() => onNavigate('privacy')} className="text-xs font-bold uppercase tracking-widest hover:text-champagne transition-colors">Privacy Policy</button>
+                        <a href="https://www.facebook.com/share/16xojXWFCn/" target="_blank" rel="noopener noreferrer" className="text-slate/60 hover:text-[#1877F2] dark:text-darkText/40 dark:hover:text-[#1877F2] transition-colors" title="Follow us on Facebook">
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
+                            </svg>
+                        </a>
                     </div>
 
                 </div>

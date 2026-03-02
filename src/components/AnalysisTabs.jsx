@@ -158,61 +158,94 @@ export default function AnalysisTabs({ session, setCurrentView }) {
                 {/* Tabs Content */}
                 <div className="content-panel bg-surface dark:bg-darkCard border border-obsidian/5 dark:border-darkText/5 shadow-inner rounded-[2rem] p-8 min-h-[400px]">
                     {activeTab === 'analysis' && (
-                        <div className="space-y-8 animate-fade-in">
-                            <h3 className="text-xl font-sans font-semibold text-obsidian dark:text-darkText mb-6">Skill Alignment Matrix</h3>
-                            <div className="grid md:grid-cols-2 gap-8">
-                                <div>
-                                    <h4 className="text-sm font-mono uppercase tracking-widest text-[#34A853] mb-4 flex items-center"><span className="w-2 h-2 rounded-full bg-[#34A853] mr-2"></span> Verified Strengths</h4>
-                                    <div className="space-y-3">
-                                        {(analysisData?.matchedProfile || []).map((match, idx) => (
-                                            <div key={idx} className="bg-white dark:bg-darkCard border border-[#34A853]/30 shadow-sm rounded-xl p-4 flex flex-col items-start gap-1 justify-center">
-                                                <div className="flex justify-between items-center w-full">
-                                                    <span className="text-obsidian dark:text-darkText font-semibold">{match.skill}</span>
-                                                    <CheckCircle className="w-4 h-4 text-[#34A853]" />
-                                                </div>
-                                                <span className="text-slate dark:text-darkText/70 text-sm">{match.description}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div>
-                                    <h4 className="text-sm font-mono uppercase tracking-widest text-[#EA4335] mb-4 flex items-center"><span className="w-2 h-2 rounded-full bg-[#EA4335] mr-2"></span> Identified Gaps</h4>
-                                    <div className="space-y-3">
-                                        {(analysisData?.gapAnalysis || []).map((gap, idx) => (
-                                            <div key={idx} className="bg-white dark:bg-darkCard border border-[#EA4335]/30 shadow-sm rounded-xl p-4 flex flex-col items-start gap-1 justify-center">
-                                                <div className="flex justify-between items-center w-full">
-                                                    <span className="text-obsidian dark:text-darkText font-semibold">{gap.missingSkill}</span>
-                                                    <Target className="w-4 h-4 text-[#EA4335]" />
-                                                </div>
-                                                <span className="text-slate dark:text-darkText/70 text-sm">{gap.description}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
+                        <div className="animate-fade-in">
+                            <h3 className="text-xl font-sans font-semibold text-obsidian dark:text-darkText mb-6">Candidate Architecture (Bento Profile)</h3>
 
-                            {/* Deep Transferable Skills Mapping */}
-                            {analysisData?.transferableSkills && analysisData.transferableSkills.length > 0 && (
-                                <div className="mt-12 pt-8 border-t border-obsidian/5 dark:border-darkText/5">
-                                    <h3 className="text-xl font-sans font-semibold text-obsidian dark:text-darkText mb-6 flex items-center">
-                                        <Activity className="w-5 h-5 mr-3 text-champagne" />
-                                        Transferable Skill Bridges
-                                    </h3>
-                                    <p className="text-slate dark:text-darkText/70 text-sm mb-6">Deep alignments identified by the AI to rhetorically overcome missing technical requirements.</p>
-                                    <div className="grid md:grid-cols-2 gap-6">
-                                        {analysisData.transferableSkills.map((ts, idx) => (
-                                            <div key={idx} className="bg-white/40 dark:bg-darkCard/40 border border-obsidian/10 dark:border-darkText/10 rounded-2xl p-6 shadow-sm">
-                                                <div className="inline-block px-3 py-1 bg-obsidian/5 dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 text-xs font-mono uppercase tracking-widest rounded-full mb-4">
-                                                    Bridging Gap: <span className="font-bold text-obsidian dark:text-darkText">{ts.missingSkill}</span>
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 auto-rows-min">
+
+                                {/* Target Role Context (Spans 1 Column, taller) */}
+                                <div className="bg-white/50 dark:bg-darkCard/30 border border-obsidian/5 dark:border-darkText/5 shadow-sm rounded-3xl p-8 flex flex-col justify-between lg:row-span-2">
+                                    <div>
+                                        <div className="inline-block px-3 py-1 bg-champagne/20 text-champagne text-[10px] font-black uppercase tracking-widest rounded-full mb-4">Target Role Focus</div>
+                                        <h4 className="text-2xl font-bold text-obsidian dark:text-darkText leading-tight mb-2">
+                                            {analysisData?.jobTitle || 'Analyzed Role'}
+                                        </h4>
+                                        <p className="text-sm font-mono text-slate dark:text-darkText/60 mb-6">{analysisData?.company || 'Company'}</p>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div className="p-4 bg-obsidian/5 dark:bg-darkText/5 rounded-2xl">
+                                            <p className="text-[10px] font-mono uppercase tracking-widest text-slate dark:text-darkText/50 mb-1">Match Quality</p>
+                                            <p className="text-lg font-bold text-obsidian dark:text-darkText">{analysisData?.matchScore || 0}% Baseline Synergy</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Verified Strengths (Spans 2 Columns) */}
+                                <div className="bg-white dark:bg-darkCard border border-[#34A853]/10 shadow-sm rounded-3xl p-8 lg:col-span-2 relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-[#34A853]/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
+                                    <h4 className="text-sm font-mono uppercase tracking-widest text-[#34A853] mb-6 flex items-center">
+                                        <span className="w-2 h-2 rounded-full bg-[#34A853] mr-2 shadow-[0_0_8px_rgba(52,168,83,0.5)]"></span>
+                                        Core Competencies
+                                    </h4>
+                                    <div className="grid sm:grid-cols-2 gap-4">
+                                        {(analysisData?.matchedProfile || []).slice(0, 4).map((match, idx) => (
+                                            <div key={idx} className="bg-surface dark:bg-darkBg rounded-2xl p-4 flex flex-col justify-center">
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <span className="text-obsidian dark:text-darkText font-bold text-sm tracking-tight">{match.skill}</span>
+                                                    <CheckCircle className="w-4 h-4 text-[#34A853] shrink-0" />
                                                 </div>
-                                                <p className="text-obsidian/80 dark:text-darkText/80 leading-relaxed text-sm">
+                                                <span className="text-slate dark:text-darkText/70 text-xs line-clamp-2">{match.description}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Identified Gaps (Spans 1 Column) */}
+                                <div className="bg-white dark:bg-darkCard border border-[#EA4335]/10 shadow-sm rounded-3xl p-8 relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 w-24 h-24 bg-[#EA4335]/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
+                                    <h4 className="text-sm font-mono uppercase tracking-widest text-[#EA4335] mb-6 flex items-center">
+                                        <span className="w-2 h-2 rounded-full bg-[#EA4335] mr-2 shadow-[0_0_8px_rgba(234,67,53,0.5)]"></span>
+                                        Vulnerabilities
+                                    </h4>
+                                    <div className="space-y-3">
+                                        {(analysisData?.gapAnalysis || []).slice(0, 2).map((gap, idx) => (
+                                            <div key={idx} className="flex gap-3 items-start border-l-2 border-[#EA4335]/30 pl-3">
+                                                <Target className="w-4 h-4 text-[#EA4335] shrink-0 mt-0.5" />
+                                                <div>
+                                                    <span className="text-obsidian dark:text-darkText font-bold text-sm block mb-0.5">{gap.missingSkill}</span>
+                                                    <span className="text-slate dark:text-darkText/70 text-xs line-clamp-2 leading-relaxed">{gap.description}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Deep Transferable Skills Mapping (Spans 1 Column) */}
+                                <div className="bg-obsidian dark:bg-darkText text-white dark:text-darkBg border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-3xl p-8 relative overflow-hidden">
+                                    <Activity className="absolute -bottom-4 -right-4 w-32 h-32 text-white/5 pointer-events-none" />
+                                    <h4 className="text-sm font-mono uppercase tracking-widest text-champagne mb-6 flex items-center">
+                                        <span className="w-2 h-2 rounded-full bg-champagne mr-2 shadow-[0_0_8px_rgba(235,210,166,0.5)]"></span>
+                                        Transferable Bridge
+                                    </h4>
+                                    <div className="space-y-4 relative z-10">
+                                        {(analysisData?.transferableSkills || []).slice(0, 1).map((ts, idx) => (
+                                            <div key={idx} className="flex flex-col gap-2">
+                                                <div className="inline-block self-start px-2 py-1 bg-white/10 dark:bg-darkBg/10 text-[10px] font-mono uppercase tracking-widest rounded text-champagne">
+                                                    Bridge: {ts.missingSkill}
+                                                </div>
+                                                <p className="text-white/80 dark:text-darkBg/80 text-xs leading-relaxed">
                                                     {ts.bridgeAmmunition}
                                                 </p>
                                             </div>
                                         ))}
+                                        {(!analysisData?.transferableSkills || analysisData.transferableSkills.length === 0) && (
+                                            <p className="text-white/50 dark:text-darkBg/50 text-xs italic">No deep transferable bridges identified.</p>
+                                        )}
                                     </div>
                                 </div>
-                            )}
+
+                            </div>
                         </div>
                     )}
 
