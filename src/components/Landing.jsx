@@ -85,7 +85,7 @@ const Landing = ({ onNavigate }) => {
                         <div className="absolute bottom-0 left-0 w-96 h-96 bg-slate rounded-full" />
                     </div>
 
-                    <div className="max-w-5xl mx-auto text-center">
+                    <div className="max-w-5xl mx-auto text-center mt-32 md:mt-24">
                         <h1 className="hero-title text-5xl md:text-7xl font-bold tracking-tightest leading-[0.9] mb-8 text-obsidian dark:text-darkText">
                             Turn Your Past Experience <br />
                             <span className="font-drama italic text-champagne font-normal">Into Your Next Offer</span>
@@ -116,13 +116,13 @@ const Landing = ({ onNavigate }) => {
                 </motion.section>
 
                 {/* ═══ PRODUCT SIMULATION (Overlaps the sinking hero) ═══ */}
-                <section className="relative z-10 w-full mt-[35vh] pb-32">
+                <section className="relative z-10 w-full mt-[35vh] pb-10">
                     <Simulation />
                 </section>
             </div>
 
             {/* ═══ TECH STACK RIBBON (INFINITE MARQUEE) ═══ */}
-            <section className="py-20 border-y border-obsidian/5 dark:border-darkText/5">
+            <section className="py-6 border-y border-obsidian/5 dark:border-darkText/5">
                 <div className="max-w-6xl mx-auto px-6 text-center">
                     <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate/40 dark:text-darkText/30 mb-12 italic">
                         The ultimate analytical companion for career growth
@@ -203,6 +203,94 @@ const Landing = ({ onNavigate }) => {
                             </div>
 
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* ═══ BENTO BOX FEATURES ═══ */}
+            <section className="py-24 px-6 relative">
+                <div className="max-w-7xl mx-auto">
+                    {/* Section Header */}
+                    <div className="text-center mb-16">
+                        <h2 className="font-drama text-4xl md:text-5xl text-obsidian dark:text-darkText font-bold mb-4 tracking-tight">
+                            Engineered for the <span className="text-champagne italic">Modern Pivot</span>
+                        </h2>
+                        <p className="font-sans text-lg text-slate dark:text-darkText/60 max-w-2xl mx-auto">
+                            A suite of hyper-focused tools designed to decode ATS requirements and translate your unique trajectory.
+                        </p>
+                    </div>
+
+                    {/* Bento Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 auto-rows-[300px]">
+
+                        {/* 1. The Deep Analysis (Hero Card - Largest) */}
+                        <div className="md:col-span-2 lg:col-span-2 row-span-2 bg-surface dark:bg-darkCard rounded-3xl p-8 border border-obsidian/5 dark:border-darkText/5 overflow-hidden relative group hover:shadow-2xl transition-all duration-500 hover:-translate-y-1">
+                            {/* Visual Mockup Suggestion: A glowing, interconnected node graph or radar chart pulsing in the background, subtly masked. A large, prominent "Match Score: 92%" dial floating in the center. */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-champagne/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                            <div className="relative z-10 h-full flex flex-col justify-between">
+                                <div className="space-y-2">
+                                    <span className="font-mono text-xs uppercase tracking-widest text-champagne font-bold bg-champagne/10 px-3 py-1 rounded-full w-fit">Apex ATS Engine v2.0</span>
+                                    <h3 className="font-drama text-3xl font-bold text-obsidian dark:text-darkText mt-4">Multi-Dimensional <br />Trajectory Scoring</h3>
+                                    <p className="font-sans text-slate dark:text-darkText/70 leading-relaxed max-w-md mt-2">
+                                        We don't just match keywords. The Gemini analysis engine maps your hidden "Transferable Bridge," scoring your baseline fit while projecting your ultimate potential in the new role.
+                                    </p>
+                                </div>
+                                <div className="mt-8 flex gap-4 opacity-80 group-hover:opacity-100 transition-opacity">
+                                    {/* Abstract Visual Placeholder */}
+                                    <div className="w-full h-32 bg-background dark:bg-darkBg rounded-xl border border-obsidian/10 dark:border-darkText/10 animate-pulse flex items-center justify-center">
+                                        <span className="font-mono text-[10px] text-slate/50 dark:text-darkText/30">[Radar Chart Animation Render]</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 2. The Centavo Value (High-Contrast Feature) */}
+                        <div className="md:col-span-1 lg:col-span-2 row-span-1 bg-obsidian dark:bg-[#111] text-white rounded-3xl p-8 border border-champagne/20 relative overflow-hidden group">
+                            {/* Visual Mockup Suggestion: A sleek, dark card with a glowing, gold GCash/PayMongo QR code watermark pattern in the bottom right corner. A shiny metallic coin element rotating slowly. */}
+                            <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-champagne/10 rounded-full blur-3xl group-hover:bg-champagne/20 transition-all duration-700" />
+                            <div className="relative z-10">
+                                <span className="font-mono text-[10px] uppercase tracking-widest text-[#27C93F] mb-3 block font-bold flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-[#27C93F] animate-ping" /> Micro-Transactions
+                                </span>
+                                <h3 className="font-drama text-2xl font-bold mb-2">Premium Access. <br />Zero Abono.</h3>
+                                <p className="font-sans text-white/60 text-sm max-w-sm">
+                                    No massive USD subscription commitments. Pay precisely for the analysis you need using GCash or PayMongo. Top up ₱50 at a time.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* 3. Smart Optimization (Medium Card) */}
+                        <div className="md:col-span-1 lg:col-span-1 row-span-1 bg-surface dark:bg-darkCard rounded-3xl p-8 border border-obsidian/5 dark:border-darkText/5 relative overflow-hidden group hover:shadow-xl transition-all duration-300">
+                            {/* Visual Mockup Suggestion: A stacked UI showing three pills: [Direct], [Creative], [Professional]. A subtle shimmer sweeps across the active pill. */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-darkBg/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="relative z-10 h-full flex flex-col justify-end">
+                                <h3 className="font-drama text-xl font-bold text-obsidian dark:text-darkText mb-2">Tone-Calibrated Drafting</h3>
+                                <p className="font-sans text-sm text-slate dark:text-darkText/60 leading-relaxed">
+                                    Ditch generic AI intros. Our system forces a high-impact value proposition tailored to your exact industry dialect.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* 4. How It Works (Process Card) */}
+                        <div className="md:col-span-2 lg:col-span-1 row-span-1 bg-surface dark:bg-darkCard rounded-3xl p-8 border border-obsidian/5 dark:border-darkText/5 flex flex-col justify-center relative group">
+                            {/* Visual Mockup Suggestion: A 3-step vertical progress line that lights up sequentially (Resume -> Processing -> Result). */}
+                            <h3 className="font-mono text-xs font-bold tracking-widest text-champagne uppercase mb-4 text-center">Execution Flow</h3>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-4 text-sm font-sans text-slate dark:text-darkText/80 group-hover:text-obsidian dark:group-hover:text-darkText transition-colors">
+                                    <div className="w-8 h-8 rounded-full bg-background dark:bg-darkBg flex items-center justify-center font-mono text-xs font-bold border border-obsidian/10 dark:border-darkText/10">1</div>
+                                    <span>Upload Resume & JD</span>
+                                </div>
+                                <div className="flex items-center gap-4 text-sm font-sans text-slate dark:text-darkText/80 group-hover:text-obsidian dark:group-hover:text-darkText transition-colors">
+                                    <div className="w-8 h-8 rounded-full bg-background dark:bg-darkBg flex items-center justify-center font-mono text-xs font-bold border border-obsidian/10 dark:border-darkText/10">2</div>
+                                    <span>Engine Extracts Skills</span>
+                                </div>
+                                <div className="flex items-center gap-4 text-sm font-sans text-slate dark:text-darkText/80 group-hover:text-obsidian dark:group-hover:text-darkText transition-colors">
+                                    <div className="w-8 h-8 rounded-full bg-background dark:bg-darkBg flex items-center justify-center font-mono text-xs font-bold border border-obsidian/10 dark:border-darkText/10">3</div>
+                                    <span>Export Calibrated PDF</span>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </section>
