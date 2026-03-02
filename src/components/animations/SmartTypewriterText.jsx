@@ -28,10 +28,10 @@ export default function SmartTypewriterText({
             typeChar();
         };
 
-        timeout = setTimeout(startTyping, startDelay);
+        timeout = setTimeout(startTypingAction, startDelay);
 
         return () => clearTimeout(timeout);
-    }, [text, typeSpeed, startDelay]);
+    }, [text, typeSpeed, startDelay, start]);
 
     return (
         <div className={`relative inline-block ${className}`}>
