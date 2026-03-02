@@ -4,8 +4,10 @@ import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
 import Simulation from './Simulation';
 import ContactModal from './ContactModal';
-import OriginButton from './animations/OriginButton';
+import SlideInButton from './animations/SlideInButton';
 import SwipeLettersButton from './animations/SwipeLettersButton';
+import SmartTypewriterText from './animations/SmartTypewriterText';
+import FAQSection from './animations/FAQSection';
 
 gsap.registerPlugin(ScrollToPlugin);
 
@@ -74,16 +76,18 @@ const Landing = ({ onNavigate }) => {
                         <span className="font-drama italic text-champagne font-normal">Scale to the future</span>
                     </h1>
 
-                    <p className="hero-sub text-xl md:text-2xl text-slate dark:text-darkText/60 max-w-2xl mx-auto mb-12 leading-relaxed">
-                        The AI-powered career intelligence platform designed for job seekers.
-                        Instantly score, optimize, and generate materials tailored to your target role.
+                    <p className="hero-sub text-xl md:text-2xl text-slate dark:text-darkText/60 max-w-2xl mx-auto mb-12 leading-relaxed flex items-center justify-center min-h-[6rem]">
+                        <SmartTypewriterText
+                            text="The AI-powered career intelligence platform designed for job seekers. Instantly score, optimize, and generate materials tailored to your target role."
+                        />
                     </p>
 
                     <div className="hero-cta flex flex-col md:flex-row items-center justify-center gap-4">
                         <div className="w-full md:w-64 h-16">
-                            <OriginButton
+                            <SlideInButton
                                 onClick={() => onNavigate('auth')}
-                                className="h-full"
+                                text="Start your journey"
+                                className="w-full h-full text-lg"
                             />
                         </div>
                         <button
@@ -302,6 +306,9 @@ const Landing = ({ onNavigate }) => {
                     </div>
                 </div>
             </section>
+
+            {/* ═══ FAQ SECTION ═══ */}
+            <FAQSection onContactClick={() => setIsContactModalOpen(true)} />
 
             {/* ═══ FOOTER ═══ */}
             <footer className="py-20 px-6 border-t border-obsidian/5 dark:border-darkText/5 bg-surface/20 dark:bg-darkCard/10">
