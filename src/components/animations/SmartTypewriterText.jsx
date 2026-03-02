@@ -5,15 +5,12 @@ export default function SmartTypewriterText({
     text = "The AI-powered career intelligence platform designed for job seekers. Instantly score, optimize, and generate materials tailored to your target role.",
     className = "",
     typeSpeed = 30, // ms per char
-    startDelay = 500,
-    start = true
+    startDelay = 500
 }) {
     const [displayedText, setDisplayedText] = useState("");
     const [isTyping, setIsTyping] = useState(false);
 
     useEffect(() => {
-        if (!start) return;
-
         let timeout;
         let currentIndex = 0;
 
@@ -34,7 +31,7 @@ export default function SmartTypewriterText({
         timeout = setTimeout(startTyping, startDelay);
 
         return () => clearTimeout(timeout);
-    }, [text, typeSpeed, startDelay, start]);
+    }, [text, typeSpeed, startDelay]);
 
     return (
         <div className={`relative inline-block ${className}`}>

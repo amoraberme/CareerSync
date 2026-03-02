@@ -8,18 +8,14 @@ import SlideInButton from './animations/SlideInButton';
 import SwipeLettersButton from './animations/SwipeLettersButton';
 import SmartTypewriterText from './animations/SmartTypewriterText';
 import FAQSection from './animations/FAQSection';
-import RevealPreloader from './animations/RevealPreloader';
 
 gsap.registerPlugin(ScrollToPlugin);
 
 const Landing = ({ onNavigate }) => {
     const landingRef = useRef(null);
     const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-    const [isPreloaderDone, setIsPreloaderDone] = useState(false);
 
     useEffect(() => {
-        if (!isPreloaderDone) return; // Wait until preloader finishes before triggering GSAP
-
         const ctx = gsap.context(() => {
             // Hero entrance
             gsap.from('.hero-title', { opacity: 0, y: 30, duration: 1, ease: 'power3.out', delay: 0.2 });
@@ -30,7 +26,7 @@ const Landing = ({ onNavigate }) => {
             gsap.from('.stat-item', { opacity: 0, y: 20, duration: 0.8, stagger: 0.1, ease: 'power2.out', scrollTrigger: { trigger: '.stats-grid', start: 'top 80%' } });
         }, landingRef);
         return () => ctx.revert();
-    }, [isPreloaderDone]);
+    }, []);
 
     const scrollToPricing = () => {
         gsap.to(window, { duration: 1, scrollTo: "#pricing", ease: "power3.inOut" });
@@ -38,8 +34,6 @@ const Landing = ({ onNavigate }) => {
 
     return (
         <div ref={landingRef} className="bg-background text-obsidian dark:bg-darkBg dark:text-darkText font-sans selection:bg-champagne selection:text-obsidian">
-            {/* ═══ PRELOADER ═══ */}
-            <RevealPreloader onComplete={() => setIsPreloaderDone(true)} />
 
             {/* ═══ NAVBAR ═══ */}
             <nav className="fixed top-0 left-0 right-0 z-[100] bg-background/80 dark:bg-darkBg/80 backdrop-blur-xl border-b border-obsidian/5 dark:border-darkText/5">
@@ -85,7 +79,6 @@ const Landing = ({ onNavigate }) => {
                     <p className="hero-sub text-xl md:text-2xl text-slate dark:text-darkText/60 max-w-2xl mx-auto mb-12 leading-relaxed flex items-center justify-center min-h-[6rem]">
                         <SmartTypewriterText
                             text="The AI-powered career intelligence platform designed for job seekers. Instantly score, optimize, and generate materials tailored to your target role."
-                            start={isPreloaderDone}
                         />
                     </p>
 
