@@ -8,24 +8,30 @@ import SlideInButton from './animations/SlideInButton';
 import SwipeLettersButton from './animations/SwipeLettersButton';
 import SmartTypewriterText from './animations/SmartTypewriterText';
 import FAQSection from './animations/FAQSection';
+import RevealPreloader from './animations/RevealPreloader';
 
 gsap.registerPlugin(ScrollToPlugin);
 
 const Landing = ({ onNavigate }) => {
     const landingRef = useRef(null);
     const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+    const [isHeroRevealed, setIsHeroRevealed] = useState(false);
 
     useEffect(() => {
-        const ctx = gsap.context(() => {
-            // Hero entrance
-            gsap.from('.hero-title', { opacity: 0, y: 30, duration: 1, ease: 'power3.out', delay: 0.2 });
-            gsap.from('.hero-sub', { opacity: 0, y: 20, duration: 1, ease: 'power3.out', delay: 0.4 });
-            gsap.from('.hero-cta', { opacity: 0, scale: 0.9, duration: 0.8, ease: 'back.out(1.7)', delay: 0.6 });
+        // Trigger hero reveal after the preloader starts lifting
+        const slideTimer = setTimeout(() => {
+            setIsHeroRevealed(true);
+        }, 300); // Small offset so they rise as curtain lifts
 
+        const ctx = gsap.context(() => {
             // Stats entrance
+
             gsap.from('.stat-item', { opacity: 0, y: 20, duration: 0.8, stagger: 0.1, ease: 'power2.out', scrollTrigger: { trigger: '.stats-grid', start: 'top 80%' } });
         }, landingRef);
-        return () => ctx.revert();
+        return () => {
+            ctx.revert();
+            clearTimeout(slideTimer);
+        };
     }, []);
 
     const scrollToPricing = () => {
@@ -33,7 +39,8 @@ const Landing = ({ onNavigate }) => {
     };
 
     return (
-        <div ref={landingRef} className="bg-background text-obsidian dark:bg-darkBg dark:text-darkText font-sans selection:bg-champagne selection:text-obsidian">
+        <div ref={landingRef} className="bg-background text-obsidian dark:bg-darkBg dark:text-darkText font-sans selection:bg-champagne selection:text-obsidian relative min-h-screen">
+            <RevealPreloader />
 
             {/* ═══ NAVBAR ═══ */}
             <nav className="fixed top-0 left-0 right-0 z-[100] bg-background/80 dark:bg-darkBg/80 backdrop-blur-xl border-b border-obsidian/5 dark:border-darkText/5">
@@ -70,19 +77,45 @@ const Landing = ({ onNavigate }) => {
 
                 <div className="max-w-5xl mx-auto text-center">
 
-
-                    <h1 className="hero-title text-6xl md:text-8xl font-bold tracking-tightest leading-[0.9] mb-8 text-obsidian dark:text-darkText">
+                    <h1
+                        className="text-6xl md:text-8xl font-bold tracking-tightest leading-[0.9] mb-8 text-obsidian dark:text-darkText"
+                        style={{
+                            opacity: isHeroRevealed ? 1 : 0,
+                            transform: isHeroRevealed ? 'translateY(0)' : 'translateY(32px)',
+                            transition: 'opacity 1s cubic-bezier(0.22, 1, 0.36, 1), transform 1s cubic-bezier(0.22, 1, 0.36, 1)',
+                            transitionDelay: '400ms',
+                            willChange: 'opacity, transform'
+                        }}
+                    >
                         Build your career <br />
                         <span className="font-drama italic text-champagne font-normal">Scale to the future</span>
                     </h1>
 
-                    <p className="hero-sub text-xl md:text-2xl text-slate dark:text-darkText/60 max-w-2xl mx-auto mb-12 leading-relaxed flex items-center justify-center min-h-[6rem]">
+                    <div
+                        className="text-xl md:text-2xl text-slate dark:text-darkText/60 max-w-2xl mx-auto mb-12 leading-relaxed flex items-center justify-center min-h-[6rem]"
+                        style={{
+                            opacity: isHeroRevealed ? 1 : 0,
+                            transform: isHeroRevealed ? 'translateY(0)' : 'translateY(32px)',
+                            transition: 'opacity 1s cubic-bezier(0.22, 1, 0.36, 1), transform 1s cubic-bezier(0.22, 1, 0.36, 1)',
+                            transitionDelay: '500ms',
+                            willChange: 'opacity, transform'
+                        }}
+                    >
                         <SmartTypewriterText
                             text="The AI-powered career intelligence platform designed for job seekers. Instantly score, optimize, and generate materials tailored to your target role."
                         />
-                    </p>
+                    </div>
 
-                    <div className="hero-cta flex flex-col md:flex-row items-center justify-center gap-4">
+                    <div
+                        className="flex flex-col md:flex-row items-center justify-center gap-4"
+                        style={{
+                            opacity: isHeroRevealed ? 1 : 0,
+                            transform: isHeroRevealed ? 'translateY(0)' : 'translateY(32px)',
+                            transition: 'opacity 1s cubic-bezier(0.22, 1, 0.36, 1), transform 1s cubic-bezier(0.22, 1, 0.36, 1)',
+                            transitionDelay: '600ms',
+                            willChange: 'opacity, transform'
+                        }}
+                    >
                         <div className="w-full md:w-64 h-16">
                             <SlideInButton
                                 onClick={() => onNavigate('auth')}
