@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Check, ArrowRight, Shield, Zap, Target, FileText } from 'lucide-react';
+import { Check, ArrowRight, Shield, Zap, Target, FileText, CheckCircle2, X } from 'lucide-react';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
 import Simulation from './Simulation';
@@ -163,142 +163,139 @@ const Landing = ({ onNavigate }) => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
 
                         {/* BASE TIER */}
-                        <div className="bg-surface/50 dark:bg-darkCard/20 border border-obsidian/5 dark:border-darkText/5 rounded-[2.5rem] p-8 flex flex-col hover:border-obsidian/10 dark:hover:border-darkText/10 transition-colors">
-                            <div className="mb-8">
-                                <h3 className="text-xl font-bold mb-1">Base Token</h3>
-                                <p className="text-sm text-slate dark:text-darkText/50">Perfect for single job applications.</p>
+                        <div className="bg-white dark:bg-darkCard border border-obsidian/5 dark:border-darkText/5 rounded-[2.5rem] p-8 flex flex-col hover:shadow-xl transition-shadow relative overflow-hidden">
+                            <div className="mb-6">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-slate/50 dark:text-darkText/50 mb-3">PAY-AS-YOU-GO</p>
+                                <h3 className="text-2xl font-bold mb-1 text-obsidian dark:text-darkText">Base Token</h3>
                             </div>
 
                             <div className="mb-8">
                                 <div className="flex items-baseline mb-1">
-                                    <span className="text-3xl font-bold text-obsidian dark:text-darkText mr-1">₱</span>
+                                    <span className="text-xl font-bold text-obsidian dark:text-darkText mr-1">₱</span>
                                     <span className="text-7xl font-sans font-black text-obsidian dark:text-darkText tracking-tighter">1</span>
-                                    <span className="text-sm text-slate dark:text-darkText/50 ml-2">/ top-up</span>
+                                    <span className="text-sm text-slate dark:text-darkText/50 ml-2 font-bold">/ top-up</span>
                                 </div>
+                                <p className="text-xs text-slate/60 dark:text-darkText/40">~₱1.XX unique amount per session</p>
                             </div>
 
-                            <button onClick={() => onNavigate('auth')} className="w-full py-4 rounded-2xl bg-obsidian dark:bg-darkText text-background dark:text-darkBg font-bold mb-8 transition-transform active:scale-95">
-                                Get Started
-                            </button>
-
                             <ul className="space-y-4 mb-8 flex-1">
-                                <li className="flex gap-3 text-sm text-slate dark:text-darkText/70">
-                                    <Check className="w-4 h-4 text-champagne shrink-0" />
-                                    <span><strong>10 credits</strong> — daily expiry</span>
+                                <li className="flex gap-3 text-sm text-obsidian/80 dark:text-darkText/90">
+                                    <Check className="w-4 h-4 text-obsidian/60 dark:text-darkText/60 shrink-0" />
+                                    <span><strong>10 credits</strong> — expires daily</span>
                                 </li>
-                                <li className="flex gap-3 text-sm text-slate dark:text-darkText/70">
-                                    <Check className="w-4 h-4 text-champagne shrink-0" />
-                                    <span>AI Match Score & Summary</span>
+                                <li className="flex gap-3 text-sm text-obsidian/80 dark:text-darkText/90">
+                                    <Check className="w-4 h-4 text-obsidian/60 dark:text-darkText/60 shrink-0" />
+                                    <span>Basic analysis & cover letter</span>
                                 </li>
-                                <li className="flex gap-3 text-sm text-slate dark:text-darkText/70">
-                                    <Check className="w-4 h-4 text-champagne shrink-0" />
-                                    <span>Basic Cover Letter generation</span>
+                                <li className="flex gap-3 text-sm text-obsidian/80 dark:text-darkText/90">
+                                    <Check className="w-4 h-4 text-obsidian/60 dark:text-darkText/60 shrink-0" />
+                                    <span><strong>No lock-in</strong> — buy anytime</span>
                                 </li>
-                                <li className="flex items-start gap-3 mt-1">
-                                    <span className="w-5 h-5 rounded-full bg-slate/8 flex items-center justify-center shrink-0 mt-0.5">
-                                        <span className="text-slate/40 text-[10px] font-bold leading-none">✕</span>
-                                    </span>
-                                    <span className="text-slate/40 dark:text-darkText/30 text-xs">No PDF export</span>
+                                <li className="flex items-start gap-3 mt-4 opacity-40 grayscale">
+                                    <X className="w-4 h-4 text-slate shrink-0" />
+                                    <span className="text-slate text-sm">No premium credits</span>
                                 </li>
-                                <li className="flex items-start gap-3 mt-1">
-                                    <span className="w-5 h-5 rounded-full bg-slate/8 flex items-center justify-center shrink-0 mt-0.5">
-                                        <span className="text-slate/40 text-[10px] font-bold leading-none">✕</span>
-                                    </span>
-                                    <span className="text-slate/40 dark:text-darkText/25 text-xs">No resume optimization</span>
+                                <li className="flex items-start gap-3 mt-1 opacity-40 grayscale">
+                                    <X className="w-4 h-4 text-slate shrink-0" />
+                                    <span className="text-slate text-sm">No Advanced Parsing (Paste Listing)</span>
+                                </li>
+                                <li className="flex items-start gap-3 mt-1 opacity-40 grayscale">
+                                    <X className="w-4 h-4 text-slate shrink-0" />
+                                    <span className="text-slate text-sm">No PDF export</span>
+                                </li>
+                                <li className="flex items-start gap-3 mt-1 opacity-40 grayscale">
+                                    <X className="w-4 h-4 text-slate shrink-0" />
+                                    <span className="text-slate text-sm">No resume optimization</span>
                                 </li>
                             </ul>
-
-                            <p className="text-[10px] text-slate/40 text-center uppercase tracking-widest font-bold">Base Analytics Only</p>
                         </div>
 
                         {/* PREMIUM TIER (Featured) */}
-                        <div className="relative bg-white dark:bg-darkCard border-[3px] border-champagne rounded-[2.5rem] p-10 md:py-16 flex flex-col shadow-2xl shadow-champagne/30 scale-100 lg:scale-110 z-10 -my-4 lg:-my-8 text-center order-first md:order-none">
-                            <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-champagne text-obsidian px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg">
-                                Most Popular
+                        <div className="relative bg-[#fffdf9] dark:bg-[#1a1713] border-[3px] border-champagne rounded-[2.5rem] p-10 md:py-16 flex flex-col shadow-2xl shadow-champagne/30 scale-100 lg:scale-110 z-10 -my-4 lg:-my-8 text-center order-first md:order-none">
+                            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-champagne/10 to-transparent rounded-[2.5rem] pointer-events-none"></div>
+
+                            <div className="mb-6 mt-2 relative z-10">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-champagne/80 mb-3">BEST VALUE</p>
+                                <h3 className="text-3xl font-bold mb-1 text-champagne">Premium</h3>
                             </div>
 
-                            <div className="mb-8 mt-2">
-                                <h3 className="text-xl font-bold mb-1 text-champagne">Premium</h3>
-                                <p className="text-sm text-slate dark:text-darkText/50">For serious career growth & surgery.</p>
-                            </div>
-
-                            <div className="mb-8">
+                            <div className="mb-8 relative z-10">
                                 <div className="flex justify-center flex-col items-center mb-1">
                                     <div className="flex items-baseline justify-center">
-                                        <span className="text-4xl font-bold text-obsidian dark:text-darkText mr-1">₱</span>
+                                        <span className="text-3xl font-bold text-obsidian dark:text-darkText mr-2">₱</span>
                                         <span className="text-[120px] leading-[0.8] font-sans font-black text-obsidian dark:text-darkText tracking-tighter">3</span>
+                                        <span className="text-lg font-bold text-obsidian dark:text-darkText ml-3">/ month</span>
                                     </div>
-                                    <span className="text-lg font-bold text-slate dark:text-darkText/50 mt-1">/ month</span>
+                                    <span className="text-xs text-slate/80 dark:text-darkText/60 mt-4">~₱3.XX unique amount per session</span>
                                 </div>
                             </div>
 
-                            <button onClick={() => onNavigate('auth')} className="w-full py-4 rounded-2xl bg-champagne text-obsidian font-black mb-8 transition-transform active:scale-95 shadow-xl shadow-champagne/30">
-                                Get Started
-                            </button>
-
-                            <ul className="space-y-4 mb-8 flex-1">
-                                <li className="flex gap-3 text-sm">
-                                    <Check className="w-4 h-4 text-champagne shrink-0" />
-                                    <span><strong>50 Premium Credits</strong> daily refilled</span>
+                            <ul className="space-y-5 mb-8 flex-1 text-left relative z-10 px-0 md:px-4">
+                                <li className="flex gap-3 text-sm text-obsidian/90 dark:text-darkText/90">
+                                    <CheckCircle2 className="w-5 h-5 text-champagne shrink-0" />
+                                    <span><strong>50 Premium Credits</strong> — refills daily</span>
                                 </li>
-                                <li className="flex gap-3 text-sm">
-                                    <Check className="w-4 h-4 text-champagne shrink-0" />
+                                <li className="flex gap-3 text-sm text-obsidian/90 dark:text-darkText/90">
+                                    <CheckCircle2 className="w-5 h-5 text-champagne shrink-0" />
+                                    <span><strong>Advanced Parsing</strong> (Paste Listing)</span>
+                                </li>
+                                <li className="flex gap-3 text-sm text-obsidian/90 dark:text-darkText/90">
+                                    <CheckCircle2 className="w-5 h-5 text-champagne shrink-0" />
                                     <span><strong>Full PDF Export</strong> capabilities</span>
                                 </li>
-                                <li className="flex gap-3 text-sm">
-                                    <Check className="w-4 h-4 text-champagne shrink-0" />
-                                    <span><strong>Resume Optimization</strong> Surgery</span>
+                                <li className="flex gap-3 text-sm text-obsidian/90 dark:text-darkText/90">
+                                    <CheckCircle2 className="w-5 h-5 text-champagne shrink-0" />
+                                    <span><strong>Resume Optimization</strong> surgery</span>
                                 </li>
-                                <li className="flex gap-3 text-sm">
-                                    <Check className="w-4 h-4 text-champagne shrink-0" />
+                                <li className="flex gap-3 text-sm text-obsidian/90 dark:text-darkText/90">
+                                    <CheckCircle2 className="w-5 h-5 text-champagne shrink-0" />
                                     <span>Unlimited History View</span>
                                 </li>
+                                <li className="flex gap-3 text-sm text-obsidian/90 dark:text-darkText/90">
+                                    <CheckCircle2 className="w-5 h-5 text-champagne shrink-0" />
+                                    <span><strong>30-Day Plan Lock</strong> — stable access period</span>
+                                </li>
                             </ul>
-
-                            <p className="text-[10px] text-champagne/60 text-center uppercase tracking-widest font-bold">The Full Career Intelligence Kit</p>
                         </div>
 
                         {/* STANDARD TIER */}
-                        <div className="bg-surface/50 dark:bg-darkCard/20 border border-obsidian/5 dark:border-darkText/5 rounded-[2.5rem] p-8 flex flex-col hover:border-obsidian/10 dark:hover:border-darkText/10 transition-colors">
-                            <div className="mb-8">
-                                <h3 className="text-xl font-bold mb-1">Standard</h3>
-                                <p className="text-sm text-slate dark:text-darkText/50">Steady applications and tracking.</p>
+                        <div className="bg-white dark:bg-darkCard border border-obsidian/5 dark:border-darkText/5 rounded-[2.5rem] p-8 flex flex-col hover:shadow-xl transition-shadow relative overflow-hidden">
+                            <div className="mb-6">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-slate/50 dark:text-darkText/50 mb-3">MONTHLY RETAINER</p>
+                                <h3 className="text-2xl font-bold mb-1 text-obsidian dark:text-darkText">Standard</h3>
                             </div>
 
                             <div className="mb-8">
                                 <div className="flex items-baseline mb-1">
-                                    <span className="text-3xl font-bold text-obsidian dark:text-darkText mr-1">₱</span>
+                                    <span className="text-xl font-bold text-obsidian dark:text-darkText mr-1">₱</span>
                                     <span className="text-7xl font-sans font-black text-obsidian dark:text-darkText tracking-tighter">2</span>
-                                    <span className="text-sm text-slate dark:text-darkText/50 ml-2">/ month</span>
+                                    <span className="text-sm text-slate dark:text-darkText/50 ml-2 font-bold">/ month</span>
                                 </div>
+                                <p className="text-xs text-slate/60 dark:text-darkText/40">~₱2.XX unique amount per session</p>
                             </div>
 
-                            <button onClick={() => onNavigate('auth')} className="w-full py-4 rounded-2xl bg-obsidian dark:bg-darkText text-background dark:text-darkBg font-bold mb-8 transition-transform active:scale-95">
-                                Get Started
-                            </button>
-
                             <ul className="space-y-4 mb-8 flex-1">
-                                <li className="flex gap-3 text-sm text-slate dark:text-darkText/70">
-                                    <Check className="w-4 h-4 text-champagne shrink-0" />
-                                    <span><strong>40 Premium Credits</strong> daily refilled</span>
+                                <li className="flex gap-3 text-sm text-obsidian/80 dark:text-darkText/90">
+                                    <CheckCircle2 className="w-4 h-4 text-[#3b82f6] shrink-0" />
+                                    <span><strong>40 Premium Credits</strong> — refills daily</span>
                                 </li>
-                                <li className="flex gap-3 text-sm text-slate dark:text-darkText/70">
-                                    <Check className="w-4 h-4 text-champagne shrink-0" />
-                                    <span><strong>Full PDF Export</strong> reports</span>
+                                <li className="flex gap-3 text-sm text-obsidian/80 dark:text-darkText/90">
+                                    <CheckCircle2 className="w-4 h-4 text-[#3b82f6] shrink-0" />
+                                    <span><strong>Advanced Parsing</strong> (Paste Listing)</span>
                                 </li>
-                                <li className="flex gap-3 text-sm text-slate dark:text-darkText/70">
-                                    <Shield className="w-4 h-4 text-champagne shrink-0" />
-                                    <span>30-Day Plan Lock stability</span>
+                                <li className="flex gap-3 text-sm text-obsidian/80 dark:text-darkText/90">
+                                    <CheckCircle2 className="w-4 h-4 text-[#3b82f6] shrink-0" />
+                                    <span><strong>Full PDF Export</strong> capabilities</span>
                                 </li>
-                                <li className="flex items-start gap-3 mt-1">
-                                    <span className="w-5 h-5 rounded-full bg-slate/8 flex items-center justify-center shrink-0 mt-0.5">
-                                        <span className="text-slate/40 text-[10px] font-bold leading-none">✕</span>
-                                    </span>
-                                    <span className="text-slate/40 dark:text-darkText/25 text-xs">No resume optimization</span>
+                                <li className="flex gap-3 text-sm text-obsidian/80 dark:text-darkText/90">
+                                    <CheckCircle2 className="w-4 h-4 text-[#3b82f6] shrink-0" />
+                                    <span><strong>30-Day Plan Lock</strong> — stable access period</span>
+                                </li>
+                                <li className="flex items-start gap-3 mt-4 opacity-40 grayscale">
+                                    <X className="w-4 h-4 text-slate shrink-0" />
+                                    <span className="text-slate text-sm">No resume optimization</span>
                                 </li>
                             </ul>
-
-                            <p className="text-[10px] text-slate/40 text-center uppercase tracking-widest font-bold">Enhanced Reporting</p>
                         </div>
 
                     </div>
