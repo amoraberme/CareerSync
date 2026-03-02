@@ -71,8 +71,8 @@ const Landing = ({ onNavigate }) => {
                 <div className="max-w-5xl mx-auto text-center">
 
 
-                    <h1 className="hero-title text-6xl md:text-8xl font-bold tracking-tightest leading-[0.9] mb-8 text-obsidian dark:text-darkText">
-                        Turn Your Past Experience, <br />
+                    <h1 className="hero-title text-5xl md:text-7xl font-bold tracking-tightest leading-[0.9] mb-8 text-obsidian dark:text-darkText">
+                        Turn Your Past Experience <br />
                         <span className="font-drama italic text-champagne font-normal">Into Your Next Offer</span>
                     </h1>
 
