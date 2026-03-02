@@ -159,9 +159,9 @@ export default function AnalysisTabs({ session, setCurrentView }) {
                 <div className="content-panel bg-surface dark:bg-darkCard border border-obsidian/5 dark:border-darkText/5 shadow-inner rounded-[2rem] p-8 min-h-[400px]">
                     {activeTab === 'analysis' && (
                         <div className="animate-fade-in">
-                            <h3 className="text-xl font-sans font-semibold text-obsidian dark:text-darkText mb-6">Candidate Architecture (Bento Profile)</h3>
+                            <h3 className="text-xl font-sans font-semibold text-obsidian dark:text-darkText mb-6">Candidate Architecture</h3>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 auto-rows-min">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 auto-rows-max">
 
                                 {/* Target Role Context (Spans 1 Column, taller) */}
                                 <div className="bg-white/50 dark:bg-darkCard/30 border border-obsidian/5 dark:border-darkText/5 shadow-sm rounded-3xl p-8 flex flex-col justify-between lg:row-span-2">
@@ -195,7 +195,7 @@ export default function AnalysisTabs({ session, setCurrentView }) {
                                                     <span className="text-obsidian dark:text-darkText font-bold text-sm tracking-tight">{match.skill}</span>
                                                     <CheckCircle className="w-4 h-4 text-[#34A853] shrink-0" />
                                                 </div>
-                                                <span className="text-slate dark:text-darkText/70 text-xs line-clamp-2">{match.description}</span>
+                                                <span className="text-slate dark:text-darkText/70 text-xs leading-relaxed">{match.description}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -214,7 +214,7 @@ export default function AnalysisTabs({ session, setCurrentView }) {
                                                 <Target className="w-4 h-4 text-[#EA4335] shrink-0 mt-0.5" />
                                                 <div>
                                                     <span className="text-obsidian dark:text-darkText font-bold text-sm block mb-0.5">{gap.missingSkill}</span>
-                                                    <span className="text-slate dark:text-darkText/70 text-xs line-clamp-2 leading-relaxed">{gap.description}</span>
+                                                    <span className="text-slate dark:text-darkText/70 text-xs leading-relaxed">{gap.description}</span>
                                                 </div>
                                             </div>
                                         ))}
