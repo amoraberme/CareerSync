@@ -41,7 +41,7 @@ const Landing = ({ onNavigate }) => {
                     {/* Logo */}
                     <div className="flex items-center gap-2 cursor-pointer" onClick={() => onNavigate('landing')}>
                         <img src="/logo.png" alt="CareerSync Logo" className="w-8 h-8 object-contain" />
-                        <span className="text-xl font-bold tracking-tightest">CareerSync</span>
+                        <span className="text-xl font-bold tracking-tightest">Career<span className="font-drama italic font-normal text-champagne">Sync.</span></span>
                     </div>
 
                     {/* Links */}
