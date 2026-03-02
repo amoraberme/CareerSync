@@ -131,6 +131,47 @@
   .animate-marquee-fast {
     animation: marquee 30s linear infinite;
   }
+
+  /* Bento Box Micro-Animations */
+  .animate-pulse-slow {
+    animation: pulse-slow 4s ease-in-out infinite;
+  }
+
+  .animate-shimmer-sweep {
+    animation: shimmer-sweep 3s linear infinite;
+    background-size: 200% 100%;
+  }
+
+  .animate-typewriter-up {
+    animation: typewriter-up 3s ease-in-out infinite;
+  }
+
+  .animate-typewriter-jitter {
+    animation: typewriter-jitter 0.1s linear infinite;
+  }
+
+  .animate-icon-bounce {
+    animation: icon-bounce 2s ease-in-out infinite;
+  }
+
+  .animate-bridge-dot {
+    animation: bridge-dot 3s linear infinite;
+  }
+
+  .animate-pillar-float {
+    animation: pillar-float 4s ease-in-out infinite;
+  }
+
+  .animate-grid-draw {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: grid-draw 2s ease-out forwards;
+  }
+
+  .animate-skeleton-line {
+    animation: skeleton-line 2s ease-in-out infinite;
+    background-size: 200% 100%;
+  }
 }
 
 @keyframes spin {
@@ -160,5 +201,112 @@
 
   to {
     transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* Bento Keyframes */
+@keyframes pulse-slow {
+
+  0%,
+  100% {
+    transform: scale(0.95);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes shimmer-sweep {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes typewriter-up {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes typewriter-jitter {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(1px);
+  }
+}
+
+@keyframes icon-bounce {
+
+  0%,
+  100% {
+    transform: translateY(2px);
+  }
+
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes bridge-dot {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes pillar-float {
+
+  0%,
+  100% {
+    transform: translateY(2px);
+  }
+
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes grid-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes skeleton-line {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
   }
 }
