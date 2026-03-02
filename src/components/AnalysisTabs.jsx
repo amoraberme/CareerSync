@@ -163,25 +163,48 @@ export default function AnalysisTabs({ session, setCurrentView }) {
 
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 auto-rows-max">
 
-                                {/* Target Role Context (Spans 1 Column, taller) */}
-                                <div className="bg-white/50 dark:bg-darkCard/30 border border-obsidian/5 dark:border-darkText/5 shadow-sm rounded-3xl p-8 flex flex-col justify-between lg:row-span-2">
-                                    <div>
-                                        <div className="inline-block px-3 py-1 bg-champagne/20 text-champagne text-[10px] font-black uppercase tracking-widest rounded-full mb-4">Target Role Focus</div>
-                                        <h4 className="text-2xl font-bold text-obsidian dark:text-darkText leading-tight mb-2">
-                                            {analysisData?.jobTitle || 'Analyzed Role'}
-                                        </h4>
-                                        <p className="text-sm font-mono text-slate dark:text-darkText/60 mb-6">{analysisData?.company || 'Company'}</p>
+                                {/* LEFT COLUMN (Target Role & Vulnerabilities) */}
+                                <div className="flex flex-col gap-6 lg:row-span-2">
+                                    {/* Target Role Context */}
+                                    <div className="bg-white/50 dark:bg-darkCard/30 border border-obsidian/5 dark:border-darkText/5 shadow-sm rounded-3xl p-8 flex flex-col justify-between flex-1">
+                                        <div>
+                                            <div className="inline-block px-3 py-1 bg-champagne/20 text-champagne text-[10px] font-black uppercase tracking-widest rounded-full mb-4">Target Role Focus</div>
+                                            <h4 className="text-2xl font-bold text-obsidian dark:text-darkText leading-tight mb-2">
+                                                {analysisData?.jobTitle || 'Analyzed Role'}
+                                            </h4>
+                                            <p className="text-sm font-mono text-slate dark:text-darkText/60 mb-6">{analysisData?.company || 'Company'}</p>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <div className="p-4 bg-obsidian/5 dark:bg-darkText/5 rounded-2xl">
+                                                <p className="text-[10px] font-mono uppercase tracking-widest text-slate dark:text-darkText/50 mb-1">Match Quality</p>
+                                                <p className="text-lg font-bold text-obsidian dark:text-darkText">{analysisData?.matchScore || 0}% Baseline Synergy</p>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <div className="space-y-4">
-                                        <div className="p-4 bg-obsidian/5 dark:bg-darkText/5 rounded-2xl">
-                                            <p className="text-[10px] font-mono uppercase tracking-widest text-slate dark:text-darkText/50 mb-1">Match Quality</p>
-                                            <p className="text-lg font-bold text-obsidian dark:text-darkText">{analysisData?.matchScore || 0}% Baseline Synergy</p>
+                                    {/* Identified Gaps (Vulnerabilities) */}
+                                    <div className="bg-white dark:bg-darkCard border border-[#EA4335]/10 shadow-sm rounded-3xl p-8 relative overflow-hidden group flex-1">
+                                        <div className="absolute top-0 right-0 w-24 h-24 bg-[#EA4335]/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
+                                        <h4 className="text-sm font-mono uppercase tracking-widest text-[#EA4335] mb-6 flex items-center">
+                                            <span className="w-2 h-2 rounded-full bg-[#EA4335] mr-2 shadow-[0_0_8px_rgba(234,67,53,0.5)]"></span>
+                                            Vulnerabilities
+                                        </h4>
+                                        <div className="space-y-3">
+                                            {(analysisData?.gapAnalysis || []).slice(0, 2).map((gap, idx) => (
+                                                <div key={idx} className="flex gap-3 items-start border-l-2 border-[#EA4335]/30 pl-3">
+                                                    <Target className="w-4 h-4 text-[#EA4335] shrink-0 mt-0.5" />
+                                                    <div>
+                                                        <span className="text-obsidian dark:text-darkText font-bold text-sm block mb-0.5">{gap.missingSkill}</span>
+                                                        <span className="text-slate dark:text-darkText/70 text-xs leading-relaxed">{gap.description}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Verified Strengths (Spans 2 Columns) */}
+                                {/* RIGHT COLUMN - Verified Strengths (Spans 2 Columns) */}
                                 <div className="bg-white dark:bg-darkCard border border-[#34A853]/10 shadow-sm rounded-3xl p-8 lg:col-span-2 relative overflow-hidden group">
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-[#34A853]/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
                                     <h4 className="text-sm font-mono uppercase tracking-widest text-[#34A853] mb-6 flex items-center">
@@ -201,40 +224,20 @@ export default function AnalysisTabs({ session, setCurrentView }) {
                                     </div>
                                 </div>
 
-                                {/* Identified Gaps (Spans 1 Column) */}
-                                <div className="bg-white dark:bg-darkCard border border-[#EA4335]/10 shadow-sm rounded-3xl p-8 relative overflow-hidden group">
-                                    <div className="absolute top-0 right-0 w-24 h-24 bg-[#EA4335]/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
-                                    <h4 className="text-sm font-mono uppercase tracking-widest text-[#EA4335] mb-6 flex items-center">
-                                        <span className="w-2 h-2 rounded-full bg-[#EA4335] mr-2 shadow-[0_0_8px_rgba(234,67,53,0.5)]"></span>
-                                        Vulnerabilities
-                                    </h4>
-                                    <div className="space-y-3">
-                                        {(analysisData?.gapAnalysis || []).slice(0, 2).map((gap, idx) => (
-                                            <div key={idx} className="flex gap-3 items-start border-l-2 border-[#EA4335]/30 pl-3">
-                                                <Target className="w-4 h-4 text-[#EA4335] shrink-0 mt-0.5" />
-                                                <div>
-                                                    <span className="text-obsidian dark:text-darkText font-bold text-sm block mb-0.5">{gap.missingSkill}</span>
-                                                    <span className="text-slate dark:text-darkText/70 text-xs leading-relaxed">{gap.description}</span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Deep Transferable Skills Mapping (Spans 1 Column) */}
-                                <div className="bg-obsidian dark:bg-darkText text-white dark:text-darkBg border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-3xl p-8 relative overflow-hidden">
+                                {/* RIGHT COLUMN - Deep Transferable Skills Mapping (Spans 2 Columns) */}
+                                <div className="bg-obsidian dark:bg-darkText text-white dark:text-darkBg border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-3xl p-8 relative overflow-hidden lg:col-span-2">
                                     <Activity className="absolute -bottom-4 -right-4 w-32 h-32 text-white/5 pointer-events-none" />
                                     <h4 className="text-sm font-mono uppercase tracking-widest text-champagne mb-6 flex items-center">
                                         <span className="w-2 h-2 rounded-full bg-champagne mr-2 shadow-[0_0_8px_rgba(235,210,166,0.5)]"></span>
                                         Transferable Bridge
                                     </h4>
-                                    <div className="space-y-4 relative z-10">
-                                        {(analysisData?.transferableSkills || []).slice(0, 1).map((ts, idx) => (
-                                            <div key={idx} className="flex flex-col gap-2">
-                                                <div className="inline-block self-start px-2 py-1 bg-white/10 dark:bg-darkBg/10 text-[10px] font-mono uppercase tracking-widest rounded text-champagne">
+                                    <div className={`grid gap-6 relative z-10 ${analysisData?.transferableSkills?.slice(0, 2).length > 1 ? 'sm:grid-cols-2' : 'grid-cols-1'}`}>
+                                        {(analysisData?.transferableSkills || []).slice(0, 2).map((ts, idx) => (
+                                            <div key={idx} className="flex flex-col gap-3 bg-white/5 dark:bg-darkBg/5 p-5 rounded-2xl border border-white/10 dark:border-darkBg/10">
+                                                <div className="inline-block self-start px-3 py-1.5 bg-white/10 dark:bg-darkBg/10 text-[10px] font-mono uppercase tracking-widest rounded-md text-champagne">
                                                     Bridge: {ts.missingSkill}
                                                 </div>
-                                                <p className="text-white/80 dark:text-darkBg/80 text-xs leading-relaxed">
+                                                <p className="text-white/80 dark:text-darkBg/80 text-sm leading-relaxed">
                                                     {ts.bridgeAmmunition}
                                                 </p>
                                             </div>
