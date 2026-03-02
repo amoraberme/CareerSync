@@ -2,16 +2,13 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 
-export default function FAQItem({ number, question, answer }) {
-    const [isOpen, setIsOpen] = useState(false);
-
+export default function FAQItem({ number, question, answer, isOpen, onClick }) {
     return (
         <motion.div
             className="w-full border-b border-obsidian/10 dark:border-darkText/10 py-6"
             initial={false}
-            onClick={() => setIsOpen(!isOpen)}
         >
-            <button className="flex w-full items-start justify-between text-left group">
+            <button onClick={onClick} className="flex w-full items-start justify-between text-left group outline-none">
                 <div className="flex gap-4 md:gap-8 items-start">
                     <span className="text-xl md:text-2xl font-mono text-slate/50 dark:text-darkText/40 group-hover:text-champagne transition-colors">
                         {number}

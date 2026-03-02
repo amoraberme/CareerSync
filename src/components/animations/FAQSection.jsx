@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import FAQItem from './FAQItem';
 import SwipeLettersButton from './SwipeLettersButton';
 
@@ -26,6 +26,8 @@ const faqData = [
 ];
 
 export default function FAQSection({ onContactClick }) {
+    const [openIndex, setOpenIndex] = useState(null);
+
     return (
         <section className="w-full max-w-7xl mx-auto px-6 py-24 border-t border-obsidian/5 dark:border-darkText/5">
             <div className="bg-white/50 dark:bg-darkCard/50 backdrop-blur-sm rounded-[3rem] p-8 md:p-16 border border-obsidian/10 dark:border-darkText/10 shadow-xl overflow-hidden relative">
@@ -60,6 +62,8 @@ export default function FAQSection({ onContactClick }) {
                                 number={item.number}
                                 question={item.question}
                                 answer={item.answer}
+                                isOpen={openIndex === index}
+                                onClick={() => setOpenIndex(index === openIndex ? null : index)}
                             />
                         ))}
                     </div>

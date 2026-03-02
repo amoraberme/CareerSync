@@ -66,17 +66,18 @@ export default function SwipeLettersButton({
                                 position: "relative",
                                 display: "inline-block",
                                 height: "1em",
+                                height: "1.25em",
                                 overflow: "hidden",
                                 fontSize: font.fontSize,
                                 fontWeight: font.variant,
                                 textTransform: font.textTransform,
-                                lineHeight: 1,
+                                lineHeight: 1.25,
                             }}
                         >
                             <span
                                 style={{
                                     display: "grid",
-                                    gridAutoRows: "1em",
+                                    gridAutoRows: "1.25em",
                                     transform: `translateY(${hovered ? hoverY : initY})`,
                                     transitionProperty: "transform",
                                     transitionDuration: `${duration}ms`,
