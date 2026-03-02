@@ -27,7 +27,7 @@ export default function SlideInButton({
             />
 
             {/* Container for text and icon */}
-            <div className="relative z-10 flex items-center justify-between w-full h-full px-6">
+            <div className="relative z-10 flex items-center justify-between w-full h-full px-6 py-4">
                 <span className="text-base text-obsidian dark:text-darkText group-hover:text-background dark:group-hover:text-darkBg transition-colors duration-300">
                     {text}
                 </span>

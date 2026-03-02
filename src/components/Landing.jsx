@@ -71,31 +71,31 @@ const Landing = ({ onNavigate }) => {
                 <div className="max-w-5xl mx-auto text-center">
 
 
-                    <h1 className="hero-title text-5xl md:text-[5.5rem] font-semibold tracking-tight leading-[1.1] mb-6 text-obsidian dark:text-darkText">
+                    <h1 className="hero-title text-6xl md:text-8xl font-bold tracking-tightest leading-[0.9] mb-8 text-obsidian dark:text-darkText">
                         Build your career <br />
-                        <span className="text-champagne">Scale to the future</span>
+                        <span className="font-drama italic text-champagne font-normal">Scale to the future</span>
                     </h1>
 
-                    <p className="hero-sub text-base md:text-lg text-slate dark:text-darkText/60 max-w-[45rem] mx-auto mb-10 leading-relaxed flex items-center justify-center min-h-[5rem] font-medium">
+                    <p className="hero-sub text-xl md:text-2xl text-slate dark:text-darkText/60 max-w-2xl mx-auto mb-12 leading-relaxed flex items-center justify-center min-h-[6rem]">
                         <SmartTypewriterText
                             text="The AI-powered career intelligence platform designed for job seekers. Instantly score, optimize, and generate materials tailored to your target role."
                         />
                     </p>
 
                     <div className="hero-cta flex flex-col md:flex-row items-center justify-center gap-4">
-                        <button
-                            onClick={scrollToPricing}
-                            className="w-full md:w-auto px-8 h-[52px] bg-transparent text-obsidian dark:text-darkText rounded-full text-base font-medium hover:bg-obsidian/5 dark:hover:bg-darkText/5 transition-colors border border-obsidian/20 dark:border-darkText/20"
-                        >
-                            View Plans
-                        </button>
-                        <div className="w-full md:w-56 h-[52px]">
+                        <div className="w-full md:w-64 h-16">
                             <SlideInButton
                                 onClick={() => onNavigate('auth')}
                                 text="Start your journey"
-                                className="w-full h-full text-base"
+                                className="w-full h-full text-lg"
                             />
                         </div>
+                        <button
+                            onClick={scrollToPricing}
+                            className="w-full md:w-auto px-8 py-4 bg-surface dark:bg-darkCard text-obsidian dark:text-darkText rounded-2xl text-lg font-bold hover:brightness-105 transition-all border border-obsidian/10 dark:border-darkText/10 active:scale-[0.98] btn-shine"
+                        >
+                            View Plans
+                        </button>
                     </div>
                 </div>
 
