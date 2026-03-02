@@ -211,8 +211,24 @@ export default function Simulation() {
 
                 <div className={`p-8 grid gap-8 relative min-h-[550px] transition-all duration-1000 ${showResults ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
 
+                    {/* The Play button centered */}
+                    {!isPlaying && !showResults && (
+                        <div className="absolute inset-0 z-[100] flex items-center justify-center">
+                            <div
+                                className="bg-[#111111] dark:bg-white text-white dark:text-black px-8 py-4 rounded-full text-lg font-bold flex items-center gap-3 shadow-[0_8px_30px_rgb(0,0,0,0.4)] hover:scale-105 transition-transform cursor-pointer"
+                                onClick={playSimulation}
+                            >
+                                <span className="relative flex h-3 w-3">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#C6A87C] opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-[#C6A87C]"></span>
+                                </span>
+                                Play
+                            </div>
+                        </div>
+                    )}
+
                     {/* Input Phase (Left Side generally, but spans full if results not shown) */}
-                    <div className={`flex flex-col gap-5 transition-all duration-700 w-full ${showResults ? 'opacity-30 blur-sm scale-95 pointer-events-none lg:w-full' : 'opacity-100 max-w-2xl mx-auto'}`}>
+                    <div className={`flex flex-col gap-5 transition-all duration-700 w-full ${showResults ? 'opacity-30 blur-sm scale-95 pointer-events-none lg:w-full' : (!isPlaying ? 'opacity-50 blur-sm pointer-events-none max-w-2xl mx-auto select-none' : 'opacity-100 max-w-2xl mx-auto')}`}>
                         {/* Job Description Block */}
                         <div id="sim-job-input" className="bg-[#FCFCFC] dark:bg-[#1E1E1E] border border-[#EEEEEE] dark:border-white/5 rounded-[0.85rem] p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
                             <div className="flex justify-between items-center mb-3">
@@ -231,19 +247,6 @@ export default function Simulation() {
                             <div className="w-full h-[80px] bg-white dark:bg-[#121212] border border-[#F0F0F0] dark:border-white/5 rounded-xl p-4 text-sm text-black/80 dark:text-white/80 font-mono whitespace-pre-wrap shadow-inner overflow-hidden relative">
                                 {resumeText || <span className="text-[#D0D0D0] dark:text-[#555555]">Upload or paste resume...</span>}
                             </div>
-                            {/* The Play button overlapping */}
-                            {!isPlaying && !showResults && (
-                                <div
-                                    className="absolute right-[-1.5rem] top-1/2 -translate-y-1/2 z-[60] bg-[#111111] dark:bg-white text-white dark:text-black px-6 py-3 rounded-full font-bold flex items-center gap-3 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:scale-105 transition-transform cursor-pointer"
-                                    onClick={playSimulation}
-                                >
-                                    <span className="relative flex h-2.5 w-2.5">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#C6A87C] opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#C6A87C]"></span>
-                                    </span>
-                                    Play
-                                </div>
-                            )}
                         </div>
 
                         {/* Tone Selector */}

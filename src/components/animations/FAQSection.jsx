@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import FAQItem from './FAQItem';
 import SwipeLettersButton from './SwipeLettersButton';
+import NeumorphismButton from './NeumorphismButton';
 
 const faqData = [
     {
@@ -49,6 +50,9 @@ export default function FAQSection({ onContactClick }) {
                         <p className="text-slate dark:text-darkText/70 text-base md:text-lg mb-8 relative z-10">
                             Have more questions? Don't hesitate to email us or reach out to support.
                         </p>
+                        <div className="relative z-10">
+                            <NeumorphismButton text="Get in touch" onClick={onContactClick} className="w-fit" />
+                        </div>
                         <div className="relative z-10 mt-auto opacity-0 lg:opacity-100 flex-grow pointer-events-none">
                             {/* spacing fill for desktop */}
                         </div>
