@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Check, ArrowRight, Shield, Zap, Target, FileText, CheckCircle2, X } from 'lucide-react';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import Simulation from './Simulation';
 import ContactModal from './ContactModal';
 import SlideInButton from './animations/SlideInButton';
@@ -13,7 +14,18 @@ gsap.registerPlugin(ScrollToPlugin);
 
 const Landing = ({ onNavigate }) => {
     const landingRef = useRef(null);
+    const scrollTrackRef = useRef(null);
     const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+
+    const { scrollYProgress } = useScroll({
+        target: scrollTrackRef,
+        offset: ["start start", "end start"]
+    });
+
+    // The Physics: Map scrollYProgress (0 to 0.5) to visual effects
+    const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+    const heroScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.9]);
+    const heroY = useTransform(scrollYProgress, [0, 0.5], [0, 50]);
 
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -60,46 +72,54 @@ const Landing = ({ onNavigate }) => {
                 </div>
             </nav>
 
-            {/* ═══ HERO SECTION ═══ */}
-            <section className="pt-40 pb-24 px-6 overflow-hidden relative">
-                {/* Background Blobs */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-full -z-10 opacity-30 dark:opacity-20 blur-[120px]">
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-champagne rounded-full" />
-                    <div className="absolute bottom-0 left-0 w-96 h-96 bg-slate rounded-full" />
-                </div>
-
-                <div className="max-w-5xl mx-auto text-center">
-
-
-                    <h1 className="hero-title text-5xl md:text-7xl font-bold tracking-tightest leading-[0.9] mb-8 text-obsidian dark:text-darkText">
-                        Turn Your Past Experience <br />
-                        <span className="font-drama italic text-champagne font-normal">Into Your Next Offer</span>
-                    </h1>
-
-                    <p className="hero-sub text-xl md:text-2xl text-slate dark:text-darkText/60 max-w-2xl mx-auto mb-12 leading-relaxed flex items-center justify-center min-h-[6rem]">
-                        <SmartTypewriterText
-                            text={`Shifting careers is terrifying when your resume doesn't match the title. Our AI maps your hidden "Transferable Bridge," automatically writing a cover letter that proves you belong in the room.`}
-                        />
-                    </p>
-
-                    <div className="hero-cta flex flex-col md:flex-row items-center justify-center gap-4">
-                        <div className="w-full md:w-64 h-16">
-                            <SlideInButton
-                                onClick={() => onNavigate('auth')}
-                                text="Run Analysis"
-                                className="w-full h-full text-lg"
-                            />
-                        </div>
-                        <button
-                            onClick={scrollToPricing}
-                            className="w-full md:w-auto px-8 py-4 bg-surface dark:bg-darkCard text-obsidian dark:text-darkText rounded-2xl text-lg font-bold hover:brightness-105 transition-all border border-obsidian/10 dark:border-darkText/10 active:scale-[0.98] btn-shine"
-                        >
-                            View Plans
-                        </button>
+            {/* ═══ SCROLL TRACK (HERO + SIMULATION) ═══ */}
+            <div ref={scrollTrackRef} className="relative h-[200vh] w-full">
+                {/* ═══ SINKING HERO SECTION ═══ */}
+                <motion.section
+                    className="sticky top-0 h-screen w-full flex flex-col justify-center px-6 overflow-hidden"
+                    style={{ opacity: heroOpacity, scale: heroScale, y: heroY }}
+                >
+                    {/* Background Blobs */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-full -z-10 opacity-30 dark:opacity-20 blur-[120px]">
+                        <div className="absolute top-0 right-0 w-96 h-96 bg-champagne rounded-full" />
+                        <div className="absolute bottom-0 left-0 w-96 h-96 bg-slate rounded-full" />
                     </div>
-                </div>
 
-            </section>
+                    <div className="max-w-5xl mx-auto text-center">
+                        <h1 className="hero-title text-5xl md:text-7xl font-bold tracking-tightest leading-[0.9] mb-8 text-obsidian dark:text-darkText">
+                            Turn Your Past Experience <br />
+                            <span className="font-drama italic text-champagne font-normal">Into Your Next Offer</span>
+                        </h1>
+
+                        <p className="hero-sub text-xl md:text-2xl text-slate dark:text-darkText/60 max-w-2xl mx-auto mb-12 leading-relaxed flex items-center justify-center min-h-[6rem]">
+                            <SmartTypewriterText
+                                text={`Shifting careers is terrifying when your resume doesn't match the title. Our AI maps your hidden "Transferable Bridge," automatically writing a cover letter that proves you belong in the room.`}
+                            />
+                        </p>
+
+                        <div className="hero-cta flex flex-col md:flex-row items-center justify-center gap-4">
+                            <div className="w-full md:w-64 h-16">
+                                <SlideInButton
+                                    onClick={() => onNavigate('auth')}
+                                    text="Run Analysis"
+                                    className="w-full h-full text-lg"
+                                />
+                            </div>
+                            <button
+                                onClick={scrollToPricing}
+                                className="w-full md:w-auto px-8 py-4 bg-surface dark:bg-darkCard text-obsidian dark:text-darkText rounded-2xl text-lg font-bold hover:brightness-105 transition-all border border-obsidian/10 dark:border-darkText/10 active:scale-[0.98] btn-shine"
+                            >
+                                View Plans
+                            </button>
+                        </div>
+                    </div>
+                </motion.section>
+
+                {/* ═══ PRODUCT SIMULATION (Overlaps the sinking hero) ═══ */}
+                <section className="relative z-10 w-full mt-[100vh] pb-32">
+                    <Simulation />
+                </section>
+            </div>
 
             {/* ═══ TECH STACK RIBBON ═══ */}
             <section className="py-20 border-y border-obsidian/5 dark:border-darkText/5">
@@ -145,11 +165,6 @@ const Landing = ({ onNavigate }) => {
                         </div>
                     </div>
                 </div>
-            </section>
-
-            {/* ═══ PRODUCT SIMULATION ═══ */}
-            <section className="relative z-20 mb-20">
-                <Simulation />
             </section>
 
             {/* ═══ PRICING SECTION ═══ */}
