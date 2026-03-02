@@ -194,10 +194,10 @@ export default function Simulation() {
             </div>
 
             {/* Main Application Container */}
-            <div className={`relative bg-[#EAEAEA] dark:bg-[#121212] border border-black/5 dark:border-white/5 rounded-[1rem] shadow-2xl overflow-hidden transition-all duration-1000 transform ${showResults ? 'scale-100' : 'scale-[0.98]'}`}>
+            <div className={`relative bg-surface dark:bg-darkCard border border-obsidian/5 dark:border-darkText/5 rounded-[1rem] shadow-2xl overflow-hidden transition-all duration-1000 transform ${showResults ? 'scale-100' : 'scale-[0.98]'}`}>
 
                 {/* Top Toolbar Simulation */}
-                <div className="h-10 border-b border-black/5 dark:border-white/5 flex items-center px-4 gap-2 bg-[#F8F8F8] dark:bg-[#1A1A1A]">
+                <div className="h-10 border-b border-obsidian/5 dark:border-darkText/5 flex items-center px-4 gap-2 bg-background dark:bg-darkBg">
                     <div className="flex gap-1.5">
                         <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F56]"></div>
                         <div className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E]"></div>
