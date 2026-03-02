@@ -4,16 +4,8 @@ import { ArrowRight } from 'lucide-react';
 
 export default function SlideInButton({
     onClick,
-    text = "Get Started",
-    className = "",
-    defaultBg = "var(--tw-colors-background)",
-    hoverBg = "var(--tw-colors-obsidian)",
-    defaultText = "var(--tw-colors-obsidian)",
-    hoverText = "var(--tw-colors-background)",
-    darkDefaultBg = "var(--tw-colors-darkCard)",
-    darkHoverBg = "var(--tw-colors-darkText)",
-    darkDefaultText = "var(--tw-colors-darkText)",
-    darkHoverText = "var(--tw-colors-darkBg)"
+    text = "Start your journey",
+    className = ""
 }) {
     return (
         <motion.button
@@ -21,59 +13,37 @@ export default function SlideInButton({
             initial="idle"
             whileHover="hover"
             whileTap="tap"
-            className={`relative flex items-center justify-between overflow-hidden rounded-full font-bold shadow-lg transition-shadow hover:shadow-xl ${className}`}
-            style={{
-                padding: "4px",
-            }}
+            className={`group relative flex items-center justify-between overflow-hidden rounded-full font-bold shadow-lg hover:shadow-xl bg-surface dark:bg-darkCard border border-obsidian/10 dark:border-darkText/10 ${className}`}
         >
-            {/* Background fill that slides from the left icon area */}
+            {/* Sliding Background */}
             <motion.div
-                className="absolute left-0 top-0 bottom-0 rounded-full z-0 bg-obsidian dark:bg-darkText"
+                className="absolute left-0 top-0 bottom-0 z-0 bg-obsidian dark:bg-darkText"
                 variants={{
-                    idle: { left: "4px", top: "4px", bottom: "4px", width: "40px", borderRadius: "100px" },
-                    hover: { left: "0px", top: "0px", bottom: "0px", width: "100%", borderRadius: "100px" },
-                    tap: { left: "0px", top: "0px", bottom: "0px", width: "100%", borderRadius: "100px" }
+                    idle: { width: "0%" },
+                    hover: { width: "100%" },
+                    tap: { width: "100%" }
                 }}
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
             />
 
-            {/* Inner Content Container */}
-            <motion.div
-                className="relative z-10 flex items-center h-full w-full bg-background dark:bg-darkBg rounded-full"
-                variants={{
-                    idle: { backgroundColor: "var(--tw-colors-background)", paddingLeft: "16px", paddingRight: "60px" },
-                    hover: { backgroundColor: "transparent", paddingLeft: "24px", paddingRight: "52px" },
-                    tap: { backgroundColor: "transparent", paddingLeft: "24px", paddingRight: "52px" }
-                }}
-                transition={{ duration: 0.2 }}
-            >
-                {/* Dark mode background override via class toggles is tricky with framer variants targeting backgroundColor natively. 
-                    We'll use standard CSS transitions for the background instead, relying on the parent wrapper for the dark mode class contexts. */}
-                <div className="absolute inset-0 rounded-full bg-background dark:bg-darkCard transition-colors" />
+            {/* Container for text and icon */}
+            <div className="relative z-10 flex items-center justify-between w-full h-full px-6 py-4">
+                <span className="text-base text-obsidian dark:text-darkText group-hover:text-background dark:group-hover:text-darkBg transition-colors duration-300">
+                    {text}
+                </span>
 
-                <motion.span
-                    className="relative z-10 text-base py-3"
+                <motion.div
                     variants={{
-                        idle: { color: "var(--tw-colors-obsidian)" },
-                        hover: { color: "var(--tw-colors-background)" }
+                        idle: { x: 0 },
+                        hover: { x: 4 },
+                        tap: { x: 4 }
                     }}
+                    transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
+                    className="ml-4 flex flex-shrink-0 text-obsidian dark:text-darkText group-hover:text-background dark:group-hover:text-darkBg transition-colors duration-300"
                 >
-                    <span className="dark:hidden leading-none">{text}</span>
-                    <span className="hidden dark:inline leading-none" style={{ color: "var(--tw-colors-darkBg)" }}>{text}</span>
-                </motion.span>
-            </motion.div>
-
-            {/* Icon Container (stays on top) */}
-            <motion.div
-                className="absolute right-2 z-20 flex items-center justify-center w-10 h-10 rounded-full pointer-events-none"
-                variants={{
-                    idle: { x: 0 },
-                    hover: { x: -4 },
-                    tap: { x: -2 }
-                }}
-            >
-                <ArrowRight className="w-5 h-5 text-background dark:text-darkBg" />
-            </motion.div>
+                    <ArrowRight className="w-5 h-5" />
+                </motion.div>
+            </div>
         </motion.button>
     );
 }
