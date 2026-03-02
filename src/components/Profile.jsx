@@ -4,6 +4,7 @@ import useWorkspaceStore from '../store/useWorkspaceStore';
 import { User, Lock, Mail, Fingerprint, Award, Coins, Key, ShieldCheck, AlertTriangle, Trash2, MessageSquare, Sparkles } from 'lucide-react';
 import ContactModal from './ContactModal';
 import SwipeLettersButton from './animations/SwipeLettersButton';
+import DeleteAccountButton from './animations/DeleteAccountButton';
 
 export default function Profile({ session, setCurrentView }) {
     const [profileData, setProfileData] = useState(null);
@@ -278,13 +279,7 @@ export default function Profile({ session, setCurrentView }) {
 
                     {/* Danger Zone: Delete Account */}
                     <div className="mt-8 pt-6 border-t border-[#EA4335]/20">
-                        <button
-                            onClick={() => setShowDeleteModal(true)}
-                            className="w-full flex items-center justify-center space-x-2 py-3 px-6 rounded-2xl border-2 border-[#EA4335]/30 text-[#EA4335] font-medium text-sm hover:bg-[#EA4335]/5 hover:border-[#EA4335]/50 transition-all active:scale-[0.98]"
-                        >
-                            <Trash2 className="w-4 h-4" />
-                            <span>Delete Account</span>
-                        </button>
+                        <DeleteAccountButton onDelete={() => setShowDeleteModal(true)} />
                     </div>
                 </div>
             </div>
