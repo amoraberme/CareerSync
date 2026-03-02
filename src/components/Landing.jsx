@@ -22,14 +22,10 @@ const Landing = ({ onNavigate }) => {
         offset: ["start start", "end start"]
     });
 
-    // The Physics: Map scrollYProgress (0 to 0.5) to visual effects
-    // Opacity hits 0.65 exactly at progress 0.175
-    const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-    const heroScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.9]);
-    const heroY = useTransform(scrollYProgress, [0, 0.5], [0, 50]);
-
-    // Simulation Entrance: Stays invisible until Hero opacity = 0.65 (progress 0.175)
-    const simulationOpacity = useTransform(scrollYProgress, [0, 0.175, 0.4], [0, 0, 1]);
+    // The Physics: Map scrollYProgress to exactly hit 0.60 at 0.175
+    const heroOpacity = useTransform(scrollYProgress, [0, 0.175, 0.5], [1, 0.60, 0]);
+    const heroScale = useTransform(scrollYProgress, [0, 0.175, 0.5], [1, 0.96, 0.9]);
+    const heroY = useTransform(scrollYProgress, [0, 0.175, 0.5], [0, 15, 50]);
 
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -77,7 +73,7 @@ const Landing = ({ onNavigate }) => {
             </nav>
 
             {/* ═══ SCROLL TRACK (HERO + SIMULATION) ═══ */}
-            <div ref={scrollTrackRef} className="relative h-[200vh] w-full">
+            <div ref={scrollTrackRef} className="relative w-full">
                 {/* ═══ SINKING HERO SECTION ═══ */}
                 <motion.section
                     className="sticky top-0 h-screen w-full flex flex-col justify-center px-6 overflow-hidden"
@@ -120,23 +116,21 @@ const Landing = ({ onNavigate }) => {
                 </motion.section>
 
                 {/* ═══ PRODUCT SIMULATION (Overlaps the sinking hero) ═══ */}
-                <section className="relative z-10 w-full mt-[100vh] pb-32">
-                    <motion.div style={{ opacity: simulationOpacity }}>
-                        <Simulation />
-                    </motion.div>
+                <section className="relative z-10 w-full mt-[35vh] pb-32">
+                    <Simulation />
                 </section>
             </div>
 
             {/* ═══ TECH STACK RIBBON (INFINITE MARQUEE) ═══ */}
             <section className="py-20 border-y border-obsidian/5 dark:border-darkText/5">
-                <div className="max-w-4xl w-[65%] mx-auto text-center">
+                <div className="max-w-6xl mx-auto px-6 text-center">
                     <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate/40 dark:text-darkText/30 mb-12 italic">
                         The ultimate analytical companion for career growth
                     </p>
 
                     {/* The Constrained Container (Fade Mask) */}
                     <div
-                        className="relative w-full overflow-hidden"
+                        className="relative w-full md:w-[65%] mx-auto overflow-hidden"
                         style={{ maskImage: "linear-gradient(to right, transparent, black 15%, black 85%, transparent)", WebkitMaskImage: "linear-gradient(to right, transparent, black 15%, black 85%, transparent)" }}
                     >
                         {/* The Infinite Track */}
