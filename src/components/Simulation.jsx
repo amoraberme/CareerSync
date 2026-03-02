@@ -1,206 +1,341 @@
-import React, { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import React, { useEffect, useRef, useState } from 'react';
 import { MousePointer2, FileText, CheckCircle, UploadCloud, ChevronRight, Wand2, ArrowRight } from 'lucide-react';
+import gsap from 'gsap';
+import { TextPlugin } from 'gsap/TextPlugin';
 
-const Card1 = () => (
-    <div className="bg-white/50 dark:bg-darkCard/30 border border-obsidian/10 dark:border-darkText/10 rounded-2xl p-6 md:p-8 shadow-xl backdrop-blur-md w-full max-w-2xl mx-auto flex flex-col gap-4">
-        <div className="flex justify-between items-center bg-surface dark:bg-darkCard/40 -mt-6 -mx-6 md:-mt-8 md:-mx-8 p-4 rounded-t-2xl border-b border-obsidian/5 dark:border-darkText/5 mb-2">
-            <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                <div className="w-3 h-3 rounded-full bg-amber-400"></div>
-                <div className="w-3 h-3 rounded-full bg-green-400"></div>
-            </div>
-            <div className="mx-auto flex items-center gap-2">
-                <img src="/logo.png" alt="Logo" className="w-4 h-4 opacity-70" />
-                <span className="text-xs font-mono font-medium text-slate dark:text-darkText/60">Target Job Description</span>
-            </div>
-        </div>
+gsap.registerPlugin(TextPlugin);
 
-        <div className="flex justify-between items-center mb-1">
-            <label className="text-xs font-mono text-slate uppercase tracking-wider block">Job Listing Details</label>
-            <div className="text-[10px] bg-champagne/10 text-champagne px-2 py-0.5 rounded-full flex gap-1 items-center"><Wand2 className="w-3 h-3" /> Auto-Extract</div>
-        </div>
-        <div className="w-full min-h-[140px] bg-white dark:bg-darkText/5 border border-obsidian/5 dark:border-darkText/5 rounded-xl p-4 text-sm text-obsidian dark:text-darkText font-mono whitespace-pre-wrap flex flex-col gap-2">
-            <span className="font-bold text-base">Senior Frontend Engineer</span>
-            <span className="opacity-80">Requires 5+ years experience, React expertise, and strong UI/UX sensibilities. Must be comfortable highly scalable web applications...</span>
-        </div>
-    </div>
-);
-
-const Card2 = () => (
-    <div className="bg-white/50 dark:bg-darkCard/30 border border-obsidian/10 dark:border-darkText/10 rounded-2xl p-6 md:p-8 shadow-xl backdrop-blur-md w-full max-w-2xl mx-auto flex flex-col gap-4">
-        <div className="flex justify-between items-center bg-surface dark:bg-darkCard/40 -mt-6 -mx-6 md:-mt-8 md:-mx-8 p-4 rounded-t-2xl border-b border-obsidian/5 dark:border-darkText/5 mb-2">
-            <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                <div className="w-3 h-3 rounded-full bg-amber-400"></div>
-                <div className="w-3 h-3 rounded-full bg-green-400"></div>
-            </div>
-            <div className="mx-auto flex items-center gap-2">
-                <span className="text-xs font-mono font-medium text-slate dark:text-darkText/60">Your Resume</span>
-            </div>
-        </div>
-
-        <label className="text-xs font-mono text-slate uppercase tracking-wider mb-1 block">Context Upload</label>
-        <div className="w-full h-[140px] border-2 border-dashed border-champagne/40 bg-champagne/5 rounded-xl flex items-center justify-center flex-col gap-2 text-champagne">
-            <UploadCloud className="w-8 h-8 opacity-80" />
-            <span className="text-sm font-semibold opacity-80">portfolio_resume.pdf uploaded</span>
-        </div>
-    </div>
-);
-
-const Card3 = () => (
-    <div className="bg-white/50 dark:bg-darkCard/30 border border-obsidian/10 dark:border-darkText/10 rounded-2xl p-6 md:p-8 shadow-xl backdrop-blur-md w-full max-w-2xl mx-auto flex flex-col gap-6">
-        <div className="flex justify-between items-center bg-surface dark:bg-darkCard/40 -mt-6 -mx-6 md:-mt-8 md:-mx-8 p-4 rounded-t-2xl border-b border-obsidian/5 dark:border-darkText/5 mb-2">
-            <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                <div className="w-3 h-3 rounded-full bg-amber-400"></div>
-                <div className="w-3 h-3 rounded-full bg-green-400"></div>
-            </div>
-            <div className="mx-auto flex items-center gap-2">
-                <span className="text-xs font-mono font-medium text-slate dark:text-darkText/60">Analysis Configuration</span>
-            </div>
-        </div>
-
-        <div className="flex items-center justify-between">
-            <label className="text-xs font-mono text-slate uppercase tracking-wider block">Target Tone</label>
-            <div className="flex gap-2">
-                <div className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-slate opacity-50">Direct</div>
-                <div className="px-3 py-1.5 rounded-full text-xs font-semibold bg-champagne text-white shadow-md">Professional</div>
-                <div className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-slate opacity-50">Creative</div>
-            </div>
-        </div>
-
-        <div className="w-full py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 bg-obsidian dark:bg-darkText text-background dark:text-darkBg shadow-lg">
-            <span>Run Deep Analysis</span>
-            <ArrowRight className="w-5 h-5" />
-        </div>
-    </div>
-);
-
-const Card4 = () => (
-    <div className="bg-surface dark:bg-darkCard border border-obsidian/10 dark:border-darkText/10 rounded-2xl p-6 md:p-8 shadow-2xl backdrop-blur-md w-full max-w-2xl mx-auto flex flex-col gap-6 z-50">
-        <h3 className="text-2xl font-bold text-obsidian dark:text-darkText mb-2 flex items-center gap-2">
-            <CheckCircle className="text-[#34A853] w-6 h-6" />
-            Analysis Complete
-        </h3>
-
-        {/* Match Ring Simulation */}
-        <div className="flex items-center gap-6 bg-white dark:bg-darkBg border border-obsidian/5 rounded-2xl p-6 shadow-sm">
-            <div className="relative w-20 h-20 flex items-center justify-center shrink-0">
-                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 96 96" overflow="visible">
-                    <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate/20" />
-                    <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-[#34A853] drop-shadow-md stroke-dasharray-[251.2] stroke-dashoffset-[20.096]" />
-                </svg>
-                <span className="absolute text-xl font-bold dark:text-darkText">92<span className="text-xs">%</span></span>
-            </div>
-            <div>
-                <p className="text-xs font-mono uppercase text-slate dark:text-darkText/50 mb-1">Projected Match</p>
-                <p className="text-sm text-obsidian dark:text-darkText font-medium">Excellent alignment. Core skills match exactly. Recommended to proceed.</p>
-            </div>
-        </div>
-
-        {/* Optimization Preview */}
-        <div className="space-y-4">
-            <div className="bg-white dark:bg-darkBg border border-obsidian/5 rounded-2xl p-5 shadow-sm">
-                <p className="text-xs font-mono uppercase text-champagne font-bold mb-2">Resume Optimization</p>
-                <p className="text-sm text-slate line-through mb-1">Developed internal tools for staff.</p>
-                <p className="text-sm font-medium text-obsidian dark:text-darkText text-[#34A853]">→ Architected scalable internal React dashboards, increasing team efficiency by 40%.</p>
-            </div>
-        </div>
-    </div>
-);
-
-const StepCard = ({ i, targetScale, progress, children }) => {
-    // Each card becomes fully active at a certain progress milestone
-    // Card 1 active 0.0 -> 0.25 (scaled down past 0.25)
-    // Card 2 active 0.25 -> 0.5 (scaled down past 0.5)
-    // Card 3 active 0.5 -> 0.75 (scaled down past 0.75)
-    // Card 4 active 0.75 -> 1.0
-
-    // We base the start and end of this card's "active" state on its index
-    const startRange = i * 0.25;
-    const endRange = (i + 1) * 0.25;
-
-    // The scale drops to targetScale when progress passes endRange
-    const scale = useTransform(
-        progress,
-        [startRange - 0.25, startRange, endRange, endRange + 0.25],
-        [1.2, 1, 1, targetScale]
-    );
-
-    // The opacity only drops slightly, we want them visible faintly behind
-    const opacity = useTransform(
-        progress,
-        [startRange - 0.25, startRange, endRange, endRange + 0.25],
-        [0, 1, 1, 0.4]
-    );
-
-    // Y positioning: Slide in from bottom
-    const y = useTransform(
-        progress,
-        [startRange - 0.25, startRange],
-        ["100%", "0%"]
-    );
-
-    return (
-        <motion.div
-            style={{
-                scale,
-                opacity,
-                y,
-                transformOrigin: "top center",
-                zIndex: i,
-            }}
-            className="absolute top-0 left-0 w-full flex items-center justify-center p-4 xl:p-0"
-        >
-            {children}
-        </motion.div>
-    );
-};
+// --- Timing Configuration (Adjust these to speed up/slow down the simulation) ---
+const DELAY_START = 1;
+const CURSOR_MOVE_DURATION = 1.2;
+const TYPING_SPEED = 30; // ms per character (used if calculating exact time, but GSAP uses duration)
+const GSAP_TYPING_DURATION = 2; // Fixed duration for typing simulation
+const PAUSE_BETWEEN_STEPS = 0.5;
+const PROCESSING_DURATION = 2.5;
 
 export default function Simulation() {
     const containerRef = useRef(null);
+    const cursorRef = useRef(null);
+    const tlRef = useRef(null);
+    const [isPlaying, setIsPlaying] = useState(false);
 
-    const { scrollYProgress } = useScroll({
-        target: containerRef,
-        offset: ["start start", "end end"]
-    });
+    // UI States managed by the timeline
+    const [jobText, setJobText] = useState("");
+    const [resumeText, setResumeText] = useState("");
+    const [activeTone, setActiveTone] = useState("Professional");
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [showResults, setShowResults] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [isRevealed, setIsRevealed] = useState(false);
 
-    const CARDS = [
-        { id: 0, component: <Card1 />, targetScale: 0.85 },
-        { id: 1, component: <Card2 />, targetScale: 0.90 },
-        { id: 2, component: <Card3 />, targetScale: 0.95 },
-        { id: 3, component: <Card4 />, targetScale: 1.0 },
-    ];
+    const fullJobText = "Senior Frontend Engineer\nRequires 5+ years experience, React expertise, and strong UI/UX sensibilities...";
+    const fullResumeText = "Software Developer with 6 years of experience building scalable web applications using React and Node.js...";
+
+    const resetSimulation = () => {
+        if (tlRef.current) {
+            tlRef.current.kill();
+        }
+        setIsPlaying(false);
+        setJobText("");
+        setResumeText("");
+        setActiveTone("Professional");
+        setIsAnalyzing(false);
+        setShowResults(false);
+        setProgress(0);
+
+        // Reset cursor position to start, absolute relative to container
+        gsap.set(cursorRef.current, { x: 50, y: 500, opacity: 0 });
+    };
+
+    const playSimulation = () => {
+        if (isPlaying) return;
+        resetSimulation();
+        setIsPlaying(true);
+
+        const tl = gsap.timeline();
+        tlRef.current = tl;
+
+        // 1. Cursor enters
+        tl.to(cursorRef.current, {
+            opacity: 1,
+            duration: 0.3
+        })
+
+            // 2. Move to Job Input
+            .to(cursorRef.current, {
+                x: () => {
+                    const container = containerRef.current?.getBoundingClientRect();
+                    const el = document.getElementById('sim-job-input')?.getBoundingClientRect();
+                    return el && container ? (el.left - container.left) + 40 : 200;
+                },
+                y: () => {
+                    const container = containerRef.current?.getBoundingClientRect();
+                    const el = document.getElementById('sim-job-input')?.getBoundingClientRect();
+                    return el && container ? (el.top - container.top) + 20 : 200;
+                },
+                duration: CURSOR_MOVE_DURATION,
+                ease: "power2.inOut"
+            }, `+=${DELAY_START}`)
+
+            // Click effect
+            .to(cursorRef.current, { scale: 0.8, duration: 0.1, yoyo: true, repeat: 1 })
+
+            // Type Job Text
+            .to({ length: 0 }, {
+                length: fullJobText.length,
+                duration: GSAP_TYPING_DURATION,
+                ease: "none",
+                onUpdate: function () {
+                    setJobText(fullJobText.substring(0, Math.floor(this.targets()[0].length)));
+                }
+            })
+
+            // 3. Move to Resume Input
+            .to(cursorRef.current, {
+                x: () => {
+                    const container = containerRef.current?.getBoundingClientRect();
+                    const el = document.getElementById('sim-resume-input')?.getBoundingClientRect();
+                    return el && container ? (el.left - container.left) + 40 : 200;
+                },
+                y: () => {
+                    const container = containerRef.current?.getBoundingClientRect();
+                    const el = document.getElementById('sim-resume-input')?.getBoundingClientRect();
+                    return el && container ? (el.top - container.top) + 20 : 300;
+                },
+                duration: CURSOR_MOVE_DURATION,
+                ease: "power2.inOut"
+            }, `+=${PAUSE_BETWEEN_STEPS}`)
+
+            // Click effect
+            .to(cursorRef.current, { scale: 0.8, duration: 0.1, yoyo: true, repeat: 1 })
+
+            // Paste Resume Text (Instant)
+            .add(() => setResumeText(fullResumeText))
+            .to({}, { duration: 0.5 }) // Brief pause after paste
+
+            // 4. Move to Tone Selector
+            .to(cursorRef.current, {
+                x: () => {
+                    const container = containerRef.current?.getBoundingClientRect();
+                    const el = document.getElementById('sim-tone-professional')?.getBoundingClientRect();
+                    return el && container ? (el.left - container.left) + 20 : 300;
+                },
+                y: () => {
+                    const container = containerRef.current?.getBoundingClientRect();
+                    const el = document.getElementById('sim-tone-professional')?.getBoundingClientRect();
+                    return el && container ? (el.top - container.top) + 10 : 400;
+                },
+                duration: CURSOR_MOVE_DURATION,
+                ease: "power2.inOut"
+            })
+
+            // Click effect
+            .to(cursorRef.current, { scale: 0.8, duration: 0.1, yoyo: true, repeat: 1 })
+
+            // 5. Move to Analyze Button
+            .to(cursorRef.current, {
+                x: () => {
+                    const container = containerRef.current?.getBoundingClientRect();
+                    const el = document.getElementById('sim-analyze-btn')?.getBoundingClientRect();
+                    return el && container ? (el.left - container.left) + (el.width / 2) : 400;
+                },
+                y: () => {
+                    const container = containerRef.current?.getBoundingClientRect();
+                    const el = document.getElementById('sim-analyze-btn')?.getBoundingClientRect();
+                    return el && container ? (el.top - container.top) + 20 : 500;
+                },
+                duration: CURSOR_MOVE_DURATION,
+                ease: "power2.inOut"
+            }, `+=${PAUSE_BETWEEN_STEPS}`)
+
+            // Click Analyze
+            .to(cursorRef.current, { scale: 0.8, duration: 0.1, yoyo: true, repeat: 1 })
+            .add(() => setIsAnalyzing(true))
+
+            // 6. Processing State (Simulate loading bar)
+            .to({ p: 0 }, {
+                p: 100,
+                duration: PROCESSING_DURATION,
+                ease: "power1.inOut",
+                onUpdate: function () {
+                    setProgress(Math.floor(this.targets()[0].p));
+                }
+            })
+
+            // 7. Show Results
+            .add(() => {
+                setIsAnalyzing(false);
+                setShowResults(true);
+            })
+
+            // Move cursor out of the way
+            .to(cursorRef.current, {
+                x: '100%',
+                y: '100%',
+                duration: CURSOR_MOVE_DURATION,
+                ease: "power2.inOut",
+                opacity: 0
+            });
+    };
+
+    // Initial setup
+    useEffect(() => {
+        gsap.set(cursorRef.current, { opacity: 0 });
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIsRevealed(true);
+                    if (containerRef.current) {
+                        observer.unobserve(containerRef.current);
+                    }
+                }
+            },
+            { threshold: 0.15 }
+        );
+
+        if (containerRef.current) {
+            observer.observe(containerRef.current);
+        }
+
+        return () => {
+            if (containerRef.current) observer.unobserve(containerRef.current);
+        };
+    }, []);
 
     return (
-        <div ref={containerRef} className="relative w-full h-[400vh]">
-            <div className="sticky top-0 w-full h-screen overflow-hidden flex flex-col items-center justify-center z-10">
-                {/* Background Blobs for specific section */}
-                <div className="absolute inset-0 -z-10 bg-background dark:bg-darkBg">
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-[400px] opacity-20 dark:opacity-10 blur-[100px] bg-gradient-to-r from-champagne via-transparent to-slate rounded-full pointer-events-none" />
+        <div style={{ perspective: "1000px" }} className="w-full my-24">
+            <div
+                ref={containerRef}
+                className={`reveal-hidden ${isRevealed ? 'reveal-visible' : ''} relative w-full max-w-5xl mx-auto overflow-hidden rounded-[2rem]`}
+            >
+                {/* The Cursor */}
+                <div
+                    ref={cursorRef}
+                    className="absolute top-0 left-0 z-[200] pointer-events-none text-obsidian drop-shadow-lg"
+                    style={{ filter: "drop-shadow(2px 4px 6px rgba(0,0,0,0.3))" }}
+                >
+                    <MousePointer2 className="w-8 h-8 fill-obsidian stroke-white stroke-2" />
                 </div>
 
-                <div className="text-center mb-12 lg:mb-20 px-4 -mt-32">
-                    <h2 className="text-3xl md:text-5xl font-bold tracking-tightest text-obsidian dark:text-darkText mb-4">
-                        Powered by intelligence.
-                    </h2>
-                    <p className="text-slate dark:text-darkText/60 max-w-lg mx-auto">
-                        Scroll down to witness how our engine breaks down job requirements, aligns your resume, and engineers the perfect candidate profile.
-                    </p>
-                </div>
+                {/* Main Application Container */}
+                <div className={`relative bg-background dark:bg-darkBg border border-obsidian/10 dark:border-darkText/10 rounded-[2rem] shadow-2xl transition-all duration-1000 transform ${showResults ? 'scale-100' : 'scale-[0.98]'}`}>
 
-                <div className="relative w-full max-w-3xl mx-auto h-[450px]">
-                    {CARDS.map((card, i) => (
-                        <StepCard
-                            key={card.id}
-                            i={i}
-                            targetScale={card.targetScale}
-                            progress={scrollYProgress}
-                        >
-                            {card.component}
-                        </StepCard>
-                    ))}
+                    {/* Overlay to intercept clicks and show Play button initially */}
+                    {!isPlaying && !showResults && (
+                        <div className="absolute inset-0 z-50 bg-background/10 dark:bg-darkBg/10 flex items-center justify-center cursor-pointer transition-opacity hover:bg-background/20" onClick={playSimulation}>
+                            <div className="bg-obsidian dark:bg-darkText text-white dark:text-darkBg px-8 py-4 rounded-full font-bold flex items-center gap-3 shadow-2xl hover:scale-105 transition-transform">
+                                <span className="relative flex h-3 w-3">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-champagne opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-champagne"></span>
+                                </span>
+                                Play
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Top Toolbar Simulation */}
+                    <div className="h-12 border-b border-obsidian/5 dark:border-darkText/5 flex items-center px-4 gap-2 bg-surface dark:bg-darkCard/40">
+                        <div className="flex gap-1.5">
+                            <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                            <div className="w-3 h-3 rounded-full bg-amber-400"></div>
+                            <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                        </div>
+                        <div className="mx-auto flex items-center gap-2">
+                            <img src="/logo.png" alt="Logo" className="w-4 h-4 opacity-70" />
+                            <span className="text-xs font-mono font-medium text-slate dark:text-darkText/60">CareerSync Engine</span>
+                        </div>
+                    </div>
+
+                    <div className="p-8 grid grid-cols-1 lg:grid-cols-2 gap-8 relative min-h-[600px] sm:min-h-[650px]">
+
+                        {/* Input Phase (Left Side generally, but spans full if results not shown) */}
+                        <div className={`flex flex-col gap-6 transition-all duration-700 ${showResults ? 'opacity-30 blur-sm scale-95 pointer-events-none' : 'opacity-100'}`}>
+                            {/* Job Description Block */}
+                            <div id="sim-job-input" className="bg-white/50 dark:bg-darkCard/30 border border-obsidian/10 dark:border-darkText/10 rounded-2xl p-5 shadow-sm">
+                                <div className="flex justify-between items-center mb-3">
+                                    <label className="text-xs font-mono text-slate uppercase tracking-wider block">Target Job Description</label>
+                                    <div className="text-[10px] bg-champagne/10 text-champagne px-2 py-0.5 rounded-full flex gap-1 items-center"><Wand2 className="w-3 h-3" /> Paste Listing</div>
+                                </div>
+                                <div className="w-full min-h-[100px] bg-white dark:bg-darkText/5 border border-obsidian/5 dark:border-darkText/5 rounded-xl p-3 text-sm text-obsidian dark:text-darkText font-mono whitespace-pre-wrap">
+                                    {jobText || <span className="opacity-30">Waiting for input...</span>}
+                                    {isPlaying && jobText.length < fullJobText.length && jobText.length > 0 && <span className="animate-pulse">|</span>}
+                                </div>
+                            </div>
+
+                            {/* Resume Block */}
+                            <div id="sim-resume-input" className="bg-white/50 dark:bg-darkCard/30 border border-obsidian/10 dark:border-darkText/10 rounded-2xl p-5 shadow-sm">
+                                <label className="text-xs font-mono text-slate uppercase tracking-wider mb-3 block">Your Resume</label>
+                                <div className="w-full min-h-[80px] bg-white dark:bg-darkText/5 border border-obsidian/5 dark:border-darkText/5 rounded-xl p-3 text-sm text-obsidian dark:text-darkText font-mono whitespace-pre-wrap">
+                                    {resumeText || <span className="opacity-30">Upload or paste resume...</span>}
+                                </div>
+                            </div>
+
+                            {/* Tone Selector */}
+                            <div className="bg-white/50 dark:bg-darkCard/30 border border-obsidian/10 dark:border-darkText/10 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+                                <label className="text-xs font-mono text-slate uppercase tracking-wider block">Cover Letter Tone</label>
+                                <div id="sim-tone-professional" className={`px-3 py-1.5 rounded-full text-xs font-semibold ${activeTone === 'Professional' ? 'bg-champagne text-white' : 'bg-white text-slate'}`}>
+                                    Professional
+                                </div>
+                            </div>
+
+                            {/* Analyze Button */}
+                            <div id="sim-analyze-btn" className="relative">
+                                <div className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 transition-all ${isAnalyzing ? 'bg-obsidian/80 dark:bg-darkText/80 text-background' : 'bg-obsidian dark:bg-darkText text-background dark:text-darkBg shadow-lg'}`}>
+                                    <span>{isAnalyzing ? `Extracting Data... ${progress}%` : 'Run Deep Analysis'}</span>
+                                    {!isAnalyzing && <ArrowRight className="w-5 h-5" />}
+                                </div>
+                                {/* Loading Bar Overlay */}
+                                {isAnalyzing && (
+                                    <div className="absolute bottom-0 left-0 h-1 bg-champagne rounded-b-2xl transition-all" style={{ width: `${progress}%` }}></div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Results Overlay (Expands out) */}
+                        <div className={`absolute top-0 right-0 w-full lg:w-1/2 h-full bg-surface dark:bg-darkCard p-8 shadow-2xl border-l border-obsidian/10 dark:border-darkText/10 transform transition-transform duration-1000 ease-out-expo ${showResults ? 'translate-x-0' : 'translate-x-full'}`}>
+                            {showResults && (
+                                <div className="h-full flex flex-col pt-12 animate-fade-in delay-300">
+                                    <h3 className="text-2xl font-bold text-obsidian dark:text-darkText mb-6 flex items-center gap-2">
+                                        <CheckCircle className="text-[#34A853] w-6 h-6" />
+                                        Analysis Complete
+                                    </h3>
+
+                                    {/* Match Ring Simulation */}
+                                    <div className="flex items-center gap-6 mb-8 bg-white dark:bg-darkBg border border-obsidian/5 rounded-2xl p-6">
+                                        <div className="relative w-24 h-24 flex items-center justify-center">
+                                            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 96 96" overflow="visible">
+                                                <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate/20" />
+                                                <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-[#34A853] drop-shadow-md" strokeDasharray="251.2" strokeDashoffset="20.096" style={{ transition: 'stroke-dashoffset 2s ease-out' }} />
+                                            </svg>
+                                            <span className="absolute text-2xl font-bold dark:text-darkText">92<span className="text-sm">%</span></span>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-mono uppercase text-slate dark:text-darkText/50 mb-1">Projected Match</p>
+                                            <p className="text-sm text-obsidian dark:text-darkText font-medium">Excellent alignment. Core skills match exactly. Recommended to proceed.</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Optimization Preview */}
+                                    <div className="space-y-4 flex-grow">
+                                        <div className="bg-white dark:bg-darkBg border border-obsidian/5 rounded-2xl p-5">
+                                            <p className="text-xs font-mono uppercase text-champagne font-bold mb-2">Resume Optimization</p>
+                                            <p className="text-sm text-slate line-through mb-1">Developed internal tools for staff.</p>
+                                            <p className="text-sm font-medium text-obsidian dark:text-darkText text-[#34A853]">→ Architected scalable internal React dashboards, increasing team efficiency by 40%.</p>
+                                        </div>
+                                        <div className="bg-white dark:bg-darkBg border border-obsidian/5 rounded-2xl p-5">
+                                            <p className="text-xs font-mono uppercase text-obsidian/50 font-bold mb-2">Cover Letter Snippet</p>
+                                            <p className="text-sm text-obsidian dark:text-darkText/80 font-serif italic">"With a proven track record of 6 years in scaling React architectures, I am uniquely positioned to tackle exactly the frontend challenges your team faces..."</p>
+                                        </div>
+                                    </div>
+
+                                    <button onClick={resetSimulation} className="mt-6 w-full py-3 rounded-full border border-obsidian/20 text-sm font-bold hover:bg-obsidian/5 transition-colors">
+                                        Play Again
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

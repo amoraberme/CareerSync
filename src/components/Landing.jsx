@@ -8,39 +8,61 @@ import SlideInButton from './animations/SlideInButton';
 import SwipeLettersButton from './animations/SwipeLettersButton';
 import SmartTypewriterText from './animations/SmartTypewriterText';
 import FAQSection from './animations/FAQSection';
-import RevealPreloader from './animations/RevealPreloader';
 
 gsap.registerPlugin(ScrollToPlugin);
 
 const Landing = ({ onNavigate }) => {
     const landingRef = useRef(null);
-    const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-    const [isHeroRevealed, setIsHeroRevealed] = useState(false);
+    const [preloaderState, setPreloaderState] = useState('active'); // 'active', 'revealing', 'unmounted'
 
     useEffect(() => {
-        // Trigger hero reveal after the preloader starts lifting
-        const slideTimer = setTimeout(() => {
-            setIsHeroRevealed(true);
-        }, 300); // Small offset so they rise as curtain lifts
+        // Lock body overflow
+        document.body.style.overflow = 'hidden';
+
+        // Trigger reveal after a tiny delay
+        const frame = requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                setPreloaderState('revealing');
+            });
+        });
 
         const ctx = gsap.context(() => {
             // Stats entrance
-
             gsap.from('.stat-item', { opacity: 0, y: 20, duration: 0.8, stagger: 0.1, ease: 'power2.out', scrollTrigger: { trigger: '.stats-grid', start: 'top 80%' } });
         }, landingRef);
+
         return () => {
+            cancelAnimationFrame(frame);
             ctx.revert();
-            clearTimeout(slideTimer);
+            if (document.body.style.overflow === 'hidden') {
+                document.body.style.overflow = 'auto';
+            }
         };
     }, []);
+
+    const handlePreloaderTransitionEnd = (e) => {
+        if (e.target === e.currentTarget && e.propertyName === 'transform') {
+            setPreloaderState('unmounted');
+            document.body.style.overflow = 'auto';
+        }
+    };
 
     const scrollToPricing = () => {
         gsap.to(window, { duration: 1, scrollTo: "#pricing", ease: "power3.inOut" });
     };
 
     return (
-        <div ref={landingRef} className="bg-background text-obsidian dark:bg-darkBg dark:text-darkText font-sans selection:bg-champagne selection:text-obsidian relative min-h-screen">
-            <RevealPreloader />
+        <div ref={landingRef} className="bg-background text-obsidian dark:bg-darkBg dark:text-darkText font-sans selection:bg-champagne selection:text-obsidian">
+            {preloaderState !== 'unmounted' && (
+                <div
+                    className="fixed top-0 left-0 w-[100vw] h-[100vh] z-[9999] bg-background dark:bg-darkBg"
+                    style={{
+                        transform: preloaderState === 'revealing' ? 'translateY(-100%)' : 'translateY(0)',
+                        transition: 'transform 1200ms cubic-bezier(0.85, 0, 0.15, 1)'
+                    }}
+                    onTransitionEnd={handlePreloaderTransitionEnd}
+                ></div>
+            )}
 
             {/* ═══ NAVBAR ═══ */}
             <nav className="fixed top-0 left-0 right-0 z-[100] bg-background/80 dark:bg-darkBg/80 backdrop-blur-xl border-b border-obsidian/5 dark:border-darkText/5">
@@ -77,43 +99,35 @@ const Landing = ({ onNavigate }) => {
 
                 <div className="max-w-5xl mx-auto text-center">
 
+
                     <h1
-                        className="text-6xl md:text-8xl font-bold tracking-tightest leading-[0.9] mb-8 text-obsidian dark:text-darkText"
+                        className={`hero-title text-6xl md:text-8xl font-bold tracking-tightest leading-[0.9] mb-8 text-obsidian dark:text-darkText transition-all duration-1000 ${preloaderState !== 'active' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
                         style={{
-                            opacity: isHeroRevealed ? 1 : 0,
-                            transform: isHeroRevealed ? 'translateY(0)' : 'translateY(32px)',
-                            transition: 'opacity 1s cubic-bezier(0.22, 1, 0.36, 1), transform 1s cubic-bezier(0.22, 1, 0.36, 1)',
-                            transitionDelay: '400ms',
-                            willChange: 'opacity, transform'
+                            transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
+                            transitionDelay: '400ms'
                         }}
                     >
                         Build your career <br />
                         <span className="font-drama italic text-champagne font-normal">Scale to the future</span>
                     </h1>
 
-                    <div
-                        className="text-xl md:text-2xl text-slate dark:text-darkText/60 max-w-2xl mx-auto mb-12 leading-relaxed flex items-center justify-center min-h-[6rem]"
+                    <p
+                        className={`hero-sub text-xl md:text-2xl text-slate dark:text-darkText/60 max-w-2xl mx-auto mb-12 leading-relaxed flex items-center justify-center min-h-[6rem] transition-all duration-1000 ${preloaderState !== 'active' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
                         style={{
-                            opacity: isHeroRevealed ? 1 : 0,
-                            transform: isHeroRevealed ? 'translateY(0)' : 'translateY(32px)',
-                            transition: 'opacity 1s cubic-bezier(0.22, 1, 0.36, 1), transform 1s cubic-bezier(0.22, 1, 0.36, 1)',
-                            transitionDelay: '500ms',
-                            willChange: 'opacity, transform'
+                            transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
+                            transitionDelay: '500ms'
                         }}
                     >
                         <SmartTypewriterText
                             text="The AI-powered career intelligence platform designed for job seekers. Instantly score, optimize, and generate materials tailored to your target role."
                         />
-                    </div>
+                    </p>
 
                     <div
-                        className="flex flex-col md:flex-row items-center justify-center gap-4"
+                        className={`hero-cta flex flex-col md:flex-row items-center justify-center gap-4 transition-all duration-1000 ${preloaderState !== 'active' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
                         style={{
-                            opacity: isHeroRevealed ? 1 : 0,
-                            transform: isHeroRevealed ? 'translateY(0)' : 'translateY(32px)',
-                            transition: 'opacity 1s cubic-bezier(0.22, 1, 0.36, 1), transform 1s cubic-bezier(0.22, 1, 0.36, 1)',
-                            transitionDelay: '600ms',
-                            willChange: 'opacity, transform'
+                            transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
+                            transitionDelay: '600ms'
                         }}
                     >
                         <div className="w-full md:w-64 h-16">
