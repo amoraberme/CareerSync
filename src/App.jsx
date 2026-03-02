@@ -259,10 +259,10 @@ function App() {
   // ═══ Public Routes (Landing, Terms & Privacy) ═══
   // These are rendered regardless of session status
   if (currentView === 'terms') {
-    return <Terms onBack={() => navigateTo(session ? 'workspace' : 'landing')} />;
+    return <Terms onBack={() => navigateTo(session ? 'workspace' : 'landing')} onNavigate={navigateTo} currentView={currentView} />;
   }
   if (currentView === 'privacy') {
-    return <Privacy onBack={() => navigateTo(session ? 'workspace' : 'landing')} />;
+    return <Privacy onBack={() => navigateTo(session ? 'workspace' : 'landing')} onNavigate={navigateTo} currentView={currentView} />;
   }
 
   if (!session) {

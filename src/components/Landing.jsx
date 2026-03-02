@@ -316,7 +316,7 @@ const Landing = ({ onNavigate }) => {
                     <div className="flex flex-col items-center md:items-start gap-4">
                         <div className="flex items-center gap-2">
                             <img src="/logo.png" alt="CareerSync Logo" className="w-6 h-6 object-contain" />
-                            <span className="text-lg font-bold tracking-tightest">CareerSync</span>
+                            <span className="text-lg font-bold tracking-tightest">Career<span className="font-drama italic font-normal text-champagne">Sync.</span></span>
                         </div>
                         <p className="text-xs text-slate/60 dark:text-darkText/40">© 2026 CareerSync. All rights reserved.</p>
                     </div>
