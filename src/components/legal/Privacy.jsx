@@ -312,10 +312,10 @@ const Privacy = ({ onBack }) => {
                     <div className="bg-obsidian/5 dark:bg-darkText/5 p-8 rounded-3xl space-y-4">
                         <p className="text-lg text-slate/80 dark:text-darkText/70 leading-relaxed">When you submit a job application query, our backend constructs a multi-part prompt with a server-side system instruction. This ensures your data is evaluated strictly for:</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <p className="text-base text-obsidian dark:text-darkText font-bold">✓ AI Match Score</p>
-                            <p className="text-base text-obsidian dark:text-darkText font-bold">✓ Matched Profile Analysis</p>
-                            <p className="text-base text-obsidian dark:text-darkText font-bold">✓ Gap Analysis</p>
-                            <p className="text-base text-obsidian dark:text-darkText font-bold">✓ Cover Letter Generation</p>
+                            <p className="text-base text-obsidian dark:text-darkText font-bold flex items-center"><Check className="w-5 h-5 mr-2" /> AI Match Score</p>
+                            <p className="text-base text-obsidian dark:text-darkText font-bold flex items-center"><Check className="w-5 h-5 mr-2" /> Matched Profile Analysis</p>
+                            <p className="text-base text-obsidian dark:text-darkText font-bold flex items-center"><Check className="w-5 h-5 mr-2" /> Gap Analysis</p>
+                            <p className="text-base text-obsidian dark:text-darkText font-bold flex items-center"><Check className="w-5 h-5 mr-2" /> Cover Letter Generation</p>
                         </div>
                     </div>
                 </section>

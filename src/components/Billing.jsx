@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { Check, CreditCard, ShieldCheck, AlertCircle, Download, X, QrCode, Smartphone, ExternalLink, Loader2, CheckCircle2, RefreshCw, Clock, Receipt, FileText, ChevronRight } from 'lucide-react';
+import { Check, CreditCard, ShieldCheck, AlertCircle, Download, X, QrCode, Smartphone, ExternalLink, Loader2, CheckCircle2, RefreshCw, Clock, Receipt, FileText, ChevronRight, Zap, Star, Lock } from 'lucide-react';
 import Tooltip from './ui/Tooltip';
 import gsap from 'gsap';
 import { supabase } from '../supabaseClient';
@@ -483,7 +483,7 @@ export default function Billing({ session, onPaymentModalChange }) {
                         </li>
                         <li className="flex items-start gap-3 mt-1">
                             <span className="w-5 h-5 rounded-full bg-slate/8 flex items-center justify-center shrink-0 mt-0.5">
-                                <span className="text-slate/50 text-[10px] font-bold leading-none">✕</span>
+                                <X className="w-3 h-3 text-slate/50" />
                             </span>
                             <span className="text-slate/50 dark:text-darkText/30 text-xs">No premium credits</span>
                         </li>
@@ -512,7 +512,7 @@ export default function Billing({ session, onPaymentModalChange }) {
                         disabled={sessionStatus === 'loading'}
                         className="w-full py-3.5 rounded-2xl border-2 border-obsidian/15 dark:border-darkText/15 text-obsidian/80 dark:text-darkText/80 font-bold text-sm hover:bg-obsidian/5 dark:hover:bg-darkText/5 hover:border-obsidian/30 transition-all disabled:opacity-50"
                     >
-                        {sessionStatus === 'loading' ? 'Generating…' : '⚡ Buy Base Token'}
+                        {sessionStatus === 'loading' ? 'Generating…' : <span className="flex items-center justify-center gap-2"><Zap className="w-4 h-4" /> Buy Base Token</span>}
                     </button>
                     <p className="text-xs text-center text-slate/60 dark:text-darkText/35 mt-2">
                         Your payment is processed securely. Credits are only added after your AI analysis successfully completes.
@@ -523,7 +523,7 @@ export default function Billing({ session, onPaymentModalChange }) {
                 <div className="pricing-card relative flex flex-col bg-gradient-to-b from-[#fffbf0] to-white dark:from-[#2a2416] dark:to-darkCard border-[2.5px] border-champagne rounded-[2rem] p-7 shadow-2xl shadow-champagne/20 order-1 lg:order-2 z-10 ring-1 ring-champagne/30">
                     {/* Badge */}
                     <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-champagne text-obsidian px-5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest shadow-lg whitespace-nowrap">
-                        ★ Most Popular
+                        <Star className="w-3 h-3 inline pb-[1px] mr-1" /> Most Popular
                     </div>
 
                     {/* Header */}
@@ -593,9 +593,11 @@ export default function Billing({ session, onPaymentModalChange }) {
                     <button
                         onClick={() => handleBaseCheckout('premium')}
                         disabled={sessionStatus === 'loading' || (userTier === 'premium' && isLocked(planLockedUntil))}
-                        className="w-full py-4 rounded-2xl bg-champagne text-obsidian font-bold text-base hover:brightness-105 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-champagne/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-4 rounded-2xl bg-champagne text-obsidian font-bold text-base hover:brightness-105 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-champagne/30 disabled:opacity-50 disabled:cursor-not-allowed group flex items-center justify-center"
                     >
-                        {sessionStatus === 'loading' ? 'Generating…' : (userTier === 'premium' && isLocked(planLockedUntil)) ? '✓ Plan Active' : '🔒 Get Premium — ₱3/mo'}
+                        <span className="transition-transform group-hover:translate-x-1 flex items-center justify-center gap-2">
+                            {sessionStatus === 'loading' ? 'Generating…' : (userTier === 'premium' && isLocked(planLockedUntil)) ? <><Check className="w-4 h-4" /> Plan Active</> : <><Lock className="w-4 h-4" /> Get Premium — ₱3/mo</>}
+                        </span>
                     </button>
                     <p className="text-xs text-center text-champagne/50 dark:text-champagne/35 mt-2">
                         Your payment is processed securely. Credits are only added after your AI analysis successfully completes.
@@ -653,7 +655,7 @@ export default function Billing({ session, onPaymentModalChange }) {
                         </li>
                         <li className="flex items-start gap-3 mt-1">
                             <span className="w-5 h-5 rounded-full bg-slate/8 flex items-center justify-center shrink-0 mt-0.5">
-                                <span className="text-slate/40 text-[10px] font-bold leading-none">✕</span>
+                                <X className="w-3 h-3 text-slate/40" />
                             </span>
                             <span className="text-slate/40 dark:text-darkText/25 text-xs">No resume optimization</span>
                         </li>
@@ -662,9 +664,11 @@ export default function Billing({ session, onPaymentModalChange }) {
                     <button
                         onClick={() => handleBaseCheckout('standard')}
                         disabled={sessionStatus === 'loading' || isLocked(planLockedUntil)}
-                        className="w-full py-3.5 rounded-2xl border-2 border-blue-500/40 text-blue-600 dark:text-blue-400 font-bold text-sm hover:bg-blue-500/5 hover:border-blue-500/60 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-3.5 rounded-2xl border-2 border-blue-500/40 text-blue-600 dark:text-blue-400 font-bold text-sm hover:bg-blue-500/5 hover:border-blue-500/60 transition-all disabled:opacity-50 disabled:cursor-not-allowed group flex items-center justify-center hover:scale-[1.02] active:scale-[0.98]"
                     >
-                        {sessionStatus === 'loading' ? 'Generating…' : isLocked(planLockedUntil) ? (userTier === 'premium' ? '🔒 Premium Active' : '✓ Plan Active') : '🔒 Get Standard — ₱2/mo'}
+                        <span className="transition-transform group-hover:translate-x-1 flex items-center justify-center gap-2">
+                            {sessionStatus === 'loading' ? 'Generating…' : isLocked(planLockedUntil) ? (userTier === 'premium' ? <><Lock className="w-4 h-4" /> Premium Active</> : <><Check className="w-4 h-4" /> Plan Active</>) : <><Lock className="w-4 h-4" /> Get Standard — ₱2/mo</>}
+                        </span>
                     </button>
                     <p className="text-xs text-center text-slate/60 dark:text-darkText/35 mt-2">
                         Your payment is processed securely. Credits are only added after your AI analysis successfully completes.

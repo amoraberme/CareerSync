@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import useWorkspaceStore from '../store/useWorkspaceStore';
-import { Settings, User, Moon, Sun, LogOut, Menu, X, Receipt } from 'lucide-react';
+import { Settings, User, Moon, Sun, LogOut, Menu, X, Receipt, LayoutDashboard, History, CreditCard } from 'lucide-react';
 
 export default function Navbar({ currentView, setCurrentView, onLogout, onOpenInvoice, onNavigate }) {
     const [scrolled, setScrolled] = useState(false);
@@ -57,26 +57,6 @@ export default function Navbar({ currentView, setCurrentView, onLogout, onOpenIn
                         <span className="font-sans font-bold text-xl text-obsidian dark:text-darkText tracking-tighter">Career<span className="font-drama italic font-normal text-champagne">Sync.</span></span>
                     </div>
 
-                    {/* Desktop Links — hidden on mobile */}
-                    <div className="hidden md:flex items-center justify-center space-x-1 bg-obsidian/5 dark:bg-darkText/5 p-1 rounded-full border border-obsidian/5 dark:border-darkText/5">
-                        {[
-                            { id: 'workspace', label: 'Workspace' },
-                            { id: 'history', label: 'History' },
-                            { id: 'plans', label: 'Plans' }
-                        ].map(view => (
-                            <button
-                                key={view.id}
-                                onClick={() => onNavigate ? onNavigate(view.id) : setCurrentView(view.id)}
-                                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${currentView === view.id
-                                    ? 'bg-obsidian dark:bg-darkText text-background dark:text-darkBg shadow-md'
-                                    : 'text-slate dark:text-darkText/70 hover:text-obsidian dark:hover:text-darkText'
-                                    }`}
-                            >
-                                {view.label}
-                            </button>
-                        ))}
-                    </div>
-
                     {/* Right Side: Credits + Settings (desktop) + Hamburger (mobile) */}
                     <div className="flex items-center space-x-3 md:space-x-4">
                         {/* Credits — visible on md+ */}
@@ -118,6 +98,24 @@ export default function Navbar({ currentView, setCurrentView, onLogout, onOpenIn
                                             <div className="px-5 py-3 border-b border-obsidian/5 dark:border-darkText/5 w-full mb-1">
                                                 <p className="text-xs font-mono text-slate dark:text-darkText/50 uppercase tracking-widest">Account Settings</p>
                                             </div>
+                                            <button
+                                                onClick={() => { if (onNavigate) onNavigate('workspace'); else setCurrentView('workspace'); setIsSettingsOpen(false); }}
+                                                className="w-full text-left px-5 py-3 text-sm font-medium text-obsidian dark:text-darkText hover:bg-obsidian/5 dark:hover:bg-darkText/5 flex items-center transition-colors"
+                                            >
+                                                <LayoutDashboard className="w-4 h-4 mr-3 opacity-70" /> Workspace
+                                            </button>
+                                            <button
+                                                onClick={() => { if (onNavigate) onNavigate('history'); else setCurrentView('history'); setIsSettingsOpen(false); }}
+                                                className="w-full text-left px-5 py-3 text-sm font-medium text-obsidian dark:text-darkText hover:bg-obsidian/5 dark:hover:bg-darkText/5 flex items-center transition-colors"
+                                            >
+                                                <History className="w-4 h-4 mr-3 opacity-70" /> History
+                                            </button>
+                                            <button
+                                                onClick={() => { if (onNavigate) onNavigate('plans'); else setCurrentView('plans'); setIsSettingsOpen(false); }}
+                                                className="w-full text-left px-5 py-3 text-sm font-medium text-obsidian dark:text-darkText hover:bg-obsidian/5 dark:hover:bg-darkText/5 flex items-center transition-colors"
+                                            >
+                                                <CreditCard className="w-4 h-4 mr-3 opacity-70" /> Plans
+                                            </button>
                                             <button
                                                 onClick={() => { if (onNavigate) onNavigate('profile'); else setCurrentView('profile'); setIsSettingsOpen(false); }}
                                                 className="w-full text-left px-5 py-3 text-sm font-medium text-obsidian dark:text-darkText hover:bg-obsidian/5 dark:hover:bg-darkText/5 flex items-center transition-colors"

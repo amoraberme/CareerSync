@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { HelpCircle } from 'lucide-react';
 
 /**
@@ -10,6 +10,7 @@ import { HelpCircle } from 'lucide-react';
  */
 export default function Tooltip({ text, icon, align = 'left' }) {
     const [visible, setVisible] = useState(false);
+    const timeoutRef = useRef(null);
 
     const alignClass = {
         left: 'left-0',
@@ -17,13 +18,32 @@ export default function Tooltip({ text, icon, align = 'left' }) {
         center: 'left-1/2 -translate-x-1/2',
     }[align] ?? 'left-0';
 
+    const handleMouseEnter = () => {
+        timeoutRef.current = setTimeout(() => {
+            setVisible(true);
+        }, 1000);
+    };
+
+    const handleMouseLeave = () => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+        setVisible(false);
+    };
+
+    useEffect(() => {
+        return () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        };
+    }, []);
+
     return (
         <span
             className="relative inline-flex items-center cursor-help ml-1.5"
-            onMouseEnter={() => setVisible(true)}
-            onMouseLeave={() => setVisible(false)}
-            onFocus={() => setVisible(true)}
-            onBlur={() => setVisible(false)}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onFocus={handleMouseEnter}
+            onBlur={handleMouseLeave}
             tabIndex={0}
             role="tooltip"
             aria-label={text}

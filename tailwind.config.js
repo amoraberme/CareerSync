@@ -8,16 +8,26 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: 'rgb(var(--color-background) / <alpha-value>)',
-        surface: 'rgb(var(--color-surface) / <alpha-value>)',
-        obsidian: 'rgb(var(--color-obsidian) / <alpha-value>)',
-        slate: 'rgb(var(--color-slate) / <alpha-value>)',
-        champagne: 'rgb(var(--color-champagne) / <alpha-value>)',
+        background: 'hsl(var(--background))',
+        surface: 'hsl(var(--card))',
+        obsidian: 'hsl(0 0% 5%)',
+        slate: 'hsl(0 0% 15%)',
+        champagne: 'hsl(40 40% 60%)',
 
-        // Exact original dark mode theme (pre-Snow White)
-        darkBg: '#0D0D12',     // Original 'obsidian'
-        darkCard: '#2A2A35',   // Original 'slate'
-        darkText: '#FFFFFF',   // Original 'surface'
+        // Exact original dark mode theme mappings for backward compatibility
+        darkBg: 'hsl(0 0% 0%)',
+        darkCard: 'hsl(0 0% 5%)',
+        darkText: 'hsl(0 0% 100%)',
+      },
+      boxShadow: {
+        'depth-card': 'inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.2)',
+        'depth-card-light': 'inset 0 1px 0 0 rgba(255, 255, 255, 0.8), 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
+        'depth-sunken': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+        'depth-sunken-light': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)',
+      },
+      transitionTimingFunction: {
+        'physical': 'cubic-bezier(0.68, -0.55, 0.26, 1.55)', // Bouncy elastic
+        'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)',
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],

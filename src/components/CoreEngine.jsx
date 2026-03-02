@@ -118,38 +118,51 @@ export default function CoreEngine({ session, setCurrentView }) {
                                 <input value={requiredSkills.join(', ')} onChange={(e) => updateField('requiredSkills', e.target.value.split(', '))} type="text" placeholder="React, Node..." title="Comma separated" className="w-full bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors" />
                             </div>
                         </div>
-                        <div className="flex-grow flex flex-col gap-4">
-                            <div>
-                                <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-1 block">Experience</label>
-                                <textarea value={experienceText} onChange={(e) => updateField('experienceText', e.target.value)} placeholder="Required prior experience..." className="w-full min-h-[80px] bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors resize-none"></textarea>
-                            </div>
-                            <div>
-                                <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-1 block">Qualifications</label>
-                                <textarea value={qualifications} onChange={(e) => updateField('qualifications', e.target.value)} placeholder="Educational or technical degrees/certifications..." className="w-full min-h-[80px] bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors resize-none"></textarea>
-                            </div>
-                            <div>
-                                <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-1 block">What You'll Do in the Role</label>
-                                <textarea value={roleDo} onChange={(e) => updateField('roleDo', e.target.value)} placeholder="Day-to-day responsibilities..." className="w-full min-h-[80px] bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors resize-none"></textarea>
-                            </div>
+                        <div className="flex-grow flex flex-col gap-4 mt-2">
+                            <button
+                                type="button"
+                                onClick={() => updateField('showAdvancedOptions', !useWorkspaceStore.getState().showAdvancedOptions)}
+                                className="flex items-center text-xs font-mono text-slate dark:text-darkText/50 uppercase tracking-wider hover:text-obsidian dark:hover:text-darkText transition-colors outline-none"
+                            >
+                                <span className="mr-2">{useWorkspaceStore.getState().showAdvancedOptions ? '▼' : '▶'}</span>
+                                Advanced Options
+                            </button>
 
-                            {/* Tone Selector */}
-                            <div className="mt-2">
-                                <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-2 block">Cover Letter Mood</label>
-                                <div className="flex flex-wrap gap-2">
-                                    {['Professional', 'Confident', 'Enthusiastic', 'Creative', 'Direct'].map((tone) => (
-                                        <button
-                                            key={tone}
-                                            onClick={() => updateField('coverLetterTone', tone)}
-                                            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-300 ${coverLetterTone === tone
-                                                ? 'bg-champagne text-white shadow-md'
-                                                : 'bg-white dark:bg-darkText/5 text-slate dark:text-darkText/70 border border-obsidian/10 dark:border-darkText/10 hover:border-champagne/50'
-                                                }`}
-                                        >
-                                            {tone}
-                                        </button>
-                                    ))}
+                            {useWorkspaceStore.getState().showAdvancedOptions && (
+                                <div className="space-y-4 animate-fade-in-up border-t border-obsidian/5 dark:border-darkText/5 pt-4">
+                                    <div>
+                                        <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-1 block">Experience</label>
+                                        <textarea value={experienceText} onChange={(e) => updateField('experienceText', e.target.value)} placeholder="Required prior experience..." className="w-full min-h-[80px] bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors resize-none"></textarea>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-1 block">Qualifications</label>
+                                        <textarea value={qualifications} onChange={(e) => updateField('qualifications', e.target.value)} placeholder="Educational or technical degrees/certifications..." className="w-full min-h-[80px] bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors resize-none"></textarea>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-1 block">What You'll Do in the Role</label>
+                                        <textarea value={roleDo} onChange={(e) => updateField('roleDo', e.target.value)} placeholder="Day-to-day responsibilities..." className="w-full min-h-[80px] bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors resize-none"></textarea>
+                                    </div>
+
+                                    {/* Tone Selector */}
+                                    <div className="mt-2 text-left">
+                                        <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-2 block">Cover Letter Mood</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {['Professional', 'Confident', 'Enthusiastic', 'Creative', 'Direct'].map((tone) => (
+                                                <button
+                                                    key={tone}
+                                                    onClick={() => updateField('coverLetterTone', tone)}
+                                                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-300 ${coverLetterTone === tone
+                                                        ? 'bg-champagne text-white shadow-md'
+                                                        : 'bg-white dark:bg-darkText/5 text-slate dark:text-darkText/70 border border-obsidian/10 dark:border-darkText/10 hover:border-champagne/50'
+                                                        }`}
+                                                >
+                                                    {tone}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -211,13 +224,13 @@ export default function CoreEngine({ session, setCurrentView }) {
                         <button
                             onClick={() => runAnalysis(session, () => setCurrentView('billing'))}
                             disabled={!jobTitle || !resumeUploaded || isAnalyzing}
-                            className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg ${jobTitle && resumeUploaded && !isAnalyzing
+                            className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg group ${jobTitle && resumeUploaded && !isAnalyzing
                                 ? 'bg-obsidian dark:bg-darkText text-background dark:text-darkBg hover:bg-obsidian/90 dark:hover:bg-darkText/90 hover:scale-[1.02] active:scale-[0.98] btn-magnetic cursor-pointer'
                                 : 'bg-obsidian/5 dark:bg-darkText/5 text-obsidian/30 dark:text-darkText/30 cursor-not-allowed border border-obsidian/5 dark:border-darkText/5'
                                 }`}
                         >
-                            <span>{isAnalyzing ? 'Running AI Parsing Model...' : 'Run Deep Analysis'}</span>
-                            {!isAnalyzing && <ArrowRight className="w-5 h-5" />}
+                            <span className="transition-transform group-hover:translate-x-1">{isAnalyzing ? 'Running AI Parsing Model...' : 'Run Deep Analysis'}</span>
+                            {!isAnalyzing && <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />}
                         </button>
                     </div>
                 </div>

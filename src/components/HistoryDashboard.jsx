@@ -143,6 +143,22 @@ export default function HistoryDashboard({ session, setCurrentView }) {
                 </div>
             </div>
 
+            {/* 2-Column KPI Structure */}
+            {!loading && applications.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 engine-element">
+                    <div className="bg-white/70 dark:bg-darkCard/40 backdrop-blur-xl border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-[2rem] p-6 flex flex-col justify-center">
+                        <h3 className="text-sm font-mono uppercase tracking-widest text-slate dark:text-darkText/70 mb-2">Total Analyses</h3>
+                        <div className="text-4xl font-sans font-bold text-obsidian dark:text-darkText">{applications.length}</div>
+                    </div>
+                    <div className="bg-white/70 dark:bg-darkCard/40 backdrop-blur-xl border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-[2rem] p-6 flex flex-col justify-center">
+                        <h3 className="text-sm font-mono uppercase tracking-widest text-slate dark:text-darkText/70 mb-2">Average Match Score</h3>
+                        <div className="text-4xl font-sans font-bold text-champagne">
+                            {Math.round(applications.reduce((acc, curr) => acc + curr.score, 0) / applications.length)}<span className="text-2xl text-slate dark:text-darkText/50">%</span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="bg-white dark:bg-darkCard/40 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-[2rem] overflow-hidden">
                 <div className="hidden lg:grid grid-cols-6 gap-4 p-6 border-b border-obsidian/5 dark:border-darkText/5 text-xs font-mono uppercase tracking-widest text-slate dark:text-darkText/70">
                     <div className="col-span-2">Target Role & Company</div>
@@ -168,10 +184,10 @@ export default function HistoryDashboard({ session, setCurrentView }) {
                             </p>
                             <button
                                 onClick={() => setCurrentView('workspace')}
-                                className="bg-obsidian dark:bg-darkText text-background dark:text-darkBg px-8 py-3.5 rounded-full font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform flex items-center gap-2"
+                                className="bg-obsidian dark:bg-darkText text-background dark:text-darkBg px-8 py-3.5 rounded-full font-bold shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center gap-2 group btn-tactile"
                             >
-                                Open Workspace
-                                <ChevronRight className="w-4 h-4" />
+                                <span className="group-hover:translate-x-1 transition-transform duration-300 ease-physical">Open Workspace</span>
+                                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300 ease-physical" />
                             </button>
                         </div>
                     ) : (
@@ -185,12 +201,18 @@ export default function HistoryDashboard({ session, setCurrentView }) {
                                     <Calendar className="w-4 h-4 mr-2 opacity-50" />
                                     {app.date}
                                 </div>
-                                <div>
-                                    <div className="flex items-center space-x-2">
-                                        <div className={`w-8 h-8 rounded-full border flex items-center justify-center font-bold text-sm ${app.score >= 71 ? 'border-[#34A853]/30 text-[#34A853] bg-[#34A853]/10' : app.score >= 61 ? 'border-champagne/30 text-champagne bg-champagne/10' : 'border-[#EA4335]/30 text-[#EA4335] bg-[#EA4335]/10'}`}>
-                                            {app.score}
-                                        </div>
-                                        <span className="text-xs text-slate dark:text-darkText/70">/100</span>
+                                <div className="flex flex-col space-y-1 w-full max-w-[140px]">
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className={`font-bold ${app.score >= 71 ? 'text-[#34A853]' : app.score >= 61 ? 'text-champagne' : 'text-[#EA4335]'}`}>
+                                            {app.score}%
+                                        </span>
+                                        <span className="text-slate dark:text-darkText/50 font-mono text-[10px] uppercase">Match</span>
+                                    </div>
+                                    <div className="w-full bg-obsidian/10 dark:bg-darkText/10 h-1.5 rounded-full overflow-hidden shadow-inner">
+                                        <div
+                                            className={`h-full rounded-full transition-all duration-1000 ease-physical delay-300 ${app.score >= 71 ? 'bg-[#34A853]' : app.score >= 61 ? 'bg-champagne' : 'bg-[#EA4335]'}`}
+                                            style={{ width: `${app.score}%` }}
+                                        ></div>
                                     </div>
                                 </div>
                                 <div>
@@ -223,9 +245,9 @@ export default function HistoryDashboard({ session, setCurrentView }) {
                     </div>
                     <button
                         onClick={() => setCurrentView('billing')}
-                        className="bg-champagne text-obsidian px-5 py-2.5 rounded-full text-sm font-bold hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-md whitespace-nowrap"
+                        className="bg-champagne text-obsidian px-5 py-2.5 rounded-full text-sm font-bold hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-md whitespace-nowrap group"
                     >
-                        Upgrade Plan
+                        <span className="inline-block group-hover:translate-x-0.5 transition-transform duration-300 ease-physical">Upgrade Plan</span>
                     </button>
                 </div>
             )}

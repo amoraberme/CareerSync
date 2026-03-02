@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import useWorkspaceStore from '../store/useWorkspaceStore';
-import { User, Lock, Mail, Fingerprint, Award, Coins, Key, ShieldCheck, AlertTriangle, Trash2, MessageSquare } from 'lucide-react';
+import { User, Lock, Mail, Fingerprint, Award, Coins, Key, ShieldCheck, AlertTriangle, Trash2, MessageSquare, Sparkles } from 'lucide-react';
 import ContactModal from './ContactModal';
 
 export default function Profile({ session, setCurrentView }) {
@@ -177,8 +177,8 @@ export default function Profile({ session, setCurrentView }) {
                                 <Award className="w-6 h-6 text-champagne mb-2" />
                                 <span className="text-xs font-mono uppercase tracking-widest text-slate dark:text-darkText/50 mb-2">Current Tier</span>
                                 {profileData?.tier === 'premium' ? (
-                                    <span className="px-3 py-1 rounded-full text-sm font-bold bg-gradient-to-r from-champagne to-amber-400 text-obsidian shadow-sm">
-                                        Premium ✦
+                                    <span className="px-3 py-1 rounded-full text-sm font-bold bg-gradient-to-r from-champagne to-amber-400 text-obsidian shadow-sm flex items-center justify-center gap-1">
+                                        Premium <Sparkles className="w-3 h-3 ml-0.5" />
                                     </span>
                                 ) : profileData?.tier === 'standard' ? (
                                     <span className="px-3 py-1 rounded-full text-sm font-bold bg-champagne/15 text-champagne border border-champagne/30">
