@@ -72,13 +72,13 @@ const Landing = ({ onNavigate }) => {
 
 
                     <h1 className="hero-title text-6xl md:text-8xl font-bold tracking-tightest leading-[0.9] mb-8 text-obsidian dark:text-darkText">
-                        Build your career <br />
-                        <span className="font-drama italic text-champagne font-normal">Scale to the future</span>
+                        Turn Your Past Experience, <br />
+                        <span className="font-drama italic text-champagne font-normal">Into Your Next Offer</span>
                     </h1>
 
                     <p className="hero-sub text-xl md:text-2xl text-slate dark:text-darkText/60 max-w-2xl mx-auto mb-12 leading-relaxed flex items-center justify-center min-h-[6rem]">
                         <SmartTypewriterText
-                            text="The AI-powered career intelligence platform designed for job seekers. Instantly score, optimize, and generate materials tailored to your target role."
+                            text={`Shifting careers is terrifying when your resume doesn't match the title. Our AI maps your hidden "Transferable Bridge," automatically writing a cover letter that proves you belong in the room.`}
                         />
                     </p>
 
@@ -86,7 +86,7 @@ const Landing = ({ onNavigate }) => {
                         <div className="w-full md:w-64 h-16">
                             <SlideInButton
                                 onClick={() => onNavigate('auth')}
-                                text="Start your journey"
+                                text="Run Analysis"
                                 className="w-full h-full text-lg"
                             />
                         </div>
@@ -323,16 +323,6 @@ const Landing = ({ onNavigate }) => {
 
                     <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
                         <div className="flex items-center gap-6">
-                            <SwipeLettersButton
-                                label="GET IN TOUCH"
-                                onClick={() => setIsContactModalOpen(true)}
-                                showBorder={false}
-                                defaultState={{ bgColor: "transparent", borderColor: "transparent", textColor: "var(--tw-colors-slate)" }}
-                                hoverState={{ bgColor: "transparent", borderColor: "transparent", textColor: "var(--tw-colors-champagne)" }}
-                                paddingX={0}
-                                paddingY={0}
-                                font={{ fontSize: "12px", variant: "700", letterSpacing: "1.5px", textAlign: "center", textTransform: "uppercase" }}
-                            />
                             <SwipeLettersButton
                                 label="TERMS OF SERVICE"
                                 onClick={() => onNavigate('terms')}
