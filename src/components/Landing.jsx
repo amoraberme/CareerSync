@@ -212,10 +212,10 @@ const Landing = ({ onNavigate }) => {
                 <div className="max-w-7xl mx-auto">
                     {/* Section Header */}
                     <div className="text-center mb-16">
-                        <h2 className="font-drama text-4xl md:text-5xl text-obsidian dark:text-darkText font-bold mb-4 tracking-tight">
-                            Engineered for the <span className="text-champagne italic">Modern Pivot</span>
+                        <h2 className="text-4xl md:text-5xl font-sans font-bold text-obsidian dark:text-darkText tracking-tight">
+                            Engineered for the <span className="font-drama italic text-champagne font-normal">Modern Pivot</span>
                         </h2>
-                        <p className="font-sans text-lg text-slate dark:text-darkText/60 max-w-2xl mx-auto">
+                        <p className="font-sans text-slate text-lg mt-4">
                             A suite of hyper-focused tools designed to decode ATS requirements and translate your unique trajectory.
                         </p>
                     </div>
@@ -250,7 +250,9 @@ const Landing = ({ onNavigate }) => {
                                 <div className="space-y-6">
                                     <div className="space-y-4">
                                         <span className="font-mono text-xs uppercase tracking-widest text-champagne font-bold bg-champagne/10 px-3 py-1 rounded-full w-fit border border-champagne/20">Apex ATS Engine v2.0</span>
-                                        <h3 className="font-drama text-3xl md:text-5xl font-bold text-obsidian dark:text-darkText leading-[0.9]">Multi-Dimensional <br />Trajectory Scoring</h3>
+                                        <h3 className="text-3xl md:text-5xl font-bold font-sans text-obsidian dark:text-darkText leading-[0.9] tracking-tight">
+                                            Multi-Dimensional <span className="font-drama italic text-champagne font-normal">Trajectory</span> Scoring
+                                        </h3>
                                     </div>
 
                                     {/* Data Injections */}
@@ -315,8 +317,10 @@ const Landing = ({ onNavigate }) => {
                             </div>
 
                             <div className="relative z-10 flex-1">
-                                <h3 className="font-drama text-2xl font-bold mb-2">Premium Access. <br /><span className="text-champagne">Zero Abono.</span></h3>
-                                <p className="font-sans text-xs text-white/60 leading-relaxed max-w-xs">
+                                <h3 className="text-2xl font-bold font-sans text-white mb-2 tracking-tight">
+                                    Premium Access. <span className="font-drama italic text-champagne font-normal">Zero Abono.</span>
+                                </h3>
+                                <p className="font-sans text-xs text-slate-300 leading-relaxed max-w-xs">
                                     No massive USD subscription commitments. Pay precisely for the analysis you need using GCash.
                                 </p>
                             </div>
@@ -345,8 +349,10 @@ const Landing = ({ onNavigate }) => {
                             <div className="absolute inset-0 bg-gradient-to-t from-darkBg/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                             <div className="relative z-10 flex-1 flex flex-col justify-center">
-                                <h3 className="font-drama text-2xl font-bold text-obsidian dark:text-darkText mb-3">Tone-Calibrated Drafting</h3>
-                                <p className="font-sans text-sm text-slate dark:text-darkText/60 leading-relaxed max-w-sm">
+                                <h3 className="text-2xl font-bold font-sans text-obsidian dark:text-darkText mb-3 tracking-tight">
+                                    Tone-Calibrated <span className="font-drama italic text-champagne font-normal">Drafting</span>
+                                </h3>
+                                <p className="font-sans text-sm text-slate leading-relaxed max-w-sm">
                                     Ditch generic AI intros. Our system forces a high-impact value proposition tailored to your exact industry dialect.
                                 </p>
                             </div>
@@ -404,8 +410,10 @@ const Landing = ({ onNavigate }) => {
                             <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center h-full">
                                 <div className="flex-1">
                                     <span className="font-mono text-[10px] uppercase tracking-widest text-[#27C93F] mb-3 block font-bold">Vector Comparison</span>
-                                    <h3 className="font-drama text-2xl font-bold mb-2">Semantic Skill Matching</h3>
-                                    <p className="font-sans text-white/60 text-sm max-w-sm">
+                                    <h3 className="text-2xl font-bold font-sans text-white mb-2 tracking-tight">
+                                        Semantic <span className="font-drama italic text-champagne font-normal">Skill Matching</span>
+                                    </h3>
+                                    <p className="font-sans text-[13px] text-slate-300 leading-relaxed max-w-sm">
                                         Our AI engine cross-references your resume against the target job description to uncover hidden, high-value transferable skills.
                                     </p>
                                 </div>
@@ -427,7 +435,9 @@ const Landing = ({ onNavigate }) => {
                         {/* 5. Export Ready */}
                         <div className="md:col-span-1 lg:col-span-1 row-span-1 bg-surface dark:bg-darkCard rounded-3xl p-6 border border-obsidian/5 dark:border-darkText/5 flex flex-col h-full justify-between relative group hover:shadow-xl transition-all duration-300">
                             <div className="relative z-10 text-left">
-                                <h3 className="font-drama text-2xl font-bold text-obsidian dark:text-darkText leading-tight">Export <br />Ready.</h3>
+                                <h3 className="text-2xl font-bold font-sans text-obsidian dark:text-darkText leading-tight tracking-tight">
+                                    Export <span className="font-drama italic text-champagne font-normal">Ready.</span>
+                                </h3>
                             </div>
 
                             {/* Visual Engine: Centered Document Wireframe */}
