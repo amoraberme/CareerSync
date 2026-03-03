@@ -224,27 +224,21 @@ const Landing = ({ onNavigate }) => {
                     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 auto-rows-[300px]">
 
                         {/* 1. The Deep Analysis (Hero Card - Largest) */}
-                        <div className="md:col-span-2 lg:col-span-2 row-span-2 bg-surface dark:bg-darkCard rounded-3xl p-8 border border-obsidian/5 dark:border-darkText/5 overflow-hidden relative group hover:shadow-2xl transition-all duration-500 hover:-translate-y-1 flex flex-col md:flex-row gap-8">
+                        <div className="md:col-span-2 lg:col-span-2 row-span-2 bg-surface dark:bg-darkCard rounded-3xl p-8 border border-obsidian/5 dark:border-darkText/5 overflow-hidden relative group hover:shadow-2xl transition-all duration-500 hover:-translate-y-1">
 
                             {/* Visual Engine: Faint CSS-drawn animated radar/spider chart in background */}
                             <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20 dark:opacity-10 group-hover:opacity-30 transition-opacity duration-700">
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] animate-spin-slow">
-                                    {[1, 2, 3].map((i) => (
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] animate-spin-slow">
+                                    {[1, 2, 3, 4].map((i) => (
                                         <div
                                             key={i}
-                                            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border border-champagne/40 rounded-full"
+                                            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border border-champagne/40"
                                             style={{
-                                                width: `${i * 120}px`,
-                                                height: `${i * 120}px`,
-                                                borderStyle: i === 3 ? 'dashed' : 'solid'
+                                                width: `${i * 100}px`,
+                                                height: `${i * 100}px`,
+                                                borderRadius: i % 2 === 0 ? '40% 60% 70% 30% / 40% 50% 60% 40%' : '50%',
+                                                borderStyle: i === 4 ? 'dashed' : 'solid'
                                             }}
-                                        />
-                                    ))}
-                                    {[0, 60, 120, 180, 240, 300].map((deg) => (
-                                        <div
-                                            key={deg}
-                                            className="absolute top-1/2 left-1/2 w-full h-[1px] bg-champagne/20 origin-left"
-                                            style={{ transform: `rotate(${deg}deg) translateX(0)` }}
                                         />
                                     ))}
                                 </div>
@@ -252,140 +246,132 @@ const Landing = ({ onNavigate }) => {
 
                             <div className="absolute inset-0 bg-gradient-to-br from-champagne/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
-                            {/* Left Content */}
-                            <div className="relative z-10 flex-1 flex flex-col justify-between">
-                                <div className="space-y-4">
-                                    <span className="font-mono text-xs uppercase tracking-widest text-champagne font-bold bg-champagne/10 px-3 py-1 rounded-full w-fit border border-champagne/20">Apex ATS Engine v2.0</span>
-                                    <h3 className="font-drama text-3xl md:text-4xl font-bold text-obsidian dark:text-darkText leading-tight">Multi-Dimensional <br />Trajectory Scoring</h3>
+                            <div className="relative z-10 flex flex-col h-full justify-between">
+                                <div className="space-y-6">
+                                    <div className="space-y-4">
+                                        <span className="font-mono text-xs uppercase tracking-widest text-champagne font-bold bg-champagne/10 px-3 py-1 rounded-full w-fit border border-champagne/20">Apex ATS Engine v2.0</span>
+                                        <h3 className="font-drama text-3xl md:text-5xl font-bold text-obsidian dark:text-darkText leading-[0.9]">Multi-Dimensional <br />Trajectory Scoring</h3>
+                                    </div>
 
-                                    <ul className="mt-8 space-y-3 font-sans text-sm text-slate dark:text-darkText/70">
-                                        <li className="flex items-center gap-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500 delay-100">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-[#27C93F]" />
-                                            <span>Baseline Keyword Match</span>
-                                        </li>
-                                        <li className="flex items-center gap-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500 delay-200">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-champagne" />
-                                            <span>Transferable Skill Mapping</span>
-                                        </li>
-                                        <li className="flex items-center gap-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500 delay-300">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-[#6366f1]" />
-                                            <span>Ultimate Potential Projection</span>
-                                        </li>
-                                    </ul>
+                                    {/* Data Injections */}
+                                    <div className="space-y-6">
+                                        {/* Core Bullets */}
+                                        <ul className="grid md:grid-cols-3 gap-4 font-sans text-sm font-bold text-obsidian dark:text-darkText">
+                                            <li className="flex items-center gap-3">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-[#27C93F]" />
+                                                <span>Baseline Keyword Match</span>
+                                            </li>
+                                            <li className="flex items-center gap-3">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-champagne" />
+                                                <span>Transferable Skill Mapping</span>
+                                            </li>
+                                            <li className="flex items-center gap-3">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-[#6366f1]" />
+                                                <span>Potential Projection</span>
+                                            </li>
+                                        </ul>
+
+                                        {/* Technical Detailed Specs */}
+                                        <div className="grid md:grid-cols-2 gap-x-12 gap-y-2 border-t border-obsidian/5 dark:border-darkText/5 pt-6">
+                                            {[
+                                                "Multi-format document parsing from PDF, DOCX, and TXT files",
+                                                "Tone-calibrated AI cover letter generation",
+                                                "ATS resume analysis powered by Google Gemini",
+                                                "Secure PostgreSQL database with Row-Level Security (RLS)",
+                                                "Raw text extraction using pdf-parse",
+                                                "AI analysis report export to PDF via jsPDF 4 and html2canvas"
+                                            ].map((spec, idx) => (
+                                                <div key={idx} className="flex gap-2 text-[11px] leading-snug text-slate dark:text-darkText/50">
+                                                    <span className="text-champagne font-mono opacity-40">0{idx + 1}</span>
+                                                    <span>{spec}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
 
-                                {/* Data Injection: Technical Footer */}
-                                <div className="mt-auto pt-8">
-                                    <span className="font-mono text-[10px] text-slate/40 dark:text-darkText/30 uppercase tracking-tighter">
+                                <div className="pt-8">
+                                    <span className="font-mono text-[9px] text-slate/40 dark:text-darkText/30 uppercase tracking-[0.2em]">
                                         Engine: @supabase/supabase-js ^2.97 | RLS Secured
                                     </span>
                                 </div>
                             </div>
-
-                            {/* Right Content: Animated Radar (Simplified DOM version) */}
-                            <div className="relative z-10 flex-1 flex items-center justify-center min-h-[200px]">
-                                <div className="relative w-48 h-48 flex items-center justify-center">
-                                    {/* Breathing Outer Ring */}
-                                    <div className="absolute inset-0 border border-champagne/30 rounded-full animate-pulse-slow" />
-                                    {/* Rotating Scanner Line */}
-                                    <div className="absolute inset-0 animate-spin-slow">
-                                        <div className="w-1/2 h-full bg-gradient-to-r from-transparent to-champagne/20 origin-right rounded-l-full" />
-                                    </div>
-                                    {/* Core Node */}
-                                    <div className="w-3 h-3 bg-champagne rounded-full shadow-[0_0_15px_rgba(180,140,80,0.5)] z-20" />
-                                    {/* Technical Label */}
-                                    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 font-mono text-[9px] text-[#27C93F] animate-pulse">
-                                        LIVE_SCAN_ACTIVE
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
-                        {/* 2. The Centavo Value (High-Contrast Feature) */}
-                        <div className="md:col-span-1 lg:col-span-2 row-span-1 bg-obsidian dark:bg-[#111] text-white rounded-3xl p-8 border border-champagne/20 relative overflow-hidden group hover:shadow-2xl transition-all duration-500 flex flex-col justify-between">
+                        {/* 2. Premium Access. Zero Abono. */}
+                        <div className="md:col-span-1 lg:col-span-1 row-span-1 bg-obsidian dark:bg-[#111] text-white rounded-3xl p-8 border border-champagne/20 relative overflow-hidden group hover:shadow-2xl transition-all duration-500 flex flex-col justify-between">
 
-                            {/* Visual Engine: Abstract Data Flow Background */}
-                            <div className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
-                                <div className="grid grid-cols-8 grid-rows-4 h-full w-full">
-                                    {[...Array(32)].map((_, i) => (
-                                        <div key={i} className="border-[0.5px] border-champagne/20 relative">
-                                            {i % 7 === 0 && (
-                                                <div className="absolute inset-0 bg-champagne/40 animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
+                            {/* Visual Engine: Data Flow Background with pulsing nodes */}
+                            <div className="absolute inset-0 opacity-20 pointer-events-none">
+                                <div className="grid grid-cols-6 grid-rows-6 h-full w-full">
+                                    {[...Array(36)].map((_, i) => (
+                                        <div key={i} className="border-[0.5px] border-champagne/10 relative">
+                                            {(i === 14 || i === 21 || i === 7 || i === 28) && (
+                                                <div className="absolute inset-0 bg-champagne/30 shimmer" />
                                             )}
                                         </div>
                                     ))}
                                 </div>
                             </div>
 
-                            <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-champagne/10 rounded-full blur-3xl group-hover:bg-champagne/20 transition-all duration-700 pointer-events-none" />
-
                             <div className="relative z-10">
-                                <span className="font-mono text-[10px] uppercase tracking-widest text-[#27C93F] mb-3 font-bold flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-[#27C93F] animate-ping" /> Micro-Transactions
-                                </span>
-                                <h3 className="font-drama text-2xl font-bold mb-2">Premium Access. <br />Zero Abono.</h3>
-                                <p className="font-sans text-white/60 text-sm max-w-sm">
-                                    No massive USD subscription commitments. Pay precisely for the analysis you need using GCash or PayMongo. Top up ₱50 at a time.
+                                <h3 className="font-drama text-2xl font-bold mb-2">Premium Access. <br /><span className="text-champagne">Zero Abono.</span></h3>
+                                <p className="font-sans text-xs text-white/60 leading-relaxed">
+                                    No massive USD subscription commitments. Pay precisely for the analysis you need using GCash.
                                 </p>
                             </div>
 
-                            <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-                                {/* Payment Badges */}
-                                <div className="flex gap-3">
-                                    {/* GCash Badge */}
-                                    <div className="relative overflow-hidden bg-white/5 border border-white/10 rounded-full px-4 py-2 flex items-center gap-2 backdrop-blur-sm group-hover:border-white/20 transition-colors">
-                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 animate-shimmer-sweep pointer-events-none" />
-                                        <div className="w-4 h-4 rounded-full bg-[#007DFE] flex items-center justify-center text-[8px] font-bold">G</div>
-                                        <span className="font-mono text-xs font-bold tracking-wider">GCash</span>
-                                    </div>
-
-                                    {/* PayMongo Badge */}
-                                    <div className="relative overflow-hidden bg-white/5 border border-white/10 rounded-full px-4 py-2 flex items-center gap-2 backdrop-blur-sm group-hover:border-white/20 transition-colors">
-                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 animate-shimmer-sweep pointer-events-none" style={{ animationDelay: '0.5s' }} />
-                                        <div className="w-4 h-4 rounded-full bg-[#1BC673] flex items-center justify-center text-[8px] font-bold">P</div>
-                                        <span className="font-mono text-xs font-bold tracking-wider">PayMongo</span>
+                            <div className="relative z-10 flex flex-col gap-4">
+                                {/* GCash Only UI */}
+                                <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2 rounded-xl w-fit group-hover:border-champagne/50 transition-colors">
+                                    <div className="w-8 h-8 rounded-lg bg-[#0056B3] flex items-center justify-center font-bold text-[10px]">G</div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] uppercase font-bold tracking-tighter">GCash Integrated</span>
+                                        <span className="text-[8px] text-white/40">Secure PH Gateway</span>
                                     </div>
                                 </div>
 
-                                {/* Data Injection: Terminal-style List */}
-                                <div className="font-mono text-[9px] text-[#27C93F]/60 space-y-1 bg-black/40 p-3 rounded-lg border border-white/5">
-                                    <div className="flex gap-2"><span>&gt;</span> <span className="animate-pulse">api/initiate-payment.js</span></div>
-                                    <div className="flex gap-2"><span>&gt;</span> <span>EMVCo QR generated</span></div>
-                                    <div className="flex gap-2"><span>&gt;</span> <span>Webhook active</span></div>
+                                {/* Terminal Style Injection (Bottom Right) */}
+                                <div className="flex flex-col items-end font-mono text-[9px] text-[#27C93F] opacity-70">
+                                    <span>&gt; api/initiate-payment.js</span>
+                                    <span>&gt; EMVCo QR generated</span>
+                                    <span>&gt; Webhook active</span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* 3. Smart Optimization (Medium Card) */}
-                        <div className="md:col-span-1 lg:col-span-1 row-span-1 bg-surface dark:bg-darkCard rounded-3xl p-8 border border-obsidian/5 dark:border-darkText/5 relative overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+                        {/* 3. Tone-Calibrated Drafting */}
+                        <div className="md:col-span-2 lg:col-span-2 row-span-1 bg-surface dark:bg-darkCard rounded-3xl p-8 border border-obsidian/5 dark:border-darkText/5 relative overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col md:flex-row gap-8">
                             <div className="absolute inset-0 bg-gradient-to-t from-darkBg/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                            <div className="relative z-10 block mb-6">
-                                <h3 className="font-drama text-xl font-bold text-obsidian dark:text-darkText mb-2">Tone-Calibrated Drafting</h3>
-                                <p className="font-sans text-sm text-slate dark:text-darkText/60 leading-relaxed">
+                            <div className="relative z-10 flex-1 flex flex-col justify-center">
+                                <h3 className="font-drama text-2xl font-bold text-obsidian dark:text-darkText mb-3">Tone-Calibrated Drafting</h3>
+                                <p className="font-sans text-sm text-slate dark:text-darkText/60 leading-relaxed max-w-sm">
                                     Ditch generic AI intros. Our system forces a high-impact value proposition tailored to your exact industry dialect.
                                 </p>
                             </div>
 
-                            {/* Visual Engine: Native CSS Mock Terminal Window */}
-                            <div className="relative z-10 w-full mt-auto">
-                                <div className="bg-obsidian dark:bg-black rounded-t-lg border-x border-t border-white/10 p-2 flex gap-1.5 Items-center">
-                                    <div className="w-2 h-2 rounded-full bg-destructive/50" />
-                                    <div className="w-2 h-2 rounded-full bg-champagne/50" />
-                                    <div className="w-2 h-2 rounded-full bg-[#27C93F]/50" />
-                                    <span className="font-mono text-[8px] text-white/20 ml-2 uppercase tracking-widest">bash — 80x24</span>
+                            {/* Visual Engine: Native CSS Mock Terminal Window (Mac-style) */}
+                            <div className="relative z-10 flex-1 flex flex-col justify-center">
+                                <div className="bg-obsidian dark:bg-black rounded-t-lg border-x border-t border-white/10 p-2.5 flex gap-1.5 Items-center">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F56]" />
+                                    <div className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E]" />
+                                    <div className="w-2.5 h-2.5 rounded-full bg-[#27C93F]" />
+                                    <span className="font-mono text-[9px] text-white/20 ml-3 uppercase tracking-widest">zsh — 80x24</span>
                                 </div>
-                                <div className="bg-obsidian/95 dark:bg-black/95 border border-white/10 p-4 h-24 font-mono text-[10px] text-[#27C93F] relative overflow-hidden">
-                                    <div className="flex gap-2">
-                                        <span className="text-white/40 opacity-50">$</span>
-                                        <SmartTypewriterText
-                                            text="POST /api/analyze -> @google/generative-ai (Apex-ATS v2.0)"
-                                        />
+                                <div className="bg-obsidian/95 dark:bg-black/95 border border-white/10 p-5 h-40 font-mono text-[10px] text-[#27C93F] relative overflow-hidden shadow-2xl">
+                                    <div className="space-y-1">
+                                        <div className="flex gap-2">
+                                            <span className="text-white/40">$</span>
+                                            <SmartTypewriterText text="POST /api/analyze" />
+                                        </div>
+                                        <div className="text-white/60">&gt; initializing @google/generative-ai (Apex-ATS v2.0)</div>
+                                        <div className="text-white/60">&gt; ingesting user_resume.pdf</div>
+                                        <div className="text-white/60">&gt; extracting target_industry_dialect...</div>
+                                        <div>&gt; status: 200 OK</div>
+                                        <div className="text-champagne">&gt; sys.out: Cover letter tone successfully calibrated.</div>
                                     </div>
-                                    <div className="mt-2 text-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-1000">
-                                        &gt; [SYSTEM] Tone calibration: EXECUTIVE_PRESENCE<br />
-                                        &gt; [SYSTEM] Payload analysis complete.
-                                    </div>
+
                                     {/* Scanline Effect */}
                                     <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,118,0.06))] bg-[length:100%_2px,3px_100%]" />
                                 </div>
@@ -394,99 +380,82 @@ const Landing = ({ onNavigate }) => {
 
 
 
-                        {/* 4. Connect The Unseen Dots (3D Skills Matrix) */}
+                        {/* 4. Semantic Skill Matching */}
                         <div className="md:col-span-2 lg:col-span-2 row-span-1 bg-obsidian dark:bg-[#111] text-white rounded-3xl p-8 border border-champagne/20 relative overflow-hidden group hover:shadow-2xl transition-all duration-500">
-                            {/* Visual Engine: Subtle Isometric Grid Background */}
-                            <div className="absolute inset-0 pointer-events-none opacity-20">
-                                <div
-                                    className="absolute inset-[-100%] border-[0.5px] border-dashed border-champagne/20"
-                                    style={{ transform: 'rotateX(60deg) rotateZ(-45deg)', backgroundSize: '30px 30px', backgroundImage: 'linear-gradient(to right, rgba(180,140,80,0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(180,140,80,0.1) 1px, transparent 1px)' }}
-                                />
+                            {/* Visual Engine: Neural Processing Wireframe */}
+                            <div className="absolute inset-0 pointer-events-none opacity-30">
+                                <div className="flex justify-between h-full px-12 py-8">
+                                    <div className="w-px h-full bg-gradient-to-b from-transparent via-champagne/40 to-transparent relative">
+                                        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-champagne animate-pulse" />
+                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-champagne animate-pulse delay-700" />
+                                        <div className="absolute top-3/4 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-champagne animate-pulse delay-1000" />
+                                    </div>
+                                    <div className="w-px h-full bg-gradient-to-b from-transparent via-champagne/40 to-transparent relative">
+                                        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-champagne animate-pulse delay-300" />
+                                        <div className="absolute top-2/3 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-champagne animate-pulse delay-500" />
+                                    </div>
+                                </div>
+                                {/* Connecting Shimmer Line */}
+                                <div className="absolute top-1/2 left-[10%] right-[10%] h-[1px] bg-champagne/20 overflow-hidden">
+                                    <div className="absolute inset-0 shimmer opacity-50" />
+                                </div>
                             </div>
-
-                            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-champagne/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
                             <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center h-full">
                                 <div className="flex-1">
-                                    <span className="font-mono text-[10px] uppercase tracking-widest text-[#27C93F] mb-3 block font-bold">Deep Mapping</span>
-                                    <h3 className="font-drama text-2xl font-bold mb-2">Connect The <span className="italic text-champagne">Unseen</span> Dots</h3>
+                                    <span className="font-mono text-[10px] uppercase tracking-widest text-[#27C93F] mb-3 block font-bold">Vector Comparison</span>
+                                    <h3 className="font-drama text-2xl font-bold mb-2">Semantic Skill Matching</h3>
                                     <p className="font-sans text-white/60 text-sm max-w-sm">
-                                        Visualize exactly where your skills overlap across distinct industries before you apply.
+                                        Our AI engine cross-references your resume against the target job description to uncover hidden, high-value transferable skills.
                                     </p>
                                 </div>
 
-                                {/* 3D Plane Micro-Animation with Data Injections */}
-                                <div className="flex-1 w-full flex justify-center mt-4 md:mt-0 relative">
-                                    <svg viewBox="0 0 150 100" className="w-full max-w-[200px] h-32 text-champagne/40 overflow-visible">
-                                        {/* Axes */}
-                                        <g stroke="currentColor" strokeWidth="1" opacity="0.5">
-                                            <line x1="75" y1="80" x2="30" y2="50" />
-                                            <line x1="75" y1="80" x2="120" y2="50" />
-                                            <line x1="75" y1="80" x2="75" y2="10" />
-                                        </g>
-
-                                        {/* Grid Lines */}
-                                        <g className="group-hover:animate-grid-draw" stroke="currentColor" strokeWidth="0.5" fill="none">
-                                            <path d="M 30 50 L 52.5 65 L 97.5 35 L 75 20 Z" />
-                                            <path d="M 52.5 65 L 75 80 L 120 50 L 97.5 35 Z" />
-                                            <path d="M 41 57.5 L 86 27.5 M 64 72.5 L 109 42.5 M 41 42.5 L 86 72.5 M 64 27.5 L 109 57.5" strokeDasharray="2 2" />
-                                        </g>
-
-                                        {/* Intersection Node & Labels */}
-                                        <g>
-                                            <circle cx="75" cy="50" r="3" className="fill-champagne animate-pulse-slow origin-center" />
-                                            <text x="75" y="44" className="text-[10px] uppercase font-sans fill-slate/60 font-bold" textAnchor="middle">Vector Mapping</text>
-                                        </g>
-
-                                        <g>
-                                            <circle cx="30" cy="50" r="2" className="fill-[#27C93F]" />
-                                            <text x="25" y="45" className="text-[8px] uppercase font-sans fill-slate/40" textAnchor="end">Data Ingestion</text>
-                                        </g>
-
-                                        <g>
-                                            <circle cx="120" cy="50" r="2" className="fill-champagne" />
-                                            <text x="125" y="45" className="text-[8px] uppercase font-sans fill-slate/40" textAnchor="start">Overlap Output</text>
-                                        </g>
-                                    </svg>
+                                {/* Data Injection: Backend Process Log */}
+                                <div className="flex-1 w-full bg-black/40 border border-white/5 p-4 rounded-xl backdrop-blur-sm">
+                                    <div className="font-mono text-[10px] text-slate/80 space-y-1.5">
+                                        <div className="flex gap-2"><span>&gt;</span> <span>parsing_user_resume...</span></div>
+                                        <div className="flex gap-2"><span>&gt;</span> <span>extracting_jd_requirements...</span></div>
+                                        <div className="flex gap-2"><span>&gt;</span> <span className="animate-pulse">mapping_transferable_skills()</span></div>
+                                        <div className="flex gap-2 text-champagne pt-2 border-t border-white/5">
+                                            <span>&gt;</span> <span className="font-bold">sys.out: OVERLAP_IDENTIFIED</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* 5. Export Ready (Bottom Right) */}
-                        <div className="md:col-span-1 lg:col-span-1 row-span-1 bg-surface dark:bg-darkCard rounded-3xl p-8 border border-obsidian/5 dark:border-darkText/5 flex flex-col justify-between relative group hover:shadow-xl transition-all duration-300">
-                            <div className="relative z-10 w-full flex flex-col items-center mb-6">
-                                {/* Visual Engine: Document Wireframe with skeleton-loading */}
-                                <div className="w-24 h-32 bg-white dark:bg-[#1a1a1a] border border-obsidian/10 dark:border-darkText/10 rounded shadow-md p-3 flex flex-col gap-2 group-hover:rotate-3 transition-transform duration-300 relative overflow-hidden">
+                        {/* 5. Export Ready */}
+                        <div className="md:col-span-1 lg:col-span-1 row-span-1 bg-surface dark:bg-darkCard rounded-3xl p-6 border border-obsidian/5 dark:border-darkText/5 flex flex-col h-full justify-between relative group hover:shadow-xl transition-all duration-300">
+                            <div className="relative z-10 text-left">
+                                <h3 className="font-drama text-2xl font-bold text-obsidian dark:text-darkText leading-tight">Export <br />Ready.</h3>
+                            </div>
+
+                            {/* Visual Engine: Centered Document Wireframe */}
+                            <div className="relative z-10 flex-grow flex items-center justify-center py-4">
+                                <div className="w-20 h-28 bg-white dark:bg-[#1a1a1a] border border-obsidian/10 dark:border-darkText/10 rounded shadow-sm p-3 flex flex-col gap-2 group-hover:scale-105 transition-transform duration-500 relative overflow-hidden">
                                     {/* Mock Document Header */}
-                                    <div className="w-1/2 h-2 bg-slate/20 dark:bg-darkText/20 rounded-full mb-1" />
+                                    <div className="w-1/2 h-1.5 bg-slate/20 dark:bg-darkText/20 rounded-full mb-1" />
 
                                     {/* Skeleton Loading Lines with Shimmer */}
-                                    {[1, 2, 3, 4].map((i) => (
+                                    {[1, 2, 3, 4, 5].map((i) => (
                                         <div
                                             key={i}
-                                            className="w-full h-1.5 rounded-full bg-slate/5 dark:bg-darkText/5 relative overflow-hidden"
+                                            className="w-full h-1 rounded-full bg-slate/5 dark:bg-darkText/5 relative overflow-hidden"
                                         >
-                                            <div className="absolute inset-0 shimmer opacity-20" style={{ animationDelay: `${i * 0.2}s` }} />
+                                            <div className="absolute inset-0 shimmer opacity-10" style={{ animationDelay: `${i * 0.15}s` }} />
                                         </div>
                                     ))}
 
-                                    <div className="w-full h-1.5 rounded-full bg-slate/10 dark:bg-darkText/10 mt-2" />
-                                    <div className="w-full h-1.5 rounded-full bg-slate/10 dark:bg-darkText/10" />
-
                                     {/* Gold Accent Seal */}
-                                    <div className="absolute top-2 right-2 w-3 h-3 rounded-full bg-champagne/30 border border-champagne" />
-                                </div>
-
-                                {/* Data Injection: Status Badge */}
-                                <div className="mt-4 px-2 py-1 bg-champagne/10 border border-champagne/20 rounded-md">
-                                    <span className="font-mono text-[9px] text-champagne font-bold uppercase tracking-tighter">
-                                        Module: jsPDF 4 + html2canvas | 100% Portable
-                                    </span>
+                                    <div className="absolute bottom-2 right-2 w-2.5 h-2.5 rounded-full bg-champagne/20 border border-champagne" />
                                 </div>
                             </div>
 
-                            <div className="relative z-10">
-                                <h3 className="font-drama text-xl font-bold text-obsidian dark:text-darkText leading-tight">Export <br />Ready.</h3>
+                            {/* Data Injection: Raw Terminal Footer */}
+                            <div className="relative z-10 pt-4 border-t border-obsidian/5 dark:border-darkText/5">
+                                <span className="font-mono text-[9px] text-slate/60 dark:text-darkText/40 uppercase tracking-[0.2em] block text-center">
+                                    MODULE: jsPDF 4 + html2canvas | 100% PORTABLE
+                                </span>
                             </div>
                         </div>
 
