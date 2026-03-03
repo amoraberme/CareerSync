@@ -226,6 +226,30 @@ const Landing = ({ onNavigate }) => {
                         {/* 1. The Deep Analysis (Hero Card - Largest) */}
                         <div className="md:col-span-2 lg:col-span-2 row-span-2 bg-surface dark:bg-darkCard rounded-3xl p-8 border border-obsidian/5 dark:border-darkText/5 overflow-hidden relative group hover:shadow-2xl transition-all duration-500 hover:-translate-y-1 flex flex-col md:flex-row gap-8">
 
+                            {/* Visual Engine: Faint CSS-drawn animated radar/spider chart in background */}
+                            <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20 dark:opacity-10 group-hover:opacity-30 transition-opacity duration-700">
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] animate-spin-slow">
+                                    {[1, 2, 3].map((i) => (
+                                        <div
+                                            key={i}
+                                            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border border-champagne/40 rounded-full"
+                                            style={{
+                                                width: `${i * 120}px`,
+                                                height: `${i * 120}px`,
+                                                borderStyle: i === 3 ? 'dashed' : 'solid'
+                                            }}
+                                        />
+                                    ))}
+                                    {[0, 60, 120, 180, 240, 300].map((deg) => (
+                                        <div
+                                            key={deg}
+                                            className="absolute top-1/2 left-1/2 w-full h-[1px] bg-champagne/20 origin-left"
+                                            style={{ transform: `rotate(${deg}deg) translateX(0)` }}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+
                             <div className="absolute inset-0 bg-gradient-to-br from-champagne/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
                             {/* Left Content */}
@@ -249,40 +273,50 @@ const Landing = ({ onNavigate }) => {
                                         </li>
                                     </ul>
                                 </div>
+
+                                {/* Data Injection: Technical Footer */}
+                                <div className="mt-auto pt-8">
+                                    <span className="font-mono text-[10px] text-slate/40 dark:text-darkText/30 uppercase tracking-tighter">
+                                        Engine: @supabase/supabase-js ^2.97 | RLS Secured
+                                    </span>
+                                </div>
                             </div>
 
-                            {/* Right Content: Radar Chart Micro-Animation */}
+                            {/* Right Content: Animated Radar (Simplified DOM version) */}
                             <div className="relative z-10 flex-1 flex items-center justify-center min-h-[200px]">
-                                <svg viewBox="0 0 200 200" className="w-full h-full max-w-[200px] text-obsidian/10 dark:text-darkText/20 overflow-visible">
-                                    {/* Outer Webs */}
-                                    <polygon points="100,10 186.6,60 186.6,140 100,190 13.4,140 13.4,60" fill="none" stroke="currentColor" strokeWidth="1" />
-                                    <polygon points="100,30 169.3,70 169.3,130 100,170 30.7,130 30.7,70" fill="none" stroke="currentColor" strokeWidth="1" />
-                                    <polygon points="100,50 151.9,80 151.9,120 100,150 48.1,120 48.1,80" fill="none" stroke="currentColor" strokeWidth="1" />
-                                    {/* Web Lines */}
-                                    <line x1="100" y1="100" x2="100" y2="10" stroke="currentColor" strokeWidth="1" />
-                                    <line x1="100" y1="100" x2="186.6" y2="60" stroke="currentColor" strokeWidth="1" />
-                                    <line x1="100" y1="100" x2="186.6" y2="140" stroke="currentColor" strokeWidth="1" />
-                                    <line x1="100" y1="100" x2="100" y2="190" stroke="currentColor" strokeWidth="1" />
-                                    <line x1="100" y1="100" x2="13.4" y2="140" stroke="currentColor" strokeWidth="1" />
-                                    <line x1="100" y1="100" x2="13.4" y2="60" stroke="currentColor" strokeWidth="1" />
-
-                                    {/* Inner Animated Polygon (Breathing Radar) */}
-                                    <g className="origin-center animate-pulse-slow">
-                                        <polygon points="100,40 160,85 140,140 80,160 30,100 45,55" fill="currentColor" className="text-champagne/20" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-                                        {/* Data Nodes */}
-                                        <circle cx="100" cy="40" r="4" fill="currentColor" className="text-champagne drop-shadow-md" />
-                                        <circle cx="160" cy="85" r="4" fill="currentColor" className="text-champagne drop-shadow-md" />
-                                        <circle cx="140" cy="140" r="4" fill="currentColor" className="text-champagne drop-shadow-md" />
-                                        <circle cx="80" cy="160" r="4" fill="currentColor" className="text-champagne drop-shadow-md" />
-                                        <circle cx="30" cy="100" r="4" fill="currentColor" className="text-champagne drop-shadow-md" />
-                                        <circle cx="45" cy="55" r="4" fill="currentColor" className="text-champagne drop-shadow-md" />
-                                    </g>
-                                </svg>
+                                <div className="relative w-48 h-48 flex items-center justify-center">
+                                    {/* Breathing Outer Ring */}
+                                    <div className="absolute inset-0 border border-champagne/30 rounded-full animate-pulse-slow" />
+                                    {/* Rotating Scanner Line */}
+                                    <div className="absolute inset-0 animate-spin-slow">
+                                        <div className="w-1/2 h-full bg-gradient-to-r from-transparent to-champagne/20 origin-right rounded-l-full" />
+                                    </div>
+                                    {/* Core Node */}
+                                    <div className="w-3 h-3 bg-champagne rounded-full shadow-[0_0_15px_rgba(180,140,80,0.5)] z-20" />
+                                    {/* Technical Label */}
+                                    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 font-mono text-[9px] text-[#27C93F] animate-pulse">
+                                        LIVE_SCAN_ACTIVE
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         {/* 2. The Centavo Value (High-Contrast Feature) */}
                         <div className="md:col-span-1 lg:col-span-2 row-span-1 bg-obsidian dark:bg-[#111] text-white rounded-3xl p-8 border border-champagne/20 relative overflow-hidden group hover:shadow-2xl transition-all duration-500 flex flex-col justify-between">
+
+                            {/* Visual Engine: Abstract Data Flow Background */}
+                            <div className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
+                                <div className="grid grid-cols-8 grid-rows-4 h-full w-full">
+                                    {[...Array(32)].map((_, i) => (
+                                        <div key={i} className="border-[0.5px] border-champagne/20 relative">
+                                            {i % 7 === 0 && (
+                                                <div className="absolute inset-0 bg-champagne/40 animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
                             <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-champagne/10 rounded-full blur-3xl group-hover:bg-champagne/20 transition-all duration-700 pointer-events-none" />
 
                             <div className="relative z-10">
@@ -295,20 +329,29 @@ const Landing = ({ onNavigate }) => {
                                 </p>
                             </div>
 
-                            {/* Payment Badges Micro-Animation (Metallic Shimmer) */}
-                            <div className="relative z-10 flex gap-3 mt-6">
-                                {/* GCash Badge */}
-                                <div className="relative overflow-hidden bg-white/5 border border-white/10 rounded-full px-4 py-2 flex items-center gap-2 backdrop-blur-sm group-hover:border-white/20 transition-colors">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 animate-shimmer-sweep pointer-events-none" />
-                                    <div className="w-4 h-4 rounded-full bg-[#007DFE] flex items-center justify-center text-[8px] font-bold">G</div>
-                                    <span className="font-mono text-xs font-bold tracking-wider">GCash</span>
+                            <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                                {/* Payment Badges */}
+                                <div className="flex gap-3">
+                                    {/* GCash Badge */}
+                                    <div className="relative overflow-hidden bg-white/5 border border-white/10 rounded-full px-4 py-2 flex items-center gap-2 backdrop-blur-sm group-hover:border-white/20 transition-colors">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 animate-shimmer-sweep pointer-events-none" />
+                                        <div className="w-4 h-4 rounded-full bg-[#007DFE] flex items-center justify-center text-[8px] font-bold">G</div>
+                                        <span className="font-mono text-xs font-bold tracking-wider">GCash</span>
+                                    </div>
+
+                                    {/* PayMongo Badge */}
+                                    <div className="relative overflow-hidden bg-white/5 border border-white/10 rounded-full px-4 py-2 flex items-center gap-2 backdrop-blur-sm group-hover:border-white/20 transition-colors">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 animate-shimmer-sweep pointer-events-none" style={{ animationDelay: '0.5s' }} />
+                                        <div className="w-4 h-4 rounded-full bg-[#1BC673] flex items-center justify-center text-[8px] font-bold">P</div>
+                                        <span className="font-mono text-xs font-bold tracking-wider">PayMongo</span>
+                                    </div>
                                 </div>
 
-                                {/* PayMongo Badge */}
-                                <div className="relative overflow-hidden bg-white/5 border border-white/10 rounded-full px-4 py-2 flex items-center gap-2 backdrop-blur-sm group-hover:border-white/20 transition-colors">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 animate-shimmer-sweep pointer-events-none" style={{ animationDelay: '0.5s' }} />
-                                    <div className="w-4 h-4 rounded-full bg-[#1BC673] flex items-center justify-center text-[8px] font-bold">P</div>
-                                    <span className="font-mono text-xs font-bold tracking-wider">PayMongo</span>
+                                {/* Data Injection: Terminal-style List */}
+                                <div className="font-mono text-[9px] text-[#27C93F]/60 space-y-1 bg-black/40 p-3 rounded-lg border border-white/5">
+                                    <div className="flex gap-2"><span>&gt;</span> <span className="animate-pulse">api/initiate-payment.js</span></div>
+                                    <div className="flex gap-2"><span>&gt;</span> <span>EMVCo QR generated</span></div>
+                                    <div className="flex gap-2"><span>&gt;</span> <span>Webhook active</span></div>
                                 </div>
                             </div>
                         </div>
@@ -324,136 +367,56 @@ const Landing = ({ onNavigate }) => {
                                 </p>
                             </div>
 
-                            {/* Typewriter Micro-Animation */}
-                            <div className="relative z-10 w-full h-32 flex items-end justify-center overflow-hidden">
-                                <svg viewBox="0 0 100 100" className="w-24 h-24 text-obsidian/60 dark:text-darkText/60 overflow-visible">
-                                    {/* Animated Paper Slidng Up */}
-                                    <g className="group-hover:animate-typewriter-up">
-                                        <rect x="30" y="20" width="40" height="30" fill="none" stroke="currentColor" strokeWidth="2" rx="1" />
-                                        <line x1="35" y1="28" x2="65" y2="28" stroke="currentColor" strokeWidth="1.5" />
-                                        <line x1="35" y1="36" x2="60" y2="36" stroke="currentColor" strokeWidth="1.5" />
-                                        <line x1="35" y1="44" x2="65" y2="44" stroke="currentColor" strokeWidth="1.5" />
-                                    </g>
-
-                                    {/* Typewriter Base */}
-                                    <path d="M 20 60 L 80 60 L 90 85 L 10 85 Z" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-                                    <rect x="25" y="55" width="50" height="5" fill="none" stroke="currentColor" strokeWidth="2" />
-
-                                    {/* Jittery Keys */}
-                                    <g className="group-hover:animate-typewriter-jitter">
-                                        <circle cx="30" cy="70" r="2.5" fill="none" stroke="currentColor" strokeWidth="1" className="bg-background dark:bg-darkBg" />
-                                        <circle cx="40" cy="70" r="2.5" fill="none" stroke="currentColor" strokeWidth="1" className="bg-background dark:bg-darkBg" />
-                                        <circle cx="50" cy="70" r="2.5" fill="none" stroke="currentColor" strokeWidth="1" className="bg-background dark:bg-darkBg" />
-                                        <circle cx="60" cy="70" r="2.5" fill="none" stroke="currentColor" strokeWidth="1" className="bg-background dark:bg-darkBg" />
-                                        <circle cx="70" cy="70" r="2.5" fill="none" stroke="currentColor" strokeWidth="1" className="bg-background dark:bg-darkBg" />
-
-                                        <circle cx="35" cy="78" r="2.5" fill="none" stroke="currentColor" strokeWidth="1" />
-                                        <circle cx="45" cy="78" r="2.5" fill="none" stroke="currentColor" strokeWidth="1" />
-                                        <circle cx="55" cy="78" r="2.5" fill="none" stroke="currentColor" strokeWidth="1" />
-                                        <circle cx="65" cy="78" r="2.5" fill="none" stroke="currentColor" strokeWidth="1" />
-                                    </g>
-                                </svg>
-                            </div>
-                        </div>
-
-                        {/* 4. How It Works (Process Card) */}
-                        <div className="md:col-span-2 lg:col-span-1 row-span-1 bg-surface dark:bg-darkCard rounded-3xl p-8 border border-obsidian/5 dark:border-darkText/5 flex flex-col justify-between relative group">
-                            <h3 className="font-mono text-xs font-bold tracking-widest text-champagne uppercase mb-6 text-center">Execution Flow</h3>
-
-                            <div className="space-y-6 flex-1 flex flex-col justify-center">
-                                {/* Step 1: Upload (Bouncing Arrow) */}
-                                <div className="flex items-center gap-4 group/step cursor-default">
-                                    <div className="w-10 h-10 rounded-full bg-background dark:bg-darkBg flex items-center justify-center border border-obsidian/10 dark:border-darkText/10 overflow-hidden text-obsidian dark:text-darkText">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover/step:animate-icon-bounce">
-                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                            <polyline points="17 8 12 3 7 8" />
-                                            <line x1="12" y1="3" x2="12" y2="15" />
-                                        </svg>
-                                    </div>
-                                    <span className="text-sm font-sans text-slate dark:text-darkText/80 font-medium">1. Upload Resume & JD</span>
+                            {/* Visual Engine: Native CSS Mock Terminal Window */}
+                            <div className="relative z-10 w-full mt-auto">
+                                <div className="bg-obsidian dark:bg-black rounded-t-lg border-x border-t border-white/10 p-2 flex gap-1.5 Items-center">
+                                    <div className="w-2 h-2 rounded-full bg-destructive/50" />
+                                    <div className="w-2 h-2 rounded-full bg-champagne/50" />
+                                    <div className="w-2 h-2 rounded-full bg-[#27C93F]/50" />
+                                    <span className="font-mono text-[8px] text-white/20 ml-2 uppercase tracking-widest">bash — 80x24</span>
                                 </div>
-
-                                {/* Step 2: Processing (Spinning Gear) */}
-                                <div className="flex items-center gap-4 group/step cursor-default">
-                                    <div className="w-10 h-10 rounded-full bg-background dark:bg-darkBg flex items-center justify-center border border-obsidian/10 dark:border-darkText/10 overflow-hidden text-obsidian dark:text-darkText">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover/step:animate-spin-slow">
-                                            <circle cx="12" cy="12" r="3" />
-                                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                                        </svg>
+                                <div className="bg-obsidian/95 dark:bg-black/95 border border-white/10 p-4 h-24 font-mono text-[10px] text-[#27C93F] relative overflow-hidden">
+                                    <div className="flex gap-2">
+                                        <span className="text-white/40 opacity-50">$</span>
+                                        <SmartTypewriterText
+                                            text="POST /api/analyze -> @google/generative-ai (Apex-ATS v2.0)"
+                                        />
                                     </div>
-                                    <span className="text-sm font-sans text-slate dark:text-darkText/80 font-medium">2. Engine Extracts Skills</span>
-                                </div>
-
-                                {/* Step 3: Export (Sliding Paper) */}
-                                <div className="flex items-center gap-4 group/step cursor-default">
-                                    <div className="w-10 h-10 rounded-full bg-background dark:bg-darkBg flex items-center justify-center border border-obsidian/10 dark:border-darkText/10 overflow-hidden text-obsidian dark:text-darkText relative">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 flex-shrink-0 bg-background dark:bg-darkBg">
-                                            <polyline points="6 9 6 2 18 2 18 9" />
-                                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                                        </svg>
-                                        <svg width="12" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="absolute top-[40%] text-obsidian dark:text-darkText group-hover/step:-translate-y-4 transition-transform duration-500 z-0">
-                                            <rect x="6" y="14" width="12" height="8" />
-                                        </svg>
+                                    <div className="mt-2 text-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-1000">
+                                        &gt; [SYSTEM] Tone calibration: EXECUTIVE_PRESENCE<br />
+                                        &gt; [SYSTEM] Payload analysis complete.
                                     </div>
+                                    {/* Scanline Effect */}
+                                    <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,118,0.06))] bg-[length:100%_2px,3px_100%]" />
                                 </div>
                             </div>
                         </div>
 
-                        {/* 5. Transferable Bridge (Bottom Middle-Left) */}
-                        <div className="md:col-span-1 lg:col-span-1 row-span-1 bg-surface dark:bg-darkCard rounded-3xl p-8 border border-obsidian/5 dark:border-darkText/5 flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 transition-transform duration-500">
-                            <div className="absolute inset-0 bg-gradient-to-t from-champagne/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                            <h3 className="font-drama text-xl font-bold text-obsidian dark:text-darkText max-w-[150px] relative z-10">
-                                Connect The <span className="italic text-champagne">Unseen</span> Dots
-                            </h3>
 
-                            {/* Isometric Bridge Micro-Animation */}
-                            <div className="relative z-10 w-full h-32 mt-6 flex items-end justify-center">
-                                <svg viewBox="0 0 160 100" className="w-full h-full text-obsidian/40 dark:text-darkText/40 overflow-visible">
-                                    {/* Pillar A (Floating) */}
-                                    <g className="animate-pillar-float" style={{ animationDelay: '0s' }}>
-                                        <path d="M 20 60 L 40 50 L 60 60 L 40 70 Z" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
-                                        <path d="M 20 60 L 20 90 L 40 100 L 40 70 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
-                                        <path d="M 60 60 L 60 90 L 40 100" fill="none" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
-                                        <text x="40" y="85" fontSize="12" fontFamily="monospace" fill="currentColor" textAnchor="middle" className="text-obsidian dark:text-darkText font-bold">Past</text>
-                                    </g>
-
-                                    {/* Pillar B (Floating) */}
-                                    <g className="animate-pillar-float" style={{ animationDelay: '2s' }}>
-                                        <path d="M 100 60 L 120 50 L 140 60 L 120 70 Z" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
-                                        <path d="M 100 60 L 100 90 L 120 100 L 120 70 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
-                                        <path d="M 140 60 L 140 90 L 120 100" fill="none" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
-                                        <text x="120" y="85" fontSize="12" fontFamily="monospace" fill="currentColor" textAnchor="middle" className="text-champagne font-bold">Target</text>
-                                    </g>
-
-                                    {/* The Bridge Arc */}
-                                    <path id="bridge-path" d="M 40 50 Q 80 10 120 50" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" className="opacity-50" />
-
-                                    {/* Animated Data Transfer Dots */}
-                                    <g className="group-hover:opacity-100 opacity-50 transition-opacity">
-                                        <circle r="3" className="fill-champagne animate-bridge-dot" style={{ offsetPath: "path('M 40 50 Q 80 10 120 50')", animationDelay: '0s' }} />
-                                        <circle r="3" className="fill-champagne animate-bridge-dot" style={{ offsetPath: "path('M 40 50 Q 80 10 120 50')", animationDelay: '1s' }} />
-                                        <circle r="3" className="fill-champagne animate-bridge-dot" style={{ offsetPath: "path('M 40 50 Q 80 10 120 50')", animationDelay: '2s' }} />
-                                    </g>
-                                </svg>
-                            </div>
-                        </div>
-
-                        {/* 6. Skills Matrix (Bottom Middle-Right) */}
+                        {/* 4. Connect The Unseen Dots (3D Skills Matrix) */}
                         <div className="md:col-span-2 lg:col-span-2 row-span-1 bg-obsidian dark:bg-[#111] text-white rounded-3xl p-8 border border-champagne/20 relative overflow-hidden group hover:shadow-2xl transition-all duration-500">
+                            {/* Visual Engine: Subtle Isometric Grid Background */}
+                            <div className="absolute inset-0 pointer-events-none opacity-20">
+                                <div
+                                    className="absolute inset-[-100%] border-[0.5px] border-dashed border-champagne/20"
+                                    style={{ transform: 'rotateX(60deg) rotateZ(-45deg)', backgroundSize: '30px 30px', backgroundImage: 'linear-gradient(to right, rgba(180,140,80,0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(180,140,80,0.1) 1px, transparent 1px)' }}
+                                />
+                            </div>
+
                             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-champagne/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
                             <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center h-full">
                                 <div className="flex-1">
                                     <span className="font-mono text-[10px] uppercase tracking-widest text-[#27C93F] mb-3 block font-bold">Deep Mapping</span>
-                                    <h3 className="font-drama text-2xl font-bold mb-2">3D Skills Matrix</h3>
+                                    <h3 className="font-drama text-2xl font-bold mb-2">Connect The <span className="italic text-champagne">Unseen</span> Dots</h3>
                                     <p className="font-sans text-white/60 text-sm max-w-sm">
                                         Visualize exactly where your skills overlap across distinct industries before you apply.
                                     </p>
                                 </div>
 
-                                {/* 3D Plane Micro-Animation (Grid Draw on Hover) */}
-                                <div className="flex-1 w-full flex justify-center mt-4 md:mt-0">
+                                {/* 3D Plane Micro-Animation with Data Injections */}
+                                <div className="flex-1 w-full flex justify-center mt-4 md:mt-0 relative">
                                     <svg viewBox="0 0 150 100" className="w-full max-w-[200px] h-32 text-champagne/40 overflow-visible">
                                         {/* Axes */}
                                         <g stroke="currentColor" strokeWidth="1" opacity="0.5">
@@ -462,39 +425,63 @@ const Landing = ({ onNavigate }) => {
                                             <line x1="75" y1="80" x2="75" y2="10" />
                                         </g>
 
-                                        {/* Grid Lines (Draws outward on hover) */}
+                                        {/* Grid Lines */}
                                         <g className="group-hover:animate-grid-draw" stroke="currentColor" strokeWidth="0.5" fill="none">
-                                            {/* Plane Lines - Left to Right */}
                                             <path d="M 30 50 L 52.5 65 L 97.5 35 L 75 20 Z" />
                                             <path d="M 52.5 65 L 75 80 L 120 50 L 97.5 35 Z" />
                                             <path d="M 41 57.5 L 86 27.5 M 64 72.5 L 109 42.5 M 41 42.5 L 86 72.5 M 64 27.5 L 109 57.5" strokeDasharray="2 2" />
                                         </g>
 
-                                        {/* Intersection Node */}
-                                        <circle cx="75" cy="50" r="3" className="fill-champagne animate-pulse-slow origin-center" />
+                                        {/* Intersection Node & Labels */}
+                                        <g>
+                                            <circle cx="75" cy="50" r="3" className="fill-champagne animate-pulse-slow origin-center" />
+                                            <text x="75" y="44" className="text-[10px] uppercase font-sans fill-slate/60 font-bold" textAnchor="middle">Vector Mapping</text>
+                                        </g>
+
+                                        <g>
+                                            <circle cx="30" cy="50" r="2" className="fill-[#27C93F]" />
+                                            <text x="25" y="45" className="text-[8px] uppercase font-sans fill-slate/40" textAnchor="end">Data Ingestion</text>
+                                        </g>
+
+                                        <g>
+                                            <circle cx="120" cy="50" r="2" className="fill-champagne" />
+                                            <text x="125" y="45" className="text-[8px] uppercase font-sans fill-slate/40" textAnchor="start">Overlap Output</text>
+                                        </g>
                                     </svg>
                                 </div>
                             </div>
                         </div>
 
-                        {/* 7. Calibrated PDF Export (Bottom Right) */}
+                        {/* 5. Export Ready (Bottom Right) */}
                         <div className="md:col-span-1 lg:col-span-1 row-span-1 bg-surface dark:bg-darkCard rounded-3xl p-8 border border-obsidian/5 dark:border-darkText/5 flex flex-col justify-between relative group hover:shadow-xl transition-all duration-300">
-                            <div className="relative z-10 w-full flex justify-center mb-6">
-                                {/* Interactive Resume Document SVG */}
+                            <div className="relative z-10 w-full flex flex-col items-center mb-6">
+                                {/* Visual Engine: Document Wireframe with skeleton-loading */}
                                 <div className="w-24 h-32 bg-white dark:bg-[#1a1a1a] border border-obsidian/10 dark:border-darkText/10 rounded shadow-md p-3 flex flex-col gap-2 group-hover:rotate-3 transition-transform duration-300 relative overflow-hidden">
                                     {/* Mock Document Header */}
                                     <div className="w-1/2 h-2 bg-slate/20 dark:bg-darkText/20 rounded-full mb-1" />
 
-                                    {/* Skeleton Loading Lines */}
-                                    <div className="w-full h-1.5 rounded-full bg-gradient-to-r from-slate/10 via-champagne/30 to-slate/10 dark:from-darkText/10 dark:via-champagne/40 dark:to-darkText/10 animate-skeleton-line" />
-                                    <div className="w-5/6 h-1.5 rounded-full bg-gradient-to-r from-slate/10 via-champagne/30 to-slate/10 dark:from-darkText/10 dark:via-champagne/40 dark:to-darkText/10 animate-skeleton-line" style={{ animationDelay: '0.2s' }} />
-                                    <div className="w-4/6 h-1.5 rounded-full bg-gradient-to-r from-slate/10 via-champagne/30 to-slate/10 dark:from-darkText/10 dark:via-champagne/40 dark:to-darkText/10 animate-skeleton-line" style={{ animationDelay: '0.4s' }} />
+                                    {/* Skeleton Loading Lines with Shimmer */}
+                                    {[1, 2, 3, 4].map((i) => (
+                                        <div
+                                            key={i}
+                                            className="w-full h-1.5 rounded-full bg-slate/5 dark:bg-darkText/5 relative overflow-hidden"
+                                        >
+                                            <div className="absolute inset-0 shimmer opacity-20" style={{ animationDelay: `${i * 0.2}s` }} />
+                                        </div>
+                                    ))}
 
                                     <div className="w-full h-1.5 rounded-full bg-slate/10 dark:bg-darkText/10 mt-2" />
                                     <div className="w-full h-1.5 rounded-full bg-slate/10 dark:bg-darkText/10" />
 
                                     {/* Gold Accent Seal */}
                                     <div className="absolute top-2 right-2 w-3 h-3 rounded-full bg-champagne/30 border border-champagne" />
+                                </div>
+
+                                {/* Data Injection: Status Badge */}
+                                <div className="mt-4 px-2 py-1 bg-champagne/10 border border-champagne/20 rounded-md">
+                                    <span className="font-mono text-[9px] text-champagne font-bold uppercase tracking-tighter">
+                                        Module: jsPDF 4 + html2canvas | 100% Portable
+                                    </span>
                                 </div>
                             </div>
 
