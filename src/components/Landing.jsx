@@ -299,14 +299,14 @@ const Landing = ({ onNavigate }) => {
                         </div>
 
                         {/* 2. Premium Access. Zero Abono. */}
-                        <div className="md:col-span-1 lg:col-span-1 row-span-1 bg-obsidian dark:bg-[#111] text-white rounded-3xl p-8 border border-champagne/20 relative overflow-hidden group hover:shadow-2xl transition-all duration-500 flex flex-col justify-between">
+                        <div className="md:col-span-2 lg:col-span-2 row-span-1 bg-obsidian dark:bg-[#111] text-white rounded-3xl p-8 border border-champagne/20 relative overflow-hidden group hover:shadow-2xl transition-all duration-500 flex flex-col md:flex-row gap-8 items-center">
 
                             {/* Visual Engine: Data Flow Background with pulsing nodes */}
                             <div className="absolute inset-0 opacity-20 pointer-events-none">
-                                <div className="grid grid-cols-6 grid-rows-6 h-full w-full">
-                                    {[...Array(36)].map((_, i) => (
+                                <div className="grid grid-cols-12 grid-rows-6 h-full w-full">
+                                    {[...Array(72)].map((_, i) => (
                                         <div key={i} className="border-[0.5px] border-champagne/10 relative">
-                                            {(i === 14 || i === 21 || i === 7 || i === 28) && (
+                                            {(i === 14 || i === 21 || i === 7 || i === 28 || i === 45 || i === 52) && (
                                                 <div className="absolute inset-0 bg-champagne/30 shimmer" />
                                             )}
                                         </div>
@@ -314,24 +314,24 @@ const Landing = ({ onNavigate }) => {
                                 </div>
                             </div>
 
-                            <div className="relative z-10">
+                            <div className="relative z-10 flex-1">
                                 <h3 className="font-drama text-2xl font-bold mb-2">Premium Access. <br /><span className="text-champagne">Zero Abono.</span></h3>
-                                <p className="font-sans text-xs text-white/60 leading-relaxed">
+                                <p className="font-sans text-xs text-white/60 leading-relaxed max-w-xs">
                                     No massive USD subscription commitments. Pay precisely for the analysis you need using GCash.
                                 </p>
                             </div>
 
-                            <div className="relative z-10 flex flex-col gap-4">
+                            <div className="relative z-10 flex-1 flex flex-col items-end gap-6 w-full">
                                 {/* GCash Only UI */}
-                                <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2 rounded-xl w-fit group-hover:border-champagne/50 transition-colors">
-                                    <div className="w-8 h-8 rounded-lg bg-[#0056B3] flex items-center justify-center font-bold text-[10px]">G</div>
+                                <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-3 rounded-2xl w-fit group-hover:border-champagne/50 transition-colors self-center md:self-end">
+                                    <div className="w-10 h-10 rounded-xl bg-[#0056B3] flex items-center justify-center font-bold text-xs">G</div>
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] uppercase font-bold tracking-tighter">GCash Integrated</span>
-                                        <span className="text-[8px] text-white/40">Secure PH Gateway</span>
+                                        <span className="text-xs uppercase font-bold tracking-tighter text-white">GCash Integrated</span>
+                                        <span className="text-[10px] text-white/40">Secure PH Gateway</span>
                                     </div>
                                 </div>
 
-                                {/* Terminal Style Injection (Bottom Right) */}
+                                {/* Terminal Style Injection */}
                                 <div className="flex flex-col items-end font-mono text-[9px] text-[#27C93F] opacity-70">
                                     <span>&gt; api/initiate-payment.js</span>
                                     <span>&gt; EMVCo QR generated</span>
@@ -412,7 +412,7 @@ const Landing = ({ onNavigate }) => {
 
                                 {/* Data Injection: Backend Process Log */}
                                 <div className="flex-1 w-full bg-black/40 border border-white/5 p-4 rounded-xl backdrop-blur-sm">
-                                    <div className="font-mono text-[10px] text-slate/80 space-y-1.5">
+                                    <div className="font-mono text-[10px] text-slate-400 space-y-1.5">
                                         <div className="flex gap-2"><span>&gt;</span> <span>parsing_user_resume...</span></div>
                                         <div className="flex gap-2"><span>&gt;</span> <span>extracting_jd_requirements...</span></div>
                                         <div className="flex gap-2"><span>&gt;</span> <span className="animate-pulse">mapping_transferable_skills()</span></div>
