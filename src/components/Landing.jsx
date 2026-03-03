@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Check, ArrowRight, Shield, Zap, Target, FileText, CheckCircle2, X } from 'lucide-react';
+import { Check, ArrowRight, Shield, Zap, Target, FileText, CheckCircle2, X, Upload, Settings, FileDown } from 'lucide-react';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
 import { motion, useScroll, useTransform } from 'framer-motion';
@@ -467,6 +467,47 @@ const Landing = ({ onNavigate }) => {
                                     MODULE: jsPDF 4 + html2canvas | 100% PORTABLE
                                 </span>
                             </div>
+                        </div>
+
+                        {/* 6. Execution Flow */}
+                        <div className="md:col-span-1 lg:col-span-1 row-span-1 bg-surface dark:bg-darkCard rounded-3xl p-8 border border-obsidian/5 dark:border-darkText/5 overflow-hidden relative group hover:shadow-2xl transition-all duration-500 flex flex-col h-full">
+                            <span className="font-mono text-[10px] uppercase tracking-widest text-champagne mb-6 block font-bold">Execution Flow</span>
+
+                            <motion.ul
+                                className="flex flex-col gap-6"
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true }}
+                                variants={{
+                                    visible: {
+                                        transition: {
+                                            staggerChildren: 0.2
+                                        }
+                                    }
+                                }}
+                            >
+                                {[
+                                    { icon: <Upload size={18} />, text: "1. Upload Resume & JD" },
+                                    { icon: <Settings size={18} className="animate-spin-slow" />, text: "2. Engine Extracts Skills" },
+                                    { icon: <FileDown size={18} />, text: "3. Export Analysis PDF" }
+                                ].map((step, i) => (
+                                    <motion.li
+                                        key={i}
+                                        variants={{
+                                            hidden: { opacity: 0, x: -20 },
+                                            visible: { opacity: 1, x: 0 }
+                                        }}
+                                        className="flex items-center gap-4 group/item"
+                                    >
+                                        <div className="border border-slate-200 dark:border-slate-800 rounded-full p-3 bg-surface dark:bg-darkCard group-hover/item:border-champagne/50 transition-colors">
+                                            {step.icon}
+                                        </div>
+                                        <span className="font-sans text-sm text-obsidian dark:text-darkText font-medium">
+                                            {step.text}
+                                        </span>
+                                    </motion.li>
+                                ))}
+                            </motion.ul>
                         </div>
 
                     </div>
