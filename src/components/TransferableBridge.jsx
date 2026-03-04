@@ -99,9 +99,14 @@ const TransferableBridge = () => {
             </div>
 
             <div className="max-w-7xl mx-auto px-6 relative z-10 w-full">
-                <h2 className="text-4xl md:text-5xl font-sans font-bold text-obsidian dark:text-darkText tracking-tight text-center mb-16 relative z-20">
-                    Uncover Your <span className="font-drama italic text-champagne font-normal">Hidden Network</span>
-                </h2>
+                <div className="text-center mb-16 relative z-20">
+                    <h2 className="text-4xl md:text-5xl font-sans font-bold text-obsidian dark:text-darkText tracking-tight mb-6">
+                        Uncover Your <span className="font-drama italic text-champagne font-normal">Hidden Network</span>
+                    </h2>
+                    <p className="text-lg text-slate/80 dark:text-darkText/70 max-w-3xl mx-auto font-sans leading-relaxed">
+                        You already have the skills to land the role; the algorithm just can't see the connections. CareerSync ingests your resume and target job description to map your transferable skills, generating a multi-dimensional ATS report that forces recruiters to say yes.
+                    </p>
+                </div>
 
                 {/* The Interactive Floating Web Container (Box destroyed) */}
                 <div className="relative w-full min-h-[600px] md:min-h-[700px] flex items-center justify-center bg-transparent overflow-visible">
@@ -164,8 +169,8 @@ const TransferableBridge = () => {
                                 transition={{ duration: 0.4, ease: "easeOut" }}
                             >
                                 <div className={`relative px-3 py-1.5 md:px-4 md:py-2 rounded-full border backdrop-blur-md transition-colors duration-300 text-[10px] md:text-sm whitespace-nowrap flex items-center justify-center font-mono ${isHovered
-                                        ? 'bg-champagne/10 border-champagne text-champagne shadow-[0_0_20px_rgba(212,175,55,0.3)] font-bold'
-                                        : 'bg-background/70 dark:bg-darkBg/70 border-slate-300 dark:border-slate-700 text-obsidian dark:text-darkText'
+                                    ? 'bg-champagne/10 border-champagne text-champagne shadow-[0_0_20px_rgba(212,175,55,0.3)] font-bold'
+                                    : 'bg-background/70 dark:bg-darkBg/70 border-slate-300 dark:border-slate-700 text-obsidian dark:text-darkText'
                                     }`}>
                                     {/* Optional dot for visual anchor */}
                                     {isHovered && <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-champagne animate-pulse shadow-[0_0_8px_rgba(212,175,55,1)]" />}
