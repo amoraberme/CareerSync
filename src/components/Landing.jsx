@@ -10,6 +10,7 @@ import SwipeLettersButton from './animations/SwipeLettersButton';
 import SmartTypewriterText from './animations/SmartTypewriterText';
 import FAQSection from './animations/FAQSection';
 import TransferableBridge from './TransferableBridge';
+import PASSection from './PASSection';
 
 gsap.registerPlugin(ScrollToPlugin);
 
@@ -837,6 +838,9 @@ const Landing = ({ onNavigate }) => {
                     </div>
                 </div>
             </section>
+
+            {/* ═══ PAS SECTION (CONVERSION FOCUS) ═══ */}
+            <PASSection onNavigate={onNavigate} />
 
             {/* ═══ FAQ SECTION ═══ */}
             <FAQSection onContactClick={() => setIsContactModalOpen(true)} />
