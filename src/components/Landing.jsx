@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Check, ArrowRight, Shield, Zap, Target, FileText, CheckCircle2, X, Upload, Settings, FileDown } from 'lucide-react';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import Simulation from './Simulation';
 import ContactModal from './ContactModal';
 import SlideInButton from './animations/SlideInButton';
@@ -11,6 +11,160 @@ import SmartTypewriterText from './animations/SmartTypewriterText';
 import FAQSection from './animations/FAQSection';
 
 gsap.registerPlugin(ScrollToPlugin);
+
+// --- ATS Scanner Component ---
+const ATSScanner = () => {
+    const ref = useRef(null);
+    const isInView = useInView(ref, { once: true, margin: "-100px" });
+
+    // Mathematical Visual Engine configs
+    const radius = 45;
+    const circumference = 2 * Math.PI * radius;
+    const strokeDashoffset = circumference - (0.85 * circumference); // 85% full
+
+    const dummySkills = [
+        { word: "Python", match: true },
+        { word: "Synergy", match: false },
+        { word: "Project Management", match: true },
+        { word: "Hardworking", match: false },
+        { word: "React", match: true },
+        { word: "Team Player", match: false },
+        { word: "Vector Mapping", match: true },
+        { word: "PostgreSQL", match: true }
+    ];
+
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                delayChildren: 1.5, // Start words after gauge is almost done
+                staggerChildren: 0.15
+            }
+        }
+    };
+
+    const wordVariants = {
+        hidden: { opacity: 0, scale: 0.8 },
+        visible: {
+            opacity: 1,
+            scale: 1,
+            transition: { duration: 0.3, ease: "easeOut" }
+        }
+    };
+
+    return (
+        <div ref={ref} className="w-full max-w-[480px] bg-surface dark:bg-darkCard rounded-3xl p-6 md:p-8 border border-obsidian/5 dark:border-darkText/5 shadow-2xl relative overflow-hidden flex flex-col gap-8 group">
+
+            {/* Ambient Background Glow */}
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-champagne/10 blur-3xl rounded-full" />
+            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-[#27C93F]/10 blur-3xl rounded-full" />
+
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-obsidian/5 dark:border-darkText/5 pb-4 relative z-10">
+                <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-champagne animate-pulse" />
+                    <span className="font-mono text-xs uppercase tracking-widest text-slate dark:text-darkText/50 font-bold">Live ATS Scan</span>
+                </div>
+                <span className="font-mono text-[10px] text-obsidian/40 dark:text-darkText/30">ID: a7x-992-bf</span>
+            </div>
+
+            {/* Content Split: Left (Gauge) & Right (Word Cloud) */}
+            <div className="flex flex-row items-center gap-6 relative z-10">
+
+                {/* 1. The Gauge */}
+                <div className="flex-shrink-0 relative w-32 h-32 flex items-center justify-center">
+                    <svg className="w-full h-full transform -rotate-90">
+                        {/* Background Track */}
+                        <circle
+                            cx="64"
+                            cy="64"
+                            r={radius}
+                            stroke="currentColor"
+                            strokeWidth="8"
+                            fill="transparent"
+                            className="text-obsidian/5 dark:text-darkText/5"
+                        />
+                        {/* Animated Progress */}
+                        <motion.circle
+                            initial={{ strokeDashoffset: circumference }}
+                            animate={isInView ? { strokeDashoffset } : { strokeDashoffset: circumference }}
+                            transition={{ duration: 2, ease: "easeOut" }}
+                            cx="64"
+                            cy="64"
+                            r={radius}
+                            stroke="currentColor"
+                            strokeWidth="8"
+                            fill="transparent"
+                            strokeDasharray={circumference}
+                            strokeLinecap="round"
+                            className="text-champagne drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]"
+                        />
+                    </svg>
+
+                    {/* Center Text */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <motion.span
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.5 }}
+                            transition={{ duration: 0.5, delay: 0.5 }}
+                            className="text-3xl font-sans font-bold text-obsidian dark:text-darkText leading-none"
+                        >
+                            85
+                        </motion.span>
+                        <span className="text-[10px] font-sans text-slate dark:text-darkText/50 font-medium">/100</span>
+                    </div>
+                </div>
+
+                {/* 2. The Word Cloud (Semantic Matching) */}
+                <motion.div
+                    className="flex-1 flex flex-wrap gap-2"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate={isInView ? "visible" : "hidden"}
+                >
+                    {dummySkills.map((skill, i) => (
+                        <div key={i} className="relative">
+                            {/* Base State (Dim) */}
+                            <span className="font-mono text-xs text-slate dark:text-darkText/30 px-2 py-1 relative block">
+                                {skill.word}
+                            </span>
+
+                            {/* Match State (Highlighted overlay) */}
+                            {skill.match && (
+                                <motion.span
+                                    variants={wordVariants}
+                                    className="font-mono text-xs font-bold text-champagne bg-champagne/10 border border-champagne/30 px-2 py-1 rounded absolute inset-0 whitespace-nowrap drop-shadow-[0_0_4px_rgba(212,175,55,0.3)]"
+                                >
+                                    {skill.word}
+                                </motion.span>
+                            )}
+                        </div>
+                    ))}
+                </motion.div>
+
+            </div>
+
+            {/* Footer Console Log */}
+            <div className="pt-2">
+                <div className="bg-obsidian/5 dark:bg-black/40 rounded border border-obsidian/10 dark:border-white/5 p-2 font-mono text-[9px] text-[#27C93F] opacity-80">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+                        transition={{ delay: 2.2 }}
+                        className="flex gap-2 items-center"
+                    >
+                        <span>&gt;</span>
+                        <span>overlap_identified: generating_custom_cover_letter...</span>
+                        <span className="w-1 h-3 bg-[#27C93F] animate-pulse inline-block ml-1" />
+                    </motion.div>
+                </div>
+            </div>
+
+        </div>
+    );
+};
+// ------------------------------
 
 const Landing = ({ onNavigate }) => {
     const landingRef = useRef(null);
@@ -74,7 +228,7 @@ const Landing = ({ onNavigate }) => {
 
             {/* ═══ SCROLL TRACK (HERO + SIMULATION) ═══ */}
             <div ref={scrollTrackRef} className="relative w-full">
-                {/* ═══ SINKING HERO SECTION ═══ */}
+                {/* ═══ SINKING HERO SECTION (Updated to Two-Column) ═══ */}
                 <motion.section
                     className="sticky top-0 h-screen w-full flex flex-col justify-center px-6 overflow-hidden"
                     style={{ opacity: heroOpacity, scale: heroScale, y: heroY }}
@@ -85,33 +239,43 @@ const Landing = ({ onNavigate }) => {
                         <div className="absolute bottom-0 left-0 w-96 h-96 bg-slate rounded-full" />
                     </div>
 
-                    <div className="max-w-5xl mx-auto text-center mt-32 md:mt-24">
-                        <h1 className="hero-title text-5xl md:text-7xl font-bold tracking-tightest leading-[0.9] mb-8 text-obsidian dark:text-darkText">
-                            Turn Your Past Experience <br />
-                            <span className="font-drama italic text-champagne font-normal">Into Your Next Offer</span>
-                        </h1>
+                    <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 relative items-center mt-32 md:mt-24">
 
-                        <p className="hero-sub text-xl md:text-2xl text-slate dark:text-darkText/60 max-w-2xl mx-auto mb-12 leading-relaxed flex items-center justify-center min-h-[6rem]">
-                            <SmartTypewriterText
-                                text={`Shifting careers is terrifying when your resume doesn't match the title. Our AI maps your hidden "Transferable Bridge," automatically writing a cover letter that proves you belong in the room.`}
-                            />
-                        </p>
+                        {/* Left Column: Hero Text & CTAs */}
+                        <div className="text-left lg:text-left flex flex-col items-start pt-10">
+                            <h1 className="hero-title text-5xl md:text-7xl font-bold tracking-tightest leading-[0.9] mb-8 text-obsidian dark:text-darkText max-w-2xl">
+                                Turn Your Past Experience <br className="hidden md:block" />
+                                <span className="font-drama italic text-champagne font-normal">Into Your Next Offer</span>
+                            </h1>
 
-                        <div className="hero-cta flex flex-col md:flex-row items-center justify-center gap-4">
-                            <div className="w-full md:w-64 h-16">
-                                <SlideInButton
-                                    onClick={() => onNavigate('auth')}
-                                    text="Run Analysis"
-                                    className="w-full h-full text-lg"
+                            <p className="hero-sub text-lg md:text-xl text-slate dark:text-darkText/60 max-w-xl mb-12 leading-relaxed min-h-[6rem] flex items-start text-left">
+                                <SmartTypewriterText
+                                    text={`Shifting careers is terrifying when your resume doesn't match the title. Our AI maps your hidden "Transferable Bridge," automatically writing a cover letter that proves you belong in the room.`}
                                 />
+                            </p>
+
+                            <div className="hero-cta flex flex-col sm:flex-row items-center justify-start gap-4 w-full md:w-auto">
+                                <div className="w-full sm:w-64 h-16">
+                                    <SlideInButton
+                                        onClick={() => onNavigate('auth')}
+                                        text="Run Analysis"
+                                        className="w-full h-full text-lg"
+                                    />
+                                </div>
+                                <button
+                                    onClick={scrollToPricing}
+                                    className="w-full sm:w-auto px-8 py-4 bg-surface dark:bg-darkCard text-obsidian dark:text-darkText rounded-2xl text-lg font-bold hover:brightness-105 transition-all border border-obsidian/10 dark:border-darkText/10 active:scale-[0.98] btn-shine"
+                                >
+                                    View Plans
+                                </button>
                             </div>
-                            <button
-                                onClick={scrollToPricing}
-                                className="w-full md:w-auto px-8 py-4 bg-surface dark:bg-darkCard text-obsidian dark:text-darkText rounded-2xl text-lg font-bold hover:brightness-105 transition-all border border-obsidian/10 dark:border-darkText/10 active:scale-[0.98] btn-shine"
-                            >
-                                View Plans
-                            </button>
                         </div>
+
+                        {/* Right Column: Sticky ATS Scanner Card */}
+                        <div className="sticky top-24 self-start hidden lg:flex items-center justify-center pt-10">
+                            <ATSScanner />
+                        </div>
+
                     </div>
                 </motion.section>
 
