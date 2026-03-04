@@ -251,6 +251,7 @@ const Landing = ({ onNavigate }) => {
                             <p className="hero-sub text-lg md:text-xl text-slate dark:text-darkText/60 max-w-xl mb-12 leading-relaxed min-h-[6rem] flex items-start text-left">
                                 <SmartTypewriterText
                                     text={`Shifting careers is terrifying when your resume doesn't match the title. Our AI maps your hidden "Transferable Bridge," automatically writing a cover letter that proves you belong in the room.`}
+                                    typeSpeed={9}
                                 />
                             </p>
 
