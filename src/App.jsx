@@ -70,8 +70,10 @@ import UpdatePassword from './components/UpdatePassword';
 import Terms from './components/legal/Terms';
 import Privacy from './components/legal/Privacy';
 import Landing from './components/Landing';
+import { usePageTracking } from './hooks/usePageTracking';
 
 function App() {
+  usePageTracking(); // Initialize GA4 SPA tracking
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState('workspace');
