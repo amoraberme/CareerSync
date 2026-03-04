@@ -9,6 +9,7 @@ import SlideInButton from './animations/SlideInButton';
 import SwipeLettersButton from './animations/SwipeLettersButton';
 import SmartTypewriterText from './animations/SmartTypewriterText';
 import FAQSection from './animations/FAQSection';
+import TransferableBridge from './TransferableBridge';
 
 gsap.registerPlugin(ScrollToPlugin);
 
@@ -678,6 +679,9 @@ const Landing = ({ onNavigate }) => {
                     </div>
                 </div>
             </section>
+
+            {/* ═══ ORBITAL TRANSFERABLE BRIDGE ═══ */}
+            <TransferableBridge />
 
             {/* ═══ PRICING SECTION ═══ */}
             <section id="pricing" className="py-16 px-6">
