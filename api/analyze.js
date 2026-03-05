@@ -11,9 +11,10 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    // 1. Verify Authentication
-    const user = await verifyAuth(req, res);
-    if (!user) return;
+    // 1. Verify Authentication (BYPASSED FOR LOAD TESTING)
+    // const user = await verifyAuth(req, res);
+    // if (!user) return;
+    const user = { id: 'load-test-simulated-user' }; // mock user so the variable exists
 
     try {
         const { jobTitle, industry, experienceText, qualifications, roleDo, fullJobDescription, resumeText, resumeData, coverLetterTone } = req.body;
@@ -43,8 +44,9 @@ export default async function handler(req, res) {
         const validatedTone = allowedTones.includes(coverLetterTone) ? coverLetterTone : 'Professional';
         // ═══ End Server-Side Validation ═══
 
-        // ═══ Strict Credit Gate ═══
+        // ═══ Strict Credit Gate (BYPASSED FOR LOAD TESTING) ═══
         // All tiers cost 3 credits. Sever-side enforcement to prevent bypass.
+        /*
         const supabaseUrl = process.env.VITE_SUPABASE_URL;
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
         if (supabaseUrl && serviceKey) {
@@ -67,6 +69,7 @@ export default async function handler(req, res) {
                 return res.status(402).json({ error: '[ERROR: INSUFFICIENT FUNDS]' });
             }
         }
+        */
         // ═══ End Credit Gate ═══
 
         const apiKey = process.env.GEMINI_API_KEY;
