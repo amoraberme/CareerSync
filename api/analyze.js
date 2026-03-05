@@ -88,7 +88,7 @@ Workflow:
 1. Parse: Extract JD requirements (hard/soft skills, experience) and map to Resume.
 2. Score: Compute strictly via rubric (40% Core, 30% Scope, 20% Bonus, 10% Industry): Baseline ATS Score (%) and Projected Post-Optimization Score (%).
 3. Fit Analysis: Detail direct matches. Write deep, descriptive paragraphs bridging missing JD requirements with adjacent resume experiences.
-4. Cover Letter: Adopt the ${coverLetterTone || 'Professional'} mood entirely. Prove fit using top 2-3 resume metrics. NO generic AI fluff/openings. Strict 4 paragraphs: 1) High-impact value hook targeting company/role, 2) Experience translation, 3) Technical readiness, 4) Strong closing. Internally critique (ruthless Hiring Manager persona) to remove fluff/hallucinations, then output ONLY the final draft.
+4. Cover Letter: ${coverLetterTone || 'Professional'} tone. Prove fit using top 2-3 resume metrics. NO generic AI fluff/openings. Strict 4 paragraphs: 1) High-impact value hook targeting company/role, 2) Experience translation, 3) Technical readiness, 4) Strong closing. Internally critique (ruthless Hiring Manager persona) to remove fluff/hallucinations, then output ONLY the final draft.
 5. Optimize: Provide actionable resume edits to reach the Projected Score.
 
 Output ONLY this exact JSON:
@@ -139,7 +139,7 @@ Output ONLY this exact JSON:
         // 4. Call Gemini with separated roles
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: 'gemini-1.5-flash',  // Verified working model
+            model: 'models/gemini-flash-latest',  // Verified working model
             systemInstruction: systemPrompt
         });
 
