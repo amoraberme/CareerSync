@@ -341,9 +341,9 @@ const Landing = ({ onNavigate }) => {
                                     <img src="/antigravity-logo.svg" alt="Antigravity" className="w-10 h-10 object-contain drop-shadow-sm transition-all duration-300" />
                                 </div>
 
-                                {/* Gemini AI */}
+                                {/* AI Engine */}
                                 <div className="relative flex flex-col items-center group cursor-pointer hover:-translate-y-1 transition-transform opacity-50 grayscale hover:opacity-100 hover:grayscale-0 duration-300">
-                                    <img src="/gemini-logo.png" alt="Gemini AI" className="w-10 h-10 object-contain drop-shadow-sm transition-all duration-300" />
+                                    <img src="/gemini-logo.png" alt="AI Engine" className="w-10 h-10 object-contain drop-shadow-sm transition-all duration-300" />
                                 </div>
                             </div>
 
@@ -374,9 +374,9 @@ const Landing = ({ onNavigate }) => {
                                     <img src="/antigravity-logo.svg" alt="Antigravity" className="w-10 h-10 object-contain drop-shadow-sm transition-all duration-300" />
                                 </div>
 
-                                {/* Gemini AI */}
+                                {/* AI Engine */}
                                 <div className="relative flex flex-col items-center group cursor-pointer hover:-translate-y-1 transition-transform opacity-50 grayscale hover:opacity-100 hover:grayscale-0 duration-300">
-                                    <img src="/gemini-logo.png" alt="Gemini AI" className="w-10 h-10 object-contain drop-shadow-sm transition-all duration-300" />
+                                    <img src="/gemini-logo.png" alt="AI Engine" className="w-10 h-10 object-contain drop-shadow-sm transition-all duration-300" />
                                 </div>
                             </div>
 
@@ -456,7 +456,7 @@ const Landing = ({ onNavigate }) => {
                                             {[
                                                 "Multi-format document parsing from PDF, DOCX, and TXT files",
                                                 "Tone-calibrated AI cover letter generation",
-                                                "ATS resume analysis powered by Google Gemini",
+                                                "ATS resume analysis powered by AI",
                                                 "Secure PostgreSQL database with Row-Level Security (RLS)",
                                                 "Raw text extraction using pdf-parse",
                                                 "AI analysis report export to PDF via jsPDF 4 and html2canvas"

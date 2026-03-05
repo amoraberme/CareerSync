@@ -26,7 +26,7 @@ const Terms = ({ onBack, currentView, onNavigate }) => {
                     <strong>"User"</strong>: Any individual who registers an account, uploads a resume, or initiates a payment session on the Platform.
                 </li>
                 <li>
-                    <strong>"AI Analysis Engine"</strong>: The proprietary integration utilizing the Google Gemini 2.0 Flash API, responsible for resume-to-job-description analysis, gap identification, and cover letter generation.
+                    <strong>"AI Analysis Engine"</strong>: The proprietary AI-powered engine responsible for resume-to-job-description analysis, gap identification, and cover letter generation.
                 </li>
                 <li>
                     <strong>"Centavo-Matching"</strong>: The unique payment identification mechanism where each payment session is assigned a unique Philippine Peso amount down to the centavo (e.g., ₱1.47, ₱1.83) to unambiguously match an incoming GCash transfer.
@@ -108,10 +108,10 @@ const Terms = ({ onBack, currentView, onNavigate }) => {
             </p>
             <ul>
                 <li>
-                    <strong>Base Token Model</strong>: Users may purchase individual tokens (₱1 top-up). This operates on a numeric <code>current_credit_balance</code> in <code>user_profiles</code>, which is decremented by a <code>decrement_credits</code> RPC after each successful analysis. Payment is executed via a unique Centavo-Matching system, allowing the backend to unambiguously match an incoming GCash static QR transfer to the correct user.
+                    <strong>Base Token Model</strong>: Users may purchase individual tokens (₱49/top-up). This operates on a numeric <code>current_credit_balance</code> in <code>user_profiles</code>, which is decremented by a <code>decrement_credits</code> RPC after each successful analysis. Payment is executed via a unique Centavo-Matching system, allowing the backend to unambiguously match an incoming GCash static QR transfer to the correct user.
                 </li>
                 <li>
-                    <strong>Standard & Premium Subscriptions</strong>: The Standard tier (₱2/mo) and Premium tier (₱3/mo) utilize the PayMongo integration for GCash payment intent creation and recurring billing.
+                    <strong>Standard &amp; Premium Subscriptions</strong>: The Standard tier (₱175/mo) and Premium tier (₱195/mo) utilize the PayMongo integration for GCash payment intent creation and recurring billing.
                 </li>
                 <li>
                     <strong>Recurring Charges</strong>: Subscription plans auto-renew, and users must follow the defined cancellation process before the next billing cycle hits to avoid further charges.
@@ -124,7 +124,7 @@ const Terms = ({ onBack, currentView, onNavigate }) => {
             </p>
             <ul>
                 <li>
-                    <strong>Daily Caps</strong>: Standard and Premium tiers operate on a daily-cap-based model enforced by a <code>consume_daily_credit</code> RPC. Standard users are limited to 40 requests per day, and Premium users are limited to 50 requests per day. These limits reset every 24 hours.
+                    <strong>Daily Caps</strong>: Standard and Premium tiers operate on a daily-cap-based model enforced by a <code>consume_daily_credit</code> RPC. Standard users are limited to 15 credits per day, and Premium users are limited to 20 credits per day. These limits reset every 24 hours.
                 </li>
                 <li>
                     <strong>Defensive Credit Logic</strong>: Credits are deducted only after the AI API call confirms success, preventing users from being charged for failed analyses.
@@ -135,7 +135,7 @@ const Terms = ({ onBack, currentView, onNavigate }) => {
             <p><strong>ALL DIGITAL SALES ARE FINAL.</strong></p>
             <ul>
                 <li>
-                    <strong>Immediate Consumption</strong>: Explicitly states whether all sales for digital document analyses are final, or under what specific conditions refunds are issued. Due to the immediate execution of serverless functions and the unrecoverable consumption of API compute costs via Google Gemini, CareerSync does not offer refunds for utilized credits or active subscription periods.
+                    <strong>Immediate Consumption</strong>: Explicitly states whether all sales for digital document analyses are final, or under what specific conditions refunds are issued. Due to the immediate execution of serverless functions and the unrecoverable consumption of AI compute costs, CareerSync does not offer refunds for utilized credits or active subscription periods.
                 </li>
                 <li>
                     <strong>Chargeback Prevention</strong>: This is vital for preventing and winning payment chargebacks. By initiating a payment, the User acknowledges immediate delivery of the digital service.

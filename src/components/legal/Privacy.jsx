@@ -86,14 +86,14 @@ const Privacy = ({ onBack, currentView, onNavigate }) => {
 
             <h3>3.1 AI Processing Architecture</h3>
             <p>
-                When you submit a job description and resume, CareerSync utilizes algorithmic evaluation to score and alter your professional profile. Specifically, we transmit your jobTitle, industry, description, and resumeData to the Google Gemini 2.0 Flash API.
+                When you submit a job description and resume, CareerSync utilizes algorithmic evaluation to score and alter your professional profile. Specifically, we transmit your jobTitle, industry, description, and resumeData to our AI Analysis Engine.
             </p>
             <p>
                 To protect your data from manipulation, our backend constructs a multi-part prompt featuring a server-side system instruction, which is hardcoded and physically separated from your user-supplied text.
             </p>
 
             <h3>3.2 Intellectual Property & Model Training Exclusivity</h3>
-            <p><em>We recognize the extreme sensitivity of your career documents. Regarding our integration with Google's external AI text-parsing API:</em></p>
+            <p><em>We recognize the extreme sensitivity of your career documents. Regarding our integration with the external AI text-parsing API:</em></p>
             <blockquote>
                 <p>
                     <strong>User data transmitted via API is strictly for processing purposes and is NOT used to train Google's foundational models.</strong>

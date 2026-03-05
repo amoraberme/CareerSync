@@ -202,8 +202,8 @@ export default function CoreEngine({ session, setCurrentView }) {
                             type="button"
                             onClick={() => switchMode('upload')}
                             className={`flex-1 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${resumeInputMode === 'upload'
-                                    ? 'bg-obsidian dark:bg-darkText text-white dark:text-darkBg shadow-md'
-                                    : 'text-slate dark:text-darkText/50 hover:text-obsidian dark:hover:text-darkText'
+                                ? 'bg-obsidian dark:bg-darkText text-white dark:text-darkBg shadow-md'
+                                : 'text-slate dark:text-darkText/50 hover:text-obsidian dark:hover:text-darkText'
                                 }`}
                         >
                             Upload .TXT
@@ -212,8 +212,8 @@ export default function CoreEngine({ session, setCurrentView }) {
                             type="button"
                             onClick={() => switchMode('text')}
                             className={`flex-1 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${resumeInputMode === 'text'
-                                    ? 'bg-obsidian dark:bg-darkText text-white dark:text-darkBg shadow-md'
-                                    : 'text-slate dark:text-darkText/50 hover:text-obsidian dark:hover:text-darkText'
+                                ? 'bg-obsidian dark:bg-darkText text-white dark:text-darkBg shadow-md'
+                                : 'text-slate dark:text-darkText/50 hover:text-obsidian dark:hover:text-darkText'
                                 }`}
                         >
                             Paste Text
@@ -242,7 +242,7 @@ export default function CoreEngine({ session, setCurrentView }) {
                                         Upload Resume
                                         <Tooltip
                                             align="center"
-                                            text="Your resume is securely encrypted and processed solely to generate your optimization report. We transmit this text to our AI provider (Google Gemini) for analysis, but your data is strictly legally prohibited from being used to train their foundational models."
+                                            text="Your resume is securely encrypted and processed solely to generate your optimization report. We transmit this text to our AI engine for analysis, but your data is strictly legally prohibited from being used to train AI foundational models."
                                         />
                                     </h3>
                                     <p className="text-slate dark:text-darkText/60 max-w-xs mx-auto mb-6 text-sm">
@@ -261,7 +261,7 @@ export default function CoreEngine({ session, setCurrentView }) {
                                 Resume Text
                                 <Tooltip
                                     align="center"
-                                    text="Your resume is securely encrypted and processed solely to generate your optimization report. We transmit this text to our AI provider (Google Gemini) for analysis, but your data is strictly legally prohibited from being used to train their foundational models."
+                                    text="Your resume is securely encrypted and processed solely to generate your optimization report. We transmit this text to our AI engine for analysis, but your data is strictly legally prohibited from being used to train AI foundational models."
                                 />
                             </label>
                             <textarea
