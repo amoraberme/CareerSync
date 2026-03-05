@@ -7,6 +7,7 @@ import useWorkspaceStore from '../store/useWorkspaceStore';
 
 export default function CoreEngine({ session, setCurrentView }) {
     const [showPasteModal, setShowPasteModal] = useState(false);
+    const [resumeInputMode, setResumeInputMode] = useState('upload'); // 'upload' | 'text'
     const {
         jobTitle, industry, experienceLevel, requiredSkills, experienceText, qualifications, roleDo, pastedText,
         resumeUploaded, resumeData, resumeFileName, resumeFileSize, coverLetterTone,
@@ -63,6 +64,24 @@ export default function CoreEngine({ session, setCurrentView }) {
             });
         };
         reader.readAsDataURL(file);
+    };
+
+    const handleResumeTextChange = (e) => {
+        const text = e.target.value;
+        updateField('resumeData', text ? { data: btoa(unescape(encodeURIComponent(text))), mimeType: 'text/plain', name: 'resume.txt' } : null);
+        updateField('resumeUploaded', !!text.trim());
+        updateField('resumeFileName', text.trim() ? 'Pasted Text' : '');
+        updateField('resumeFileSize', text.trim() ? `${(new Blob([text]).size / 1024).toFixed(1)}KB` : '');
+    };
+
+    const switchMode = (mode) => {
+        setResumeInputMode(mode);
+        // Clear resume state when switching modes
+        updateField('resumeUploaded', false);
+        updateField('resumeData', null);
+        updateField('resumeFileName', '');
+        updateField('resumeFileSize', '');
+        if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
     return (
@@ -174,45 +193,90 @@ export default function CoreEngine({ session, setCurrentView }) {
                         ref={fileInputRef}
                         className="hidden"
                         onChange={handleFileUpload}
-                        accept=".pdf,.txt,.doc,.docx"
+                        accept=".txt"
                     />
-                    <div
-                        className={`border-2 border-dashed ${resumeUploaded ? 'border-champagne/50 bg-champagne/5' : 'border-obsidian/10 dark:border-darkText/20 hover:border-obsidian/30 dark:hover:border-darkText/40 bg-white dark:bg-darkCard/20 hover:bg-surface dark:hover:bg-darkCard/30'} rounded-[2rem] transition-all duration-300 flex flex-col items-center justify-center p-10 xl:p-12 cursor-pointer relative overflow-hidden group shadow-sm`}
-                        onClick={() => fileInputRef.current?.click()}
-                    >
-                        {resumeUploaded ? (
-                            <div className="text-center z-10">
-                                <CheckCircle className="w-16 h-16 text-champagne mx-auto mb-4 bg-white rounded-full p-2 border border-obsidian/5 shadow-sm" />
-                                <h3 className="text-xl font-medium text-obsidian dark:text-darkText mb-2">Resume Secured</h3>
-                                <p className="text-slate dark:text-darkText/70 font-mono text-sm">{resumeFileName} ({resumeFileSize})</p>
-                                <div className="mt-6 inline-flex items-center text-xs text-slate hover:text-obsidian uppercase tracking-widest font-mono transition-colors">
-                                    Replace File
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="text-center z-10">
-                                <div className="w-20 h-20 bg-background dark:bg-darkBg border border-obsidian/5 dark:border-darkText/5 shadow-sm rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:bg-surface dark:group-hover:bg-darkText/5 transition-all duration-300">
-                                    <UploadCloud className="w-8 h-8 text-slate" />
-                                </div>
-                                <h3 className="text-xl font-medium text-obsidian dark:text-darkText mb-2 flex items-center justify-center">
-                                    Upload Resume
-                                    <Tooltip
-                                        align="center"
-                                        text="Your resume is securely encrypted and processed solely to generate your optimization report. We transmit this text to our AI provider (Google Gemini) for analysis, but your data is strictly legally prohibited from being used to train their foundational models."
-                                    />
-                                </h3>
-                                <p className="text-slate dark:text-darkText/60 max-w-xs mx-auto mb-6 text-sm">
-                                    Drag and drop your latest CV here. We support PDF, DOCX, and TXT up to 5MB.
-                                </p>
-                                <button className="bg-background dark:bg-darkBg border border-obsidian/10 dark:border-darkText/10 shadow-sm text-obsidian dark:text-darkText px-6 py-2 rounded-full text-sm font-medium hover:bg-surface dark:hover:bg-darkCard/40 transition-colors">
-                                    Browse Files
-                                </button>
-                            </div>
-                        )}
 
-                        {/* Background decorative blob */}
-                        <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-surface/5 rounded-full blur-3xl opacity-50 group-hover:bg-champagne/10 transition-colors duration-500 pointer-events-none"></div>
+                    {/* Mode Toggle */}
+                    <div className="flex rounded-2xl border border-obsidian/10 dark:border-darkText/10 bg-white dark:bg-darkCard/20 p-1 shadow-sm mb-1">
+                        <button
+                            type="button"
+                            onClick={() => switchMode('upload')}
+                            className={`flex-1 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${resumeInputMode === 'upload'
+                                    ? 'bg-obsidian dark:bg-darkText text-white dark:text-darkBg shadow-md'
+                                    : 'text-slate dark:text-darkText/50 hover:text-obsidian dark:hover:text-darkText'
+                                }`}
+                        >
+                            Upload .TXT
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => switchMode('text')}
+                            className={`flex-1 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${resumeInputMode === 'text'
+                                    ? 'bg-obsidian dark:bg-darkText text-white dark:text-darkBg shadow-md'
+                                    : 'text-slate dark:text-darkText/50 hover:text-obsidian dark:hover:text-darkText'
+                                }`}
+                        >
+                            Paste Text
+                        </button>
                     </div>
+                    {resumeInputMode === 'upload' ? (
+                        <div
+                            className={`border-2 border-dashed ${resumeUploaded ? 'border-champagne/50 bg-champagne/5' : 'border-obsidian/10 dark:border-darkText/20 hover:border-obsidian/30 dark:hover:border-darkText/40 bg-white dark:bg-darkCard/20 hover:bg-surface dark:hover:bg-darkCard/30'} rounded-[2rem] transition-all duration-300 flex flex-col items-center justify-center p-10 xl:p-12 cursor-pointer relative overflow-hidden group shadow-sm`}
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            {resumeUploaded ? (
+                                <div className="text-center z-10">
+                                    <CheckCircle className="w-16 h-16 text-champagne mx-auto mb-4 bg-white rounded-full p-2 border border-obsidian/5 shadow-sm" />
+                                    <h3 className="text-xl font-medium text-obsidian dark:text-darkText mb-2">Resume Secured</h3>
+                                    <p className="text-slate dark:text-darkText/70 font-mono text-sm">{resumeFileName} ({resumeFileSize})</p>
+                                    <div className="mt-6 inline-flex items-center text-xs text-slate hover:text-obsidian uppercase tracking-widest font-mono transition-colors">
+                                        Replace File
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-center z-10">
+                                    <div className="w-20 h-20 bg-background dark:bg-darkBg border border-obsidian/5 dark:border-darkText/5 shadow-sm rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:bg-surface dark:group-hover:bg-darkText/5 transition-all duration-300">
+                                        <UploadCloud className="w-8 h-8 text-slate" />
+                                    </div>
+                                    <h3 className="text-xl font-medium text-obsidian dark:text-darkText mb-2 flex items-center justify-center">
+                                        Upload Resume
+                                        <Tooltip
+                                            align="center"
+                                            text="Your resume is securely encrypted and processed solely to generate your optimization report. We transmit this text to our AI provider (Google Gemini) for analysis, but your data is strictly legally prohibited from being used to train their foundational models."
+                                        />
+                                    </h3>
+                                    <p className="text-slate dark:text-darkText/60 max-w-xs mx-auto mb-6 text-sm">
+                                        Drag and drop your <strong>.TXT</strong> resume file here, up to 5MB.
+                                    </p>
+                                    <button className="bg-background dark:bg-darkBg border border-obsidian/10 dark:border-darkText/10 shadow-sm text-obsidian dark:text-darkText px-6 py-2 rounded-full text-sm font-medium hover:bg-surface dark:hover:bg-darkCard/40 transition-colors">
+                                        Browse .TXT File
+                                    </button>
+                                </div>
+                            )}
+                            <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-surface/5 rounded-full blur-3xl opacity-50 group-hover:bg-champagne/10 transition-colors duration-500 pointer-events-none"></div>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-2 flex-1">
+                            <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 flex items-center gap-1">
+                                Resume Text
+                                <Tooltip
+                                    align="center"
+                                    text="Your resume is securely encrypted and processed solely to generate your optimization report. We transmit this text to our AI provider (Google Gemini) for analysis, but your data is strictly legally prohibited from being used to train their foundational models."
+                                />
+                            </label>
+                            <textarea
+                                autoFocus
+                                onChange={handleResumeTextChange}
+                                placeholder="Paste the full text of your resume here..."
+                                className="flex-1 min-h-[260px] w-full bg-white dark:bg-darkCard/20 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-[2rem] px-6 py-5 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors resize-none text-sm leading-relaxed"
+                            />
+                            {resumeUploaded && (
+                                <p className="text-xs text-champagne font-mono ml-1">
+                                    ✓ Resume text captured ({resumeFileSize})
+                                </p>
+                            )}
+                        </div>
+                    )}
 
 
 
