@@ -199,6 +199,6 @@ Do not include any extra fields or text.`;
             });
         }
 
-        return res.status(500).json({ error: 'Failed to process analysis' });
+        return res.status(500).json({ error: 'Failed to process analysis', message: error.message, stack: error.stack });
     }
 }
