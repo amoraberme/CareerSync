@@ -35,7 +35,7 @@ export default function Billing({ session, onPaymentModalChange }) {
         const interval = setInterval(() => {
             const cents = Math.floor(Math.random() * 99) + 1;
             setRandomCents(cents.toString().padStart(2, '0'));
-        }, 300);
+        }, 100);
         return () => clearInterval(interval);
     }, []);
 
@@ -465,8 +465,7 @@ export default function Billing({ session, onPaymentModalChange }) {
                         <div className="flex items-baseline mb-1">
                             <span className="text-xl font-bold text-obsidian dark:text-darkText mr-1">₱</span>
                             <span className="text-7xl font-sans font-black text-obsidian dark:text-darkText tracking-tighter">49</span>
-                            <span className="text-3xl font-bold text-champagne">.{randomCents}</span>
-                            <span className="text-sm font-bold text-slate dark:text-darkText/50 ml-2">/ top-up</span>
+                            <span className="text-3xl font-bold text-champagne tabular-nums">.{randomCents}</span>
                         </div>
                         <p className="text-xs text-slate/60 dark:text-darkText/40">~₱49.XX unique amount per session</p>
                     </div>
@@ -536,8 +535,7 @@ export default function Billing({ session, onPaymentModalChange }) {
                             <div className="flex items-baseline justify-center">
                                 <span className="text-3xl font-bold text-obsidian dark:text-darkText mr-2">₱</span>
                                 <span className="text-[120px] leading-[0.8] font-sans font-black text-obsidian dark:text-darkText tracking-tighter">195</span>
-                                <span className="text-5xl font-bold text-champagne">.{randomCents}</span>
-                                <span className="text-lg font-bold text-obsidian dark:text-darkText ml-3">/ month</span>
+                                <span className="text-5xl font-bold text-champagne tabular-nums">.{randomCents}</span>
                             </div>
                             <span className="text-xs text-slate/80 dark:text-darkText/60 mt-4">~₱195.XX unique amount per session</span>
                         </div>
@@ -598,8 +596,7 @@ export default function Billing({ session, onPaymentModalChange }) {
                         <div className="flex items-baseline mb-1">
                             <span className="text-xl font-bold text-obsidian dark:text-darkText mr-1">₱</span>
                             <span className="text-7xl font-sans font-black text-obsidian dark:text-darkText tracking-tighter">175</span>
-                            <span className="text-3xl font-bold text-champagne">.{randomCents}</span>
-                            <span className="text-sm font-bold text-slate dark:text-darkText/50 ml-2">/ month</span>
+                            <span className="text-3xl font-bold text-champagne tabular-nums">.{randomCents}</span>
                         </div>
                         <p className="text-xs text-slate/60 dark:text-darkText/40">~₱175.XX unique amount per session</p>
                     </div>
