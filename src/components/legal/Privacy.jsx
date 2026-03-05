@@ -65,7 +65,7 @@ const Privacy = ({ onBack, currentView, onNavigate }) => {
                     <strong>Transaction Logs</strong>: We store a full record of all credit purchases in our database (<code>payment_sessions</code>, <code>transactions</code>) to provide users with an invoice history.
                 </li>
                 <li>
-                    <strong>Centavo-Matching Data</strong>: For base tier payments, we temporarily assign and track a unique Philippine Peso amount down to the centavo (e.g., ₱1.47) to match an incoming transfer.
+                    <strong>Centavo-Matching Data</strong>: For payment sessions, we temporarily assign and track a unique Philippine Peso amount down to the centavo (e.g., ₱175.47, ₱195.83) to match an incoming transfer.
                 </li>
             </ul>
 
@@ -191,7 +191,7 @@ const Privacy = ({ onBack, currentView, onNavigate }) => {
             </p>
             <ul>
                 <li>
-                    <strong>The Centavo-Matching Mechanism</strong>: For base tier top-ups, we employ a unique payment identification mechanism where each payment session is assigned a unique amount down to the centavo.
+                    <strong>The Centavo-Matching Mechanism</strong>: For all payment tiers, we employ a unique payment identification mechanism where each payment session is assigned a specific amount down to the exact centavo (e.g., ₱175.47, ₱195.83).
                 </li>
                 <li>
                     <strong>Security & Data Integrity</strong>: The pool of available centavo values is managed atomically via the <code>assign_unique_centavo</code> Supabase RPC.

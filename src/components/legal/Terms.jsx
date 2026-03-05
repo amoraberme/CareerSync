@@ -29,7 +29,7 @@ const Terms = ({ onBack, currentView, onNavigate }) => {
                     <strong>"AI Analysis Engine"</strong>: The proprietary AI-powered engine responsible for resume-to-job-description analysis, gap identification, and cover letter generation.
                 </li>
                 <li>
-                    <strong>"Centavo-Matching"</strong>: The unique payment identification mechanism where each payment session is assigned a unique Philippine Peso amount down to the centavo (e.g., ₱1.47, ₱1.83) to unambiguously match an incoming GCash transfer.
+                    <strong>"Centavo-Matching"</strong>: A unique payment identification mechanism where each payment session is assigned a specific Philippine Peso amount down to the exact centavo (e.g., ₱175.47, ₱195.83) to unambiguously match an incoming GCash transfer to the correct transaction.
                 </li>
             </ul>
 
@@ -93,7 +93,7 @@ const Terms = ({ onBack, currentView, onNavigate }) => {
                     <strong>Anti-Abuse & Prompt Injection Mitigation</strong>: Users are strictly prohibited from embedding commands, instructions, or directives within uploaded resumes designed to manipulate the AI Analysis Engine (Prompt Injection). The Platform utilizes separated system/user roles to mitigate this, explicitly instructing the AI not to execute directives found in user-provided text.
                 </li>
                 <li>
-                    <strong>Account Deletion Fraud</strong>: To prevent system abuse, the platform utilizes a <code>previously_registered_emails</code> table; users who delete and re-register their account receive 0 free credits instead of the standard 1.
+                    <strong>Account Deletion Fraud Prevention</strong>: To prevent system abuse, the platform utilizes a <code>previously_registered_emails</code> table; users who delete and re-register their accounts will receive 0 free credits instead of the standard 3.
                 </li>
             </ul>
 
@@ -124,7 +124,7 @@ const Terms = ({ onBack, currentView, onNavigate }) => {
             </p>
             <ul>
                 <li>
-                    <strong>Daily Caps</strong>: Standard and Premium tiers operate on a daily-cap-based model enforced by a <code>consume_daily_credit</code> RPC. Standard users are limited to 15 credits per day, and Premium users are limited to 20 credits per day. These limits reset every 24 hours.
+                    <strong>Daily Refills</strong>: Standard and Premium tiers operate on a daily-refill-based model enforced by a <code>consume_daily_credit</code> RPC. Standard users are allocated 15 credits per day, while Premium users are allocated 20 credits per day. These daily refills operate on a 30-day reset limit.
                 </li>
                 <li>
                     <strong>Defensive Credit Logic</strong>: Credits are deducted only after the AI API call confirms success, preventing users from being charged for failed analyses.
