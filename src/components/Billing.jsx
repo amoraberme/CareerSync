@@ -28,6 +28,17 @@ export default function Billing({ session, onPaymentModalChange }) {
     const [qrModal, setQrModal] = useState(null);
     const [paymentConfirmed, setPaymentConfirmed] = useState(false);
 
+    // ═══ ANIMATED CENTS EFFECT ═══
+    const [randomCents, setRandomCents] = useState('XX');
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const cents = Math.floor(Math.random() * 99) + 1;
+            setRandomCents(cents.toString().padStart(2, '0'));
+        }, 300);
+        return () => clearInterval(interval);
+    }, []);
+
 
     // Notify parent (App.jsx) when QR modal opens/closes so Navbar can hide
     useEffect(() => {
@@ -453,10 +464,11 @@ export default function Billing({ session, onPaymentModalChange }) {
                     <div className="mb-8">
                         <div className="flex items-baseline mb-1">
                             <span className="text-xl font-bold text-obsidian dark:text-darkText mr-1">₱</span>
-                            <span className="text-7xl font-sans font-black text-obsidian dark:text-darkText tracking-tighter">1</span>
+                            <span className="text-7xl font-sans font-black text-obsidian dark:text-darkText tracking-tighter">49</span>
+                            <span className="text-3xl font-bold text-champagne">.{randomCents}</span>
                             <span className="text-sm font-bold text-slate dark:text-darkText/50 ml-2">/ top-up</span>
                         </div>
-                        <p className="text-xs text-slate/60 dark:text-darkText/40">~₱1.XX unique amount per session</p>
+                        <p className="text-xs text-slate/60 dark:text-darkText/40">~₱49.XX unique amount per session</p>
                     </div>
 
                     {/* Features */}
@@ -496,7 +508,7 @@ export default function Billing({ session, onPaymentModalChange }) {
                         disabled={sessionStatus === 'loading'}
                         className="w-full py-3.5 rounded-2xl border-2 border-obsidian/15 dark:border-darkText/15 text-obsidian/80 dark:text-darkText/80 font-bold text-sm hover:bg-obsidian/5 dark:hover:bg-darkText/5 hover:border-obsidian/30 transition-all disabled:opacity-50"
                     >
-                        {sessionStatus === 'loading' ? 'Generating…' : <span className="flex items-center justify-center gap-2"><Zap className="w-4 h-4" /> Buy Base Token</span>}
+                        {sessionStatus === 'loading' ? 'Generating…' : <span className="flex items-center justify-center gap-2"><Zap className="w-4 h-4" /> Buy Base Tier</span>}
                     </button>
                     <p className="text-xs text-center text-slate/60 dark:text-darkText/35 mt-2">
                         Your payment is processed securely. Credits are only added after your AI analysis successfully completes.
@@ -523,10 +535,11 @@ export default function Billing({ session, onPaymentModalChange }) {
                         <div className="flex justify-center flex-col items-center mb-1">
                             <div className="flex items-baseline justify-center">
                                 <span className="text-3xl font-bold text-obsidian dark:text-darkText mr-2">₱</span>
-                                <span className="text-[120px] leading-[0.8] font-sans font-black text-obsidian dark:text-darkText tracking-tighter">3</span>
+                                <span className="text-[120px] leading-[0.8] font-sans font-black text-obsidian dark:text-darkText tracking-tighter">195</span>
+                                <span className="text-5xl font-bold text-champagne">.{randomCents}</span>
                                 <span className="text-lg font-bold text-obsidian dark:text-darkText ml-3">/ month</span>
                             </div>
-                            <span className="text-xs text-slate/80 dark:text-darkText/60 mt-4">~₱3.XX unique amount per session</span>
+                            <span className="text-xs text-slate/80 dark:text-darkText/60 mt-4">~₱195.XX unique amount per session</span>
                         </div>
                     </div>
 
@@ -534,7 +547,7 @@ export default function Billing({ session, onPaymentModalChange }) {
                     <ul className="space-y-5 mb-8 flex-1 text-left relative z-10 px-0 md:px-4">
                         <li className="flex gap-3 text-sm text-obsidian/90 dark:text-darkText/90">
                             <CheckCircle2 className="w-5 h-5 text-champagne shrink-0" />
-                            <span><strong>50 Premium Credits</strong> — refills daily</span>
+                            <span><strong>30 Premium Credits</strong> — 20 daily refills</span>
                         </li>
                         <li className="flex gap-3 text-sm text-obsidian/90 dark:text-darkText/90">
                             <CheckCircle2 className="w-5 h-5 text-champagne shrink-0" />
@@ -564,7 +577,7 @@ export default function Billing({ session, onPaymentModalChange }) {
                         className="w-full py-4 rounded-2xl bg-champagne text-obsidian font-bold text-base hover:brightness-105 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-champagne/30 disabled:opacity-50 disabled:cursor-not-allowed group flex items-center justify-center"
                     >
                         <span className="transition-transform group-hover:translate-x-1 flex items-center justify-center gap-2">
-                            {sessionStatus === 'loading' ? 'Generating…' : (userTier === 'premium' && isLocked(planLockedUntil)) ? <><Check className="w-4 h-4" /> Plan Active</> : <><Lock className="w-4 h-4" /> Get Premium — ₱3/mo</>}
+                            {sessionStatus === 'loading' ? 'Generating…' : (userTier === 'premium' && isLocked(planLockedUntil)) ? <><Check className="w-4 h-4" /> Plan Active</> : <><Lock className="w-4 h-4" /> Get Premium — ₱195/mo</>}
                         </span>
                     </button>
                     <p className="text-xs text-center text-champagne/50 dark:text-champagne/35 mt-2">
@@ -584,17 +597,18 @@ export default function Billing({ session, onPaymentModalChange }) {
                     <div className="mb-8">
                         <div className="flex items-baseline mb-1">
                             <span className="text-xl font-bold text-obsidian dark:text-darkText mr-1">₱</span>
-                            <span className="text-7xl font-sans font-black text-obsidian dark:text-darkText tracking-tighter">2</span>
+                            <span className="text-7xl font-sans font-black text-obsidian dark:text-darkText tracking-tighter">175</span>
+                            <span className="text-3xl font-bold text-champagne">.{randomCents}</span>
                             <span className="text-sm font-bold text-slate dark:text-darkText/50 ml-2">/ month</span>
                         </div>
-                        <p className="text-xs text-slate/60 dark:text-darkText/40">~₱2.XX unique amount per session</p>
+                        <p className="text-xs text-slate/60 dark:text-darkText/40">~₱175.XX unique amount per session</p>
                     </div>
 
                     {/* Features */}
                     <ul className="space-y-4 mb-8 flex-1">
                         <li className="flex gap-3 text-sm text-obsidian/80 dark:text-darkText/90">
                             <CheckCircle2 className="w-4 h-4 text-[#3b82f6] shrink-0" />
-                            <span><strong>40 Premium Credits</strong> — refills daily</span>
+                            <span><strong>20 Premium Credits</strong> — 15 daily refills</span>
                         </li>
                         <li className="flex gap-3 text-sm text-obsidian/80 dark:text-darkText/90">
                             <CheckCircle2 className="w-4 h-4 text-[#3b82f6] shrink-0" />
@@ -620,7 +634,7 @@ export default function Billing({ session, onPaymentModalChange }) {
                         className="w-full py-3.5 rounded-2xl border-2 border-blue-500/40 text-blue-600 dark:text-blue-400 font-bold text-sm hover:bg-blue-500/5 hover:border-blue-500/60 transition-all disabled:opacity-50 disabled:cursor-not-allowed group flex items-center justify-center hover:scale-[1.02] active:scale-[0.98]"
                     >
                         <span className="transition-transform group-hover:translate-x-1 flex items-center justify-center gap-2">
-                            {sessionStatus === 'loading' ? 'Generating…' : isLocked(planLockedUntil) ? (userTier === 'premium' ? <><Lock className="w-4 h-4" /> Premium Active</> : <><Check className="w-4 h-4" /> Plan Active</>) : <><Lock className="w-4 h-4" /> Get Standard — ₱2/mo</>}
+                            {sessionStatus === 'loading' ? 'Generating…' : isLocked(planLockedUntil) ? (userTier === 'premium' ? <><Lock className="w-4 h-4" /> Premium Active</> : <><Check className="w-4 h-4" /> Plan Active</>) : <><Lock className="w-4 h-4" /> Get Standard — ₱175/mo</>}
                         </span>
                     </button>
                     <p className="text-xs text-center text-slate/60 dark:text-darkText/35 mt-2">

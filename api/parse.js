@@ -58,7 +58,7 @@ export default async function handler(req, res) {
 
             const { data: allowed, error: rpcError } = await supabaseAdmin
                 .rpc('decrement_credits', {
-                    deduct_amount: 1,
+                    deduct_amount: 2,
                     p_description: 'AI Parse & Extract',
                     p_type: 'Parse',
                     p_user_id: user.id
@@ -70,7 +70,7 @@ export default async function handler(req, res) {
             }
 
             if (allowed === false) {
-                return res.status(402).json({ error: '[ERROR: INSUFFICIENT FUNDS]' });
+                return res.status(402).json({ error: '[ERROR: INSUFFICIENT FUNDS] Parsing requires 2 credits.' });
             }
         }
         // ═══ End Credit Gate ═══
@@ -102,7 +102,7 @@ You MUST respond ONLY with a raw JSON object matching this exact schema:
         // 4. Call Gemini
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: 'gemini-1.5-flash',  // Verified working model
+            model: 'models/gemini-flash-latest',  // Verified working model
             systemInstruction: systemPrompt
         });
 

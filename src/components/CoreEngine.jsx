@@ -8,7 +8,7 @@ import useWorkspaceStore from '../store/useWorkspaceStore';
 export default function CoreEngine({ session, setCurrentView }) {
     const [showPasteModal, setShowPasteModal] = useState(false);
     const {
-        jobTitle, industry, experienceLevel, requiredSkills, experienceText, qualifications, roleDo, fullJobDescription, pastedText,
+        jobTitle, industry, experienceLevel, requiredSkills, experienceText, qualifications, roleDo, pastedText,
         resumeUploaded, resumeData, resumeFileName, resumeFileSize, coverLetterTone,
         isAnalyzing, isParsing, updateField, runAnalysis, runParse, userTier
     } = useWorkspaceStore();
@@ -214,10 +214,7 @@ export default function CoreEngine({ session, setCurrentView }) {
                         <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-surface/5 rounded-full blur-3xl opacity-50 group-hover:bg-champagne/10 transition-colors duration-500 pointer-events-none"></div>
                     </div>
 
-                    <div className="w-full flex-grow flex flex-col">
-                        <label className="text-xs font-mono text-slate uppercase tracking-wider ml-1 mb-1 block">Full Job Description</label>
-                        <textarea value={fullJobDescription} onChange={(e) => updateField('fullJobDescription', e.target.value)} placeholder="Paste full job description here..." className="w-full flex-grow bg-white dark:bg-darkText/5 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl px-4 py-3 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors resize-none"></textarea>
-                    </div>
+
 
                     <div className="relative group/btn w-full mt-2">
                         <Tooltip align="center" text="Cost: 3 Credits. Deep analysis strictly checks AI matches and provides detailed career guidance." />
@@ -260,7 +257,7 @@ export default function CoreEngine({ session, setCurrentView }) {
                                     Cancel
                                 </button>
                                 <div className="relative group/parse">
-                                    <Tooltip align="right" text="Cost: 1 Credit. Auto-fills your setup using the job description." />
+                                    <Tooltip align="right" text="Cost: 2 Credits. Auto-fills your setup using the job description." />
                                     <button type="submit" className="bg-obsidian text-white px-6 py-2 rounded-full text-sm font-bold shadow-md hover:bg-obsidian/90 transition-transform hover:scale-105 active:scale-95 flex items-center" disabled={isParsing}>
                                         {isParsing ? 'Extracting...' : 'Parse & Extract'}
                                     </button>

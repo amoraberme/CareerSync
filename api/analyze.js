@@ -16,7 +16,7 @@ export default async function handler(req, res) {
     if (!user) return;
 
     try {
-        const { jobTitle, industry, experienceText, qualifications, roleDo, fullJobDescription, resumeText, resumeData, coverLetterTone } = req.body;
+        const { jobTitle, industry, experienceText, qualifications, roleDo, resumeText, resumeData, coverLetterTone } = req.body;
 
         // Normalize resumeData for length validation (it can be a string from paste, or an object from file upload)
         let resumeString = '';
@@ -109,9 +109,6 @@ Output ONLY this exact JSON:
 
         // 3. User content — strictly separated
         let userContent = `Job Title: ${jobTitle}\nIndustry: ${industry}\nExperience Required: ${experienceText}\nQualifications Required: ${qualifications}\nCore Responsibilities (What You'll Do): ${roleDo}`;
-        if (fullJobDescription && fullJobDescription.trim().length > 0) {
-            userContent += `\nFull Job Description: ${fullJobDescription}`;
-        }
 
         const parts = [{ text: userContent }];
 

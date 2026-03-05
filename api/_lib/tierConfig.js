@@ -6,8 +6,8 @@
 
 export const TIER_CONFIG = {
     base: {
-        label: 'Base Token',
-        base_amount: 100,           // ₱1.00 in centavos
+        label: 'Base Tier',
+        base_amount: 4900,           // ₱49.XX in centavos
         // Credits granted to current_credit_balance on purchase
         credits_on_purchase: 10,
         // -1 = unlimited daily premium analyses (base uses credit balance, not daily cap)
@@ -17,19 +17,18 @@ export const TIER_CONFIG = {
         unlimited_base: false,
     },
     standard: {
-        label: 'Standard',
-        base_amount: 200,           // ₱2.00 in centavos
-        // Standard plan grants 40 credits on purchase
-        credits_on_purchase: 40,
-        daily_cap: 40,
+        label: 'Standard Tier',
+        base_amount: 17500,           // ₱175.XX in centavos
+        credits_on_purchase: 20,
+        daily_cap: 15,
         lock_days: 30,
         unlimited_base: true,       // Base credit balance is never deducted
     },
     premium: {
-        label: 'Premium',
-        base_amount: 300,           // ₱3.00 in centavos
-        credits_on_purchase: 50,
-        daily_cap: 50,
+        label: 'Premium Tier',
+        base_amount: 19500,           // ₱195.XX in centavos
+        credits_on_purchase: 30,
+        daily_cap: 20,
         lock_days: 30,
         unlimited_base: true,
     },
