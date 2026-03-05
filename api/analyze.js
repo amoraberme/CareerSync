@@ -148,7 +148,7 @@ Do not include any extra fields or text.`;
                     mimeType: resumeData.mimeType
                 }
             });
-        } else if (resumeData && resumeData.mimeType.startsWith('text/')) {
+        } else if (resumeData && typeof resumeData.mimeType === 'string' && resumeData.mimeType.startsWith('text/')) {
             const decodedText = Buffer.from(resumeData.data, 'base64').toString('utf-8');
             userContent += `\n\nResume Context (Extracted Text):\n${decodedText}`;
             parts[0].text = userContent;
@@ -165,7 +165,7 @@ Do not include any extra fields or text.`;
         // 4. Call Gemini with separated roles
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: 'models/gemini-flash-latest',  // Verified working model
+            model: 'gemini-1.5-flash',  // Verified working model
             systemInstruction: systemPrompt
         });
 
@@ -199,6 +199,6 @@ Do not include any extra fields or text.`;
             });
         }
 
-        return res.status(500).json({ error: 'Failed to process analysis', message: error.message, stack: error.stack });
+        return res.status(500).json({ error: 'Failed to process analysis' });
     }
 }
