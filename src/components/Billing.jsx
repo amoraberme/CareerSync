@@ -18,6 +18,7 @@ export default function Billing({ session, onPaymentModalChange }) {
     const [promoCode, setPromoCode] = useState('');
     const [activePromo, setActivePromo] = useState(null);
     const [checkingPromo, setCheckingPromo] = useState(false);
+    const [publicPromos, setPublicPromos] = useState([]);
 
     // ═══ CENTAVO MATCHING — Static QR Modal State ═══
     const [showQrModal, setShowQrModal] = useState(false);
@@ -95,6 +96,23 @@ export default function Billing({ session, onPaymentModalChange }) {
         const timeoutId = setTimeout(checkPromo, 500); // debounce
         return () => clearTimeout(timeoutId);
     }, [promoCode]);
+
+    // Fetch active non-secret public promos for the inline banner
+    useEffect(() => {
+        const fetchPublicPromos = async () => {
+            try {
+                const { data } = await supabase
+                    .from('promo_codes')
+                    .select('*')
+                    .eq('is_active', true)
+                    .eq('is_secret', false);
+                if (data) {
+                    setPublicPromos(data.filter(p => p.current_uses < p.max_uses && (!p.expires_at || new Date(p.expires_at) > new Date())));
+                }
+            } catch (e) { /* silent */ }
+        };
+        fetchPublicPromos();
+    }, []);
 
     const fetchCreditBalance = useWorkspaceStore(state => state.fetchCreditBalance);
     const userTier = useWorkspaceStore(state => state.userTier);
@@ -499,6 +517,25 @@ export default function Billing({ session, onPaymentModalChange }) {
                     All plans use GCash / QR payment. Credits reset daily. Upgrade or stay flexible.
                 </p>
             </div>
+
+            {/* ─── Inline Active Promo Notification ─── */}
+            {publicPromos.length > 0 && (
+                <div className="max-w-2xl mx-auto mb-8 -mt-8 flex flex-col sm:flex-row items-center justify-center gap-2 flex-wrap">
+                    {publicPromos.map(p => (
+                        <button
+                            key={p.code_name}
+                            onClick={() => setPromoCode(p.code_name)}
+                            className="group flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#34A853]/10 border border-[#34A853]/30 text-[#34A853] hover:bg-[#34A853]/20 transition-all duration-200 cursor-pointer"
+                        >
+                            <span className="text-lg">🔥</span>
+                            <span className="text-xs font-mono">USE PROMO:</span>
+                            <span className="font-bold tracking-widest text-sm bg-[#34A853] text-white px-2 py-0.5 rounded-lg group-hover:scale-105 transition-transform">{p.code_name}</span>
+                            <span className="text-xs font-semibold opacity-80">— {p.discount_amount}{p.is_percentage ? '%' : '₱'} OFF</span>
+                            <span className="text-[10px] opacity-60 hidden sm:inline">{p.max_uses - p.current_uses} left</span>
+                        </button>
+                    ))}
+                </div>
+            )}
 
             {/* Promo Code Input */}
             <div className="max-w-xs mx-auto mb-28 lg:mb-32 relative z-20 text-center animate-fade-in-up">
