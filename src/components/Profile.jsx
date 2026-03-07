@@ -23,6 +23,10 @@ export default function Profile({ session, setCurrentView }) {
     // Contact modal state
     const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
+    // Referral state
+    const [referralInput, setReferralInput] = useState('');
+    const [isSavingReferral, setIsSavingReferral] = useState(false);
+
     useEffect(() => {
         async function fetchProfile() {
             if (!session?.user?.id) return;
@@ -33,7 +37,7 @@ export default function Profile({ session, setCurrentView }) {
 
                 const { data, error } = await supabase
                     .from('user_profiles')
-                    .select('current_credit_balance, tier')
+                    .select('current_credit_balance, tier, referred_by')
                     .eq('id', uid)
                     .single();
 
@@ -41,8 +45,9 @@ export default function Profile({ session, setCurrentView }) {
 
                 const credits = data?.current_credit_balance ?? 1;
                 const tier = data?.tier || 'base';
+                const referred_by = data?.referred_by || null;
 
-                setProfileData({ email, uid, tier, credits });
+                setProfileData({ email, uid, tier, credits, referred_by });
             } catch (error) {
                 console.error('Error fetching profile:', error);
                 setProfileData({ email: session?.user?.email, uid: session?.user?.id, tier: 'base', credits: 1 });
@@ -86,6 +91,47 @@ export default function Profile({ session, setCurrentView }) {
             setToast({ message: error.message || 'Failed to update password.', type: 'error' });
         } finally {
             setIsUpdatingPassword(false);
+        }
+    };
+
+    const handleSaveReferral = async () => {
+        if (!referralInput.trim() || referralInput.trim().length < 8) {
+            setToast({ message: 'Referral code must be at least 8 characters.', type: 'error' });
+            return;
+        }
+        if (referralInput.trim() === profileData?.uid?.slice(0, referralInput.trim().length)) {
+            setToast({ message: 'You cannot refer yourself.', type: 'error' });
+            return;
+        }
+        setIsSavingReferral(true);
+        try {
+            // Find the referrer whose UUID starts with the entered code
+            const { data: referrer, error: refErr } = await supabase
+                .from('user_profiles')
+                .select('id')
+                .ilike('id::text', referralInput.trim() + '%')
+                .single();
+
+            if (refErr || !referrer) {
+                setToast({ message: 'Referral code not found. Please check and try again.', type: 'error' });
+                return;
+            }
+
+            const { error: updateErr } = await supabase
+                .from('user_profiles')
+                .update({ referred_by: referrer.id })
+                .eq('id', profileData.uid)
+                .is('referred_by', null); // Only update if not already set
+
+            if (updateErr) throw updateErr;
+
+            setProfileData(prev => ({ ...prev, referred_by: referrer.id }));
+            setReferralInput('');
+            setToast({ message: 'Referral code applied! You are now linked to your referrer.', type: 'success' });
+        } catch (err) {
+            setToast({ message: err.message || 'Failed to apply referral code.', type: 'error' });
+        } finally {
+            setIsSavingReferral(false);
         }
     };
 
@@ -173,6 +219,37 @@ export default function Profile({ session, setCurrentView }) {
                             <span className="text-slate dark:text-darkText/70 font-mono text-sm bg-background dark:bg-darkCard px-4 py-2 rounded-xl truncate border border-obsidian/5 dark:border-darkText/5">
                                 {profileData?.uid}
                             </span>
+                        </div>
+
+                        {/* Referral Code Field — one-time settable */}
+                        <div className="flex flex-col">
+                            <span className="text-xs font-mono uppercase tracking-widest text-slate dark:text-darkText/50 mb-1 flex items-center">
+                                <Key className="w-3 h-3 mr-2" /> Referral Code
+                            </span>
+                            {profileData?.referred_by ? (
+                                <div className="flex items-center gap-2 bg-[#34A853]/5 border border-[#34A853]/20 px-4 py-2 rounded-xl">
+                                    <ShieldCheck className="w-4 h-4 text-[#34A853] shrink-0" />
+                                    <span className="text-[#34A853] text-xs font-semibold">Referral applied — locked permanently</span>
+                                </div>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={referralInput}
+                                        onChange={(e) => setReferralInput(e.target.value)}
+                                        placeholder="Enter referrer's code (first 8 chars of UID)"
+                                        maxLength={36}
+                                        className="flex-1 bg-background dark:bg-darkCard border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-xl px-4 py-2 text-obsidian dark:text-darkText placeholder:text-obsidian/30 dark:placeholder:text-darkText/30 focus:outline-none focus:border-champagne/50 focus:ring-1 focus:ring-champagne/50 transition-colors text-sm font-mono"
+                                    />
+                                    <button
+                                        onClick={handleSaveReferral}
+                                        disabled={isSavingReferral || referralInput.trim().length < 8}
+                                        className="px-4 py-2 rounded-xl bg-obsidian dark:bg-darkText text-background dark:text-darkBg text-xs font-bold hover:scale-105 transition-transform disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                                    >
+                                        {isSavingReferral ? '...' : 'Apply'}
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 pt-4 border-t border-obsidian/5 dark:border-darkText/5">
