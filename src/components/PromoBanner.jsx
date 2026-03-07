@@ -1,30 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { Sparkles } from 'lucide-react';
+import { usePromoSpots } from '../hooks/usePromoSpots';
 
 export default function PromoBanner({ onNavigate }) {
-    const [userCount, setUserCount] = useState(0);
+    const { spotsLeft, loading: spotsLoading } = usePromoSpots();
     const [activePromos, setActivePromos] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const MAX_PROMO_USERS = 50;
+    const [loadingPromos, setLoadingPromos] = useState(true);
 
     useEffect(() => {
-        // Initial fetch
-        async function fetchUserCount() {
-            try {
-                const { data, error } = await supabase
-                    .from('site_stats')
-                    .select('stat_value')
-                    .eq('id', 'total_users')
-                    .single();
-
-                if (error && error.code !== 'PGRST116') throw error;
-                if (data) setUserCount(data.stat_value);
-            } catch (error) {
-                console.error('Error fetching site stats:', error);
-            }
-        }
-
+        let isMounted = true;
         async function fetchPromos() {
             try {
                 const { data, error } = await supabase
@@ -33,29 +18,23 @@ export default function PromoBanner({ onNavigate }) {
                     .eq('is_active', true)
                     .eq('is_secret', false);
 
-                if (data) {
+                if (error) {
+                    console.error('Error fetching promos:', error);
+                    return;
+                }
+
+                if (data && isMounted) {
                     const validPromos = data.filter(p => p.current_uses < p.max_uses && (!p.expires_at || new Date(p.expires_at) > new Date()));
                     setActivePromos(validPromos || []);
                 }
             } catch (err) {
-                console.error(err);
+                console.error('Error in fetchPromos:', err);
+            } finally {
+                if (isMounted) setLoadingPromos(false);
             }
         }
 
-        Promise.all([fetchUserCount(), fetchPromos()]).then(() => setLoading(false));
-
-        // Subscribe to real-time changes for site_stats
-        const statsChannel = supabase
-            .channel('public:site_stats_banner')
-            .on('postgres_changes',
-                { event: 'UPDATE', schema: 'public', table: 'site_stats', filter: 'id=eq.total_users' },
-                (payload) => {
-                    if (payload.new && typeof payload.new.stat_value === 'number') {
-                        setUserCount(payload.new.stat_value);
-                    }
-                }
-            )
-            .subscribe();
+        fetchPromos();
 
         const promoChannel = supabase
             .channel('public:promo_codes_banner')
@@ -68,15 +47,15 @@ export default function PromoBanner({ onNavigate }) {
             .subscribe();
 
         return () => {
-            supabase.removeChannel(statsChannel);
+            isMounted = false;
             supabase.removeChannel(promoChannel);
         };
     }, []);
 
-    const showFirst50 = userCount < MAX_PROMO_USERS;
+    const showFirst50 = spotsLeft !== null && spotsLeft > 0;
     const firstPromo = activePromos.length > 0 ? activePromos[0] : null;
 
-    if (loading || (!showFirst50 && !firstPromo)) {
+    if (spotsLoading || loadingPromos || (!showFirst50 && !firstPromo)) {
         return null;
     }
 
@@ -87,7 +66,7 @@ export default function PromoBanner({ onNavigate }) {
                     <Sparkles className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2 animate-pulse" />
                     <span>First 50 get 10 Free Credits!</span>
                     <span className="bg-obsidian text-champagne px-2 py-0.5 rounded-full text-[9px] md:text-xs ml-2 block truncate mt-0.5">
-                        {userCount}/{MAX_PROMO_USERS} claim
+                        {spotsLeft} spots remaining!
                     </span>
                 </div>
             )}
