@@ -1,13 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { Star, MessageSquareQuote, CheckCircle2 } from 'lucide-react';
+import { Star, MessageSquareQuote, CheckCircle2, Clock } from 'lucide-react';
 
 export default function SubmitReview({ session }) {
     const [rating, setRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);
     const [reviewText, setReviewText] = useState('');
-    const [status, setStatus] = useState('idle'); // 'idle' | 'submitting' | 'success' | 'error'
+    const [status, setStatus] = useState('idle'); // 'idle' | 'submitting' | 'success' | 'error' | 'cooldown'
     const [errorMessage, setErrorMessage] = useState('');
+    const [nextReviewDate, setNextReviewDate] = useState(null);
+    const [loadingCooldown, setLoadingCooldown] = useState(true);
+
+    // On mount, check if the user has submitted a review in the last 30 days
+    useEffect(() => {
+        async function checkCooldown() {
+            if (!session?.user?.id) return;
+            try {
+                const { data, error } = await supabase
+                    .from('user_reviews')
+                    .select('created_at')
+                    .eq('user_id', session.user.id)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .single();
+
+                if (data && !error) {
+                    const lastReview = new Date(data.created_at);
+                    const unlockDate = new Date(lastReview.getTime() + 30 * 24 * 60 * 60 * 1000);
+                    if (unlockDate > new Date()) {
+                        setNextReviewDate(unlockDate);
+                        setStatus('cooldown');
+                    }
+                }
+            } catch (_) {
+                // PGRST116 = no rows found, which means no prior review — that's fine
+            } finally {
+                setLoadingCooldown(false);
+            }
+        }
+        checkCooldown();
+    }, [session]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -47,6 +79,27 @@ export default function SubmitReview({ session }) {
         }
     };
 
+    // Format the unlock date nicely
+    const formatDate = (date) => date?.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+    if (loadingCooldown) return null;
+
+    // Cooldown — show locked state
+    if (status === 'cooldown') {
+        return (
+            <div className="bg-surface dark:bg-darkCard/40 border border-obsidian/10 dark:border-darkText/10 shadow-sm rounded-2xl p-6 flex flex-col items-center justify-center text-center">
+                <div className="w-12 h-12 bg-obsidian/5 dark:bg-darkText/10 text-slate dark:text-darkText/50 rounded-full flex items-center justify-center mb-4">
+                    <Clock className="w-6 h-6" />
+                </div>
+                <h4 className="text-lg font-bold text-obsidian dark:text-darkText mb-2">Review Submitted</h4>
+                <p className="text-slate dark:text-darkText/60 text-sm leading-relaxed">
+                    Thank you for your feedback! You can submit your next review on<br />
+                    <strong className="text-champagne">{formatDate(nextReviewDate)}</strong>.
+                </p>
+            </div>
+        );
+    }
+
     if (status === 'success') {
         return (
             <div className="bg-surface dark:bg-darkCard/40 border border-[#34A853]/20 shadow-sm rounded-2xl p-6 flex flex-col items-center justify-center text-center animate-fade-in">
@@ -54,15 +107,9 @@ export default function SubmitReview({ session }) {
                     <CheckCircle2 className="w-6 h-6" />
                 </div>
                 <h4 className="text-lg font-bold text-obsidian dark:text-darkText mb-2">Thank you!</h4>
-                <p className="text-slate dark:text-darkText/60 text-sm mb-4">
-                    Your review has been securely recorded and is pending moderation. We appreciate your feedback.
+                <p className="text-slate dark:text-darkText/60 text-sm">
+                    Your review has been recorded and is pending moderation. You can submit again in 30 days.
                 </p>
-                <button
-                    onClick={() => setStatus('idle')}
-                    className="text-xs font-bold text-champagne hover:text-champagne/80 transition-colors uppercase tracking-widest"
-                >
-                    Submit Another
-                </button>
             </div>
         );
     }
@@ -92,8 +139,8 @@ export default function SubmitReview({ session }) {
                         >
                             <Star
                                 className={`w-6 h-6 ${star <= (hoverRating || rating)
-                                        ? 'fill-champagne text-champagne'
-                                        : 'text-obsidian/20 dark:text-darkText/20'
+                                    ? 'fill-champagne text-champagne'
+                                    : 'text-obsidian/20 dark:text-darkText/20'
                                     } transition-colors duration-200`}
                             />
                         </button>
