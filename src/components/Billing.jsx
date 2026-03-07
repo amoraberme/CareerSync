@@ -672,16 +672,16 @@ export default function Billing({ session, onPaymentModalChange }) {
                                 <span className="text-3xl font-bold text-obsidian dark:text-darkText mr-2">₱</span>
                                 {activePromo ? (
                                     <>
-                                        <span className="text-[120px] leading-[0.8] font-sans font-black text-obsidian dark:text-darkText tracking-tighter">
+                                        <span className="text-[72px] leading-[0.9] font-sans font-black text-obsidian dark:text-darkText tracking-tighter">
                                             {Math.floor(195 * (activePromo.is_percentage ? (100 - activePromo.discount_amount) / 100 : 1))}
                                         </span>
-                                        <span className="text-5xl font-bold text-champagne tabular-nums">.{randomCents}</span>
-                                        <span className="ml-3 text-3xl line-through text-slate/40 dark:text-darkText/30 font-bold mb-4">₱195</span>
+                                        <span className="text-4xl font-bold text-champagne tabular-nums">.{randomCents}</span>
+                                        <span className="ml-3 text-2xl line-through text-slate/40 dark:text-darkText/30 font-bold mb-4">₱195</span>
                                     </>
                                 ) : (
                                     <>
-                                        <span className="text-[120px] leading-[0.8] font-sans font-black text-obsidian dark:text-darkText tracking-tighter">195</span>
-                                        <span className="text-5xl font-bold text-champagne tabular-nums">.{randomCents}</span>
+                                        <span className="text-[72px] leading-[0.9] font-sans font-black text-obsidian dark:text-darkText tracking-tighter">195</span>
+                                        <span className="text-4xl font-bold text-champagne tabular-nums">.{randomCents}</span>
                                     </>
                                 )}
                             </div>
