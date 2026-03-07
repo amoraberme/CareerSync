@@ -501,7 +501,7 @@ export default function Billing({ session, onPaymentModalChange }) {
             </div>
 
             {/* Promo Code Input */}
-            <div className="max-w-xs mx-auto mb-16 lg:mb-20 relative z-20 text-center animate-fade-in-up">
+            <div className="max-w-xs mx-auto mb-28 lg:mb-32 relative z-20 text-center animate-fade-in-up">
                 <label className="text-xs font-mono uppercase tracking-widest text-slate dark:text-darkText/50 mb-2 block">Optional Promo Code</label>
                 <div className="flex items-center space-x-2 bg-white dark:bg-darkCard/40 p-1.5 rounded-2xl border border-obsidian/10 dark:border-darkText/10 shadow-sm transition-all focus-within:border-champagne focus-within:ring-1 focus-within:ring-champagne">
                     <input

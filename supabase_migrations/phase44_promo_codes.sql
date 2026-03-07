@@ -6,7 +6,7 @@
 CREATE TABLE IF NOT EXISTS public.promo_codes (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     code_name TEXT UNIQUE NOT NULL,
-    discount_amount INTEGER NOT NULL, -- Discount in percentage (e.g., 20 for 20%) or fixed centavos? Let's use percentage, e.g., 20.
+    discount_amount NUMERIC(5,2) NOT NULL, -- Fixed from INTEGER to support 99.99
     is_percentage BOOLEAN DEFAULT true,
     max_uses INTEGER NOT NULL,
     current_uses INTEGER DEFAULT 0 NOT NULL,
@@ -40,14 +40,15 @@ EXCEPTION WHEN OTHERS THEN
 END;
 
 -- Atomic RPC for consuming a promo code
+-- FIXED to return NUMERIC(5,2) instead of INTEGER
 CREATE OR REPLACE FUNCTION public.consume_promo_code(p_code_name TEXT)
 RETURNS TABLE (
     valid BOOLEAN,
-    discount_val INTEGER,
+    discount_val NUMERIC(5,2),
     percentage BOOLEAN
 ) AS $$
 DECLARE
-    v_discount INTEGER;
+    v_discount NUMERIC(5,2);
     v_is_percentage BOOLEAN;
 BEGIN
     -- Attempt to update exactly one row if valid and under limit
@@ -63,12 +64,13 @@ BEGIN
     IF FOUND THEN
         RETURN QUERY SELECT true, v_discount, v_is_percentage;
     ELSE
-        RETURN QUERY SELECT false, 0, false;
+        RETURN QUERY SELECT false, 0.00::NUMERIC, false;
     END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Insert an initial promo for testing
+-- Insert an initial promo for testing (Modified per user: 99.99%, single use)
 INSERT INTO public.promo_codes (code_name, discount_amount, is_percentage, max_uses, current_uses, is_active)
-VALUES ('LAUNCH20', 20, true, 5, 0, true)
-ON CONFLICT (code_name) DO NOTHING;
+VALUES ('LAUNCH20', 99.99, true, 1, 0, true)
+ON CONFLICT (code_name) DO UPDATE 
+SET discount_amount = 99.99, max_uses = 1;
