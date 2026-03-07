@@ -97,16 +97,14 @@ BEGIN
         full_name, 
         current_credit_balance, 
         tier, 
-        credits_reset_date,
-        referred_by
+        credits_reset_date
     )
     VALUES (
         NEW.id,
         NEW.raw_user_meta_data->>'full_name',
         CASE WHEN v_was_previously_registered THEN 0 ELSE v_credits_to_grant END,
         'base',
-        CURRENT_DATE,
-        v_referrer_id
+        CURRENT_DATE
     );
 
     RETURN NEW;
