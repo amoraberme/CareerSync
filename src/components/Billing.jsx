@@ -522,17 +522,16 @@ export default function Billing({ session, onPaymentModalChange }) {
             {publicPromos.length > 0 && (
                 <div className="max-w-2xl mx-auto mb-8 -mt-8 flex flex-col sm:flex-row items-center justify-center gap-2 flex-wrap">
                     {publicPromos.map(p => (
-                        <button
+                        <div
                             key={p.code_name}
-                            onClick={() => setPromoCode(p.code_name)}
-                            className="group flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#34A853]/10 border border-[#34A853]/30 text-[#34A853] hover:bg-[#34A853]/20 transition-all duration-200 cursor-pointer"
+                            className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#34A853]/10 border border-[#34A853]/30 text-[#34A853]"
                         >
                             <span className="text-lg">🔥</span>
                             <span className="text-xs font-mono">USE PROMO:</span>
-                            <span className="font-bold tracking-widest text-sm bg-[#34A853] text-white px-2 py-0.5 rounded-lg group-hover:scale-105 transition-transform">{p.code_name}</span>
+                            <span className="font-bold tracking-widest text-sm bg-[#34A853] text-white px-2 py-0.5 rounded-lg select-all">{p.code_name}</span>
                             <span className="text-xs font-semibold opacity-80">— {p.discount_amount}{p.is_percentage ? '%' : '₱'} OFF</span>
                             <span className="text-[10px] opacity-60 hidden sm:inline">{p.max_uses - p.current_uses} left</span>
-                        </button>
+                        </div>
                     ))}
                 </div>
             )}
