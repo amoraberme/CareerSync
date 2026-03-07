@@ -506,7 +506,7 @@ export default function Billing({ session, onPaymentModalChange }) {
                 <div className="flex items-center space-x-2 bg-white dark:bg-darkCard/40 p-1.5 rounded-2xl border border-obsidian/10 dark:border-darkText/10 shadow-sm transition-all focus-within:border-champagne focus-within:ring-1 focus-within:ring-champagne">
                     <input
                         type="text"
-                        placeholder="e.g. LAUNCH20"
+                        placeholder="Promo Code"
                         value={promoCode}
                         onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                         className="flex-1 bg-transparent border-none text-center outline-none text-sm font-bold text-obsidian dark:text-darkText placeholder:text-slate/40 dark:placeholder:text-darkText/40 uppercase tracking-widest py-2"
