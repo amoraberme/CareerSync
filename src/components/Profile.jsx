@@ -5,6 +5,7 @@ import { User, Lock, Mail, Fingerprint, Award, Coins, Key, ShieldCheck, AlertTri
 import ContactModal from './ContactModal';
 import SwipeLettersButton from './animations/SwipeLettersButton';
 import DeleteAccountButton from './animations/DeleteAccountButton';
+import SubmitReview from './SubmitReview';
 
 export default function Profile({ session, setCurrentView }) {
     const [profileData, setProfileData] = useState(null);
@@ -281,6 +282,11 @@ export default function Profile({ session, setCurrentView }) {
                     <div className="mt-8 pt-6 border-t border-[#EA4335]/20">
                         <DeleteAccountButton onDelete={() => setShowDeleteModal(true)} />
                     </div>
+                </div>
+
+                {/* Sub-Column 2 Container (If we want vertical spacing for newly added components) */}
+                <div className="flex flex-col gap-8 md:col-span-2">
+                    <SubmitReview session={session} />
                 </div>
             </div>
 

@@ -70,6 +70,7 @@ import UpdatePassword from './components/UpdatePassword';
 import Terms from './components/legal/Terms';
 import Privacy from './components/legal/Privacy';
 import Landing from './components/Landing';
+import PendingVerification from './components/PendingVerification';
 import { usePageTracking } from './hooks/usePageTracking';
 
 function App() {
@@ -282,7 +283,15 @@ function App() {
     return <Landing onNavigate={navigateTo} />;
   }
 
+  const isEmailVerified = session && session.user.email_confirmed_at;
+
   const renderView = () => {
+    // ═══ Strict Email Verification Gatekeeper ═══
+    const protectedViews = ['history', 'profile', 'workspace'];
+    if (!isEmailVerified && protectedViews.includes(currentView)) {
+      return <PendingVerification session={session} onNavigate={navigateTo} />;
+    }
+
     switch (currentView) {
       case 'history':
         return <HistoryDashboard session={session} setCurrentView={setCurrentView} />;

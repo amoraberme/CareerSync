@@ -157,7 +157,7 @@ export function useBilling(session, onPaymentModalChange) {
         }, 3000 + jitter);
     }, [handlePaymentSuccess, stopCountdown, stopPolling]);
 
-    const handleBaseCheckout = async (tierName = 'base') => {
+    const handleBaseCheckout = async (tierName = 'base', promoCode = '') => {
         if (!session?.user?.id) {
             import('../../components/ui/Toast').then(({ toast }) => {
                 toast.error('Please log in to proceed.');
@@ -178,7 +178,7 @@ export function useBilling(session, onPaymentModalChange) {
                     'Content-Type': 'application/json',
                     ...(currentSession?.access_token && { 'Authorization': `Bearer ${currentSession.access_token}` })
                 },
-                body: JSON.stringify({ tier: tierName, mobile: isMobile })
+                body: JSON.stringify({ tier: tierName, mobile: isMobile, promoCode: promoCode.trim() })
             });
 
             const data = await response.json();
@@ -196,7 +196,7 @@ export function useBilling(session, onPaymentModalChange) {
         }
     };
 
-    const handleDynamicCheckout = async (tier) => {
+    const handleDynamicCheckout = async (tier, promoCode = '') => {
         if (!session?.user?.id) return;
         setIsProcessing(tier);
         try {
@@ -207,7 +207,7 @@ export function useBilling(session, onPaymentModalChange) {
                     'Content-Type': 'application/json',
                     ...(currentSession?.access_token && { 'Authorization': `Bearer ${currentSession.access_token}` })
                 },
-                body: JSON.stringify({ tier })
+                body: JSON.stringify({ tier, promoCode: promoCode.trim() })
             });
 
             const data = await response.json();

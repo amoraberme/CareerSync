@@ -14,8 +14,8 @@ const isMobileDevice = () => /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDes
 
 export default function Billing({ session, onPaymentModalChange }) {
     const containerRef = useRef(null);
-    const [isProcessing, setIsProcessing] = useState(null);
     const [isMobile, setIsMobile] = useState(false);
+    const [promoCode, setPromoCode] = useState('');
 
     // ═══ CENTAVO MATCHING — Static QR Modal State ═══
     const [showQrModal, setShowQrModal] = useState(false);
@@ -83,7 +83,7 @@ export default function Billing({ session, onPaymentModalChange }) {
                     'Content-Type': 'application/json',
                     ...(currentSession?.access_token && { 'Authorization': `Bearer ${currentSession.access_token}` })
                 },
-                body: JSON.stringify({ tier: tierName, mobile: isMobile })
+                body: JSON.stringify({ tier: tierName, mobile: isMobile, promoCode: promoCode.trim() })
             });
 
             const data = await response.json();
@@ -349,7 +349,7 @@ export default function Billing({ session, onPaymentModalChange }) {
                     'Content-Type': 'application/json',
                     ...(currentSession?.access_token && { 'Authorization': `Bearer ${currentSession.access_token}` })
                 },
-                body: JSON.stringify({ tier })
+                body: JSON.stringify({ tier, promoCode: promoCode.trim() })
             });
 
             const data = await response.json();
@@ -447,6 +447,26 @@ export default function Billing({ session, onPaymentModalChange }) {
                 <p className="text-slate dark:text-darkText/60 max-w-xl mx-auto text-base leading-relaxed">
                     All plans use GCash / QR payment. Credits reset daily. Upgrade or stay flexible.
                 </p>
+            </div>
+
+            {/* Promo Code Input */}
+            <div className="max-w-xs mx-auto mb-10 text-center animate-fade-in-up">
+                <label className="text-xs font-mono uppercase tracking-widest text-slate dark:text-darkText/50 mb-2 block">Optional Promo Code</label>
+                <div className="flex items-center space-x-2 bg-white dark:bg-darkCard/40 p-1.5 rounded-2xl border border-obsidian/10 dark:border-darkText/10 shadow-sm transition-all focus-within:border-champagne focus-within:ring-1 focus-within:ring-champagne">
+                    <input
+                        type="text"
+                        placeholder="e.g. LAUNCH20"
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                        className="flex-1 bg-transparent border-none text-center outline-none text-sm font-bold text-obsidian dark:text-darkText placeholder:text-slate/40 dark:placeholder:text-darkText/40 uppercase tracking-widest py-2"
+                        style={{ textTransform: 'uppercase' }}
+                    />
+                    {promoCode && (
+                        <button onClick={() => setPromoCode('')} className="p-2 text-slate/50 hover:text-obsidian dark:hover:text-darkText transition-colors bg-obsidian/5 dark:bg-darkText/5 rounded-xl">
+                            <X className="w-4 h-4" />
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* ─── Feature comparison row labels (desktop only) ─── */}
