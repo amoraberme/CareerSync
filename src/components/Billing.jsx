@@ -522,16 +522,17 @@ export default function Billing({ session, onPaymentModalChange }) {
             {publicPromos.length > 0 && (
                 <div className="max-w-2xl mx-auto mb-8 -mt-8 flex flex-col sm:flex-row items-center justify-center gap-2 flex-wrap">
                     {publicPromos.map(p => (
-                        <div
+                        <button
                             key={p.code_name}
-                            className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#34A853]/10 border border-[#34A853]/30 text-[#34A853]"
+                            onClick={() => setPromoCode(p.code_name)}
+                            className="group flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#34A853]/10 border border-[#34A853]/30 text-[#34A853] hover:bg-[#34A853]/20 transition-all duration-200 cursor-pointer"
                         >
                             <span className="text-lg">🔥</span>
                             <span className="text-xs font-mono">USE PROMO:</span>
-                            <span className="font-bold tracking-widest text-sm bg-[#34A853] text-white px-2 py-0.5 rounded-lg select-all">{p.code_name}</span>
+                            <span className="font-bold tracking-widest text-sm bg-[#34A853] text-white px-2 py-0.5 rounded-lg group-hover:scale-105 transition-transform">{p.code_name}</span>
                             <span className="text-xs font-semibold opacity-80">— {p.discount_amount}{p.is_percentage ? '%' : '₱'} OFF</span>
                             <span className="text-[10px] opacity-60 hidden sm:inline">{p.max_uses - p.current_uses} left</span>
-                        </div>
+                        </button>
                     ))}
                 </div>
             )}
@@ -574,11 +575,11 @@ export default function Billing({ session, onPaymentModalChange }) {
                     </div>
 
                     {/* Price */}
-                    <div className="mb-8 relative">
+                    <div className="mb-8">
                         {activePromo && (
-                            <div className="absolute -top-6 right-0 bg-[#34A853]/10 text-[#34A853] px-2 py-0.5 rounded text-xs font-bold animate-fade-in whitespace-nowrap">
+                            <span className="inline-flex items-center mb-2 bg-[#34A853]/10 text-[#34A853] px-2 py-0.5 rounded text-xs font-bold whitespace-nowrap">
                                 -{activePromo.discount_amount}{activePromo.is_percentage ? '%' : '₱'} OFF
-                            </div>
+                            </span>
                         )}
                         <div className="flex items-baseline mb-1">
                             <span className="text-xl font-bold text-obsidian dark:text-darkText mr-1">₱</span>
@@ -662,7 +663,7 @@ export default function Billing({ session, onPaymentModalChange }) {
                     {/* Price */}
                     <div className="mb-8 relative z-10">
                         {activePromo && (
-                            <div className="absolute -top-4 right-8 md:right-12 bg-[#34A853] text-white px-3 py-1 rounded-full text-xs font-bold animate-fade-in shadow-lg whitespace-nowrap z-20">
+                            <div className="inline-flex items-center justify-center mb-3 bg-[#34A853] text-white px-3 py-1 rounded-full text-xs font-bold animate-fade-in shadow-md whitespace-nowrap">
                                 PROMO APPLIED! -{activePromo.discount_amount}{activePromo.is_percentage ? '%' : '₱'}
                             </div>
                         )}
@@ -739,11 +740,11 @@ export default function Billing({ session, onPaymentModalChange }) {
                     </div>
 
                     {/* Price */}
-                    <div className="mb-8 relative">
+                    <div className="mb-8">
                         {activePromo && (
-                            <div className="absolute -top-6 right-0 bg-[#34A853]/10 text-[#34A853] px-2 py-0.5 rounded text-xs font-bold animate-fade-in whitespace-nowrap">
+                            <span className="inline-flex items-center mb-2 bg-[#34A853]/10 text-[#34A853] px-2 py-0.5 rounded text-xs font-bold whitespace-nowrap">
                                 -{activePromo.discount_amount}{activePromo.is_percentage ? '%' : '₱'} OFF
-                            </div>
+                            </span>
                         )}
                         <div className="flex items-baseline mb-1">
                             <span className="text-xl font-bold text-obsidian dark:text-darkText mr-1">₱</span>
