@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import useWorkspaceStore from '../store/useWorkspaceStore';
-import { User, Lock, Mail, Fingerprint, Award, Coins, ShieldCheck, AlertTriangle, Trash2, MessageSquare, Sparkles } from 'lucide-react';
+import { User, Lock, Mail, Fingerprint, Award, Coins, Key, ShieldCheck, AlertTriangle, Trash2, MessageSquare, Sparkles } from 'lucide-react';
 import ContactModal from './ContactModal';
 import SwipeLettersButton from './animations/SwipeLettersButton';
 import DeleteAccountButton from './animations/DeleteAccountButton';
