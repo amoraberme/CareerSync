@@ -105,11 +105,9 @@ export default function Profile({ session, setCurrentView }) {
         }
         setIsSavingReferral(true);
         try {
-            // Find the referrer whose UUID starts with the entered code
+            // Find the referrer using an RPC (PostgREST can't filter on id::text casts)
             const { data: referrer, error: refErr } = await supabase
-                .from('user_profiles')
-                .select('id')
-                .ilike('id::text', referralInput.trim() + '%')
+                .rpc('find_user_by_referral_code', { code_prefix: referralInput.trim().toLowerCase() })
                 .single();
 
             if (refErr || !referrer) {
