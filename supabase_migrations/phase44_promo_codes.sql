@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS public.promo_codes (
     discount_amount NUMERIC(5,2) NOT NULL, -- Fixed from INTEGER to support 99.99
     is_percentage BOOLEAN DEFAULT true,
     max_uses INTEGER NOT NULL,
-    current_uses INTEGER DEFAULT 0 NOT NULL,
     is_active BOOLEAN DEFAULT true NOT NULL,
+    is_secret BOOLEAN DEFAULT false NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     expires_at TIMESTAMPTZ
 );

@@ -30,7 +30,8 @@ export default function PromoBanner({ onNavigate }) {
                 const { data, error } = await supabase
                     .from('promo_codes')
                     .select('*')
-                    .eq('is_active', true);
+                    .eq('is_active', true)
+                    .eq('is_secret', false);
 
                 if (data) {
                     const validPromos = data.filter(p => p.current_uses < p.max_uses && (!p.expires_at || new Date(p.expires_at) > new Date()));
