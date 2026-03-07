@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS public.promo_codes (
     discount_amount NUMERIC(5,2) NOT NULL, -- Fixed from INTEGER to support 99.99
     is_percentage BOOLEAN DEFAULT true,
     max_uses INTEGER NOT NULL,
+    current_uses INTEGER DEFAULT 0 NOT NULL,
     is_active BOOLEAN DEFAULT true NOT NULL,
     is_secret BOOLEAN DEFAULT false NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -75,3 +76,9 @@ INSERT INTO public.promo_codes (code_name, discount_amount, is_percentage, max_u
 VALUES ('LAUNCH20', 99.99, true, 1, 0, true)
 ON CONFLICT (code_name) DO UPDATE 
 SET discount_amount = 99.99, max_uses = 1;
+
+-- Add a secret promo code for testing
+INSERT INTO public.promo_codes (code_name, discount_amount, is_percentage, max_uses, current_uses, is_active, is_secret)
+VALUES ('VIP50', 50.00, true, 10, 0, true, true)
+ON CONFLICT (code_name) DO UPDATE 
+SET discount_amount = 50.00, is_secret = true;
