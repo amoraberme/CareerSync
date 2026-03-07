@@ -11,6 +11,8 @@ import SmartTypewriterText from './animations/SmartTypewriterText';
 import FAQSection from './animations/FAQSection';
 import TransferableBridge from './TransferableBridge';
 import PASSection from './PASSection';
+import Testimonials from './Testimonials';
+import PromoBanner from './PromoBanner';
 
 gsap.registerPlugin(ScrollToPlugin);
 
@@ -212,10 +214,12 @@ const Landing = ({ onNavigate }) => {
     };
 
     return (
-        <div ref={landingRef} className="bg-background text-obsidian dark:bg-darkBg dark:text-darkText font-sans selection:bg-champagne selection:text-obsidian">
+        <div ref={landingRef} className="bg-background text-obsidian dark:bg-darkBg dark:text-darkText font-sans selection:bg-champagne selection:text-obsidian relative pt-10">
+
+            <PromoBanner onNavigate={onNavigate} />
 
             {/* ═══ NAVBAR ═══ */}
-            <nav className="fixed top-0 left-0 right-0 z-[100] bg-background/80 dark:bg-darkBg/80 backdrop-blur-xl border-b border-obsidian/5 dark:border-darkText/5">
+            <nav className="fixed top-10 left-0 right-0 z-[100] bg-background/80 dark:bg-darkBg/80 backdrop-blur-xl border-b border-obsidian/5 dark:border-darkText/5 transition-all">
                 <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                     {/* Logo */}
                     <div className="flex items-center gap-2 cursor-pointer" onClick={() => onNavigate('landing')}>
@@ -694,6 +698,9 @@ const Landing = ({ onNavigate }) => {
 
             {/* ═══ ORBITAL TRANSFERABLE BRIDGE ═══ */}
             <TransferableBridge />
+
+            {/* ═══ TESTIMONIALS ═══ */}
+            <Testimonials />
 
             {/* ═══ PRICING SECTION ═══ */}
             <section id="pricing" className="py-16 px-6">

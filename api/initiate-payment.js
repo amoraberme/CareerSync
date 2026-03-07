@@ -16,7 +16,7 @@ export default async function handler(req, res) {
     if (!user) return;
 
     try {
-        const { tier, mobile } = req.body;
+        const { tier, mobile, promoCode } = req.body;
         const userId = user.id;
 
         // W-9: Use centralized TIER_CONFIG — single source of truth
@@ -38,10 +38,34 @@ export default async function handler(req, res) {
 
         const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
+        // -- Apply Promo Code --
+        let discountMultiplier = 1;
+        if (promoCode) {
+            const { data: promoData, error: promoError } = await supabaseAdmin.rpc('consume_promo_code', {
+                p_code_name: promoCode.toUpperCase()
+            });
+
+            if (promoError) {
+                console.error('[InitiatePayment] Promo RPC error:', promoError.message);
+                return res.status(500).json({ error: 'Failed to process promo code.' });
+            }
+
+            if (promoData && promoData.length > 0 && promoData[0].valid) {
+                const { discount_val, percentage } = promoData[0];
+                if (percentage) {
+                    discountMultiplier = Math.max(0, (100 - discount_val) / 100);
+                }
+            } else {
+                return res.status(400).json({ error: 'Invalid, expired, or fully claimed promo code.' });
+            }
+        }
+
+        const discountedAmount = Math.max(100, Math.floor(config.base_amount * discountMultiplier)); // Min 1 PHP
+
         // 3. Assign a unique centavo amount via atomic row-locking RPC
         const { data, error } = await supabaseAdmin.rpc('assign_unique_centavo', {
             p_user_id: userId,
-            p_base_amount: config.base_amount,
+            p_base_amount: discountedAmount,
             p_credits: config.credits_on_purchase,  // W-4: nominal 1 credit for subscriptions
             p_tier: (tier || 'base').toLowerCase()
         });

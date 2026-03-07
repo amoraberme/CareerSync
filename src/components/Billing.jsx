@@ -14,8 +14,11 @@ const isMobileDevice = () => /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDes
 
 export default function Billing({ session, onPaymentModalChange }) {
     const containerRef = useRef(null);
-    const [isProcessing, setIsProcessing] = useState(null);
     const [isMobile, setIsMobile] = useState(false);
+    const [promoCode, setPromoCode] = useState('');
+    const [activePromo, setActivePromo] = useState(null);
+    const [checkingPromo, setCheckingPromo] = useState(false);
+    const [publicPromos, setPublicPromos] = useState([]);
 
     // ═══ CENTAVO MATCHING — Static QR Modal State ═══
     const [showQrModal, setShowQrModal] = useState(false);
@@ -44,6 +47,72 @@ export default function Billing({ session, onPaymentModalChange }) {
     useEffect(() => {
         onPaymentModalChange?.(showQrModal);
     }, [showQrModal, onPaymentModalChange]);
+
+    // Validate Promo Code dynamically
+    useEffect(() => {
+        const checkPromo = async () => {
+            if (!promoCode || promoCode.length < 3) {
+                setActivePromo(null);
+                return;
+            }
+            setCheckingPromo(true);
+            try {
+                const { data, error } = await supabase
+                    .from('promo_codes')
+                    .select('discount_amount, is_percentage')
+                    .eq('code_name', promoCode.toUpperCase())
+                    .eq('is_active', true)
+                    .lt('current_uses', supabase.rpc('max_uses')) // Works well enough, or just fetch all
+                    .single();
+
+                if (!error && data) {
+                    setActivePromo(data);
+                } else {
+                    // Try fetch all to filter locally if the rpc filter fails
+                    const { data: allPromos, error: allErr } = await supabase
+                        .from('promo_codes')
+                        .select('*')
+                        .eq('code_name', promoCode.toUpperCase())
+                        .eq('is_active', true);
+
+                    if (!allErr && allPromos && allPromos.length > 0) {
+                        const p = allPromos[0];
+                        if (p.current_uses < p.max_uses && (!p.expires_at || new Date(p.expires_at) > new Date())) {
+                            setActivePromo(p);
+                        } else {
+                            setActivePromo(null);
+                        }
+                    } else {
+                        setActivePromo(null);
+                    }
+                }
+            } catch (err) {
+                setActivePromo(null);
+            } finally {
+                setCheckingPromo(false);
+            }
+        };
+
+        const timeoutId = setTimeout(checkPromo, 500); // debounce
+        return () => clearTimeout(timeoutId);
+    }, [promoCode]);
+
+    // Fetch active non-secret public promos for the inline banner
+    useEffect(() => {
+        const fetchPublicPromos = async () => {
+            try {
+                const { data } = await supabase
+                    .from('promo_codes')
+                    .select('*')
+                    .eq('is_active', true)
+                    .eq('is_secret', false);
+                if (data) {
+                    setPublicPromos(data.filter(p => p.current_uses < p.max_uses && (!p.expires_at || new Date(p.expires_at) > new Date())));
+                }
+            } catch (e) { /* silent */ }
+        };
+        fetchPublicPromos();
+    }, []);
 
     const fetchCreditBalance = useWorkspaceStore(state => state.fetchCreditBalance);
     const userTier = useWorkspaceStore(state => state.userTier);
@@ -83,7 +152,7 @@ export default function Billing({ session, onPaymentModalChange }) {
                     'Content-Type': 'application/json',
                     ...(currentSession?.access_token && { 'Authorization': `Bearer ${currentSession.access_token}` })
                 },
-                body: JSON.stringify({ tier: tierName, mobile: isMobile })
+                body: JSON.stringify({ tier: tierName, mobile: isMobile, promoCode: promoCode.trim() })
             });
 
             const data = await response.json();
@@ -349,7 +418,7 @@ export default function Billing({ session, onPaymentModalChange }) {
                     'Content-Type': 'application/json',
                     ...(currentSession?.access_token && { 'Authorization': `Bearer ${currentSession.access_token}` })
                 },
-                body: JSON.stringify({ tier })
+                body: JSON.stringify({ tier, promoCode: promoCode.trim() })
             });
 
             const data = await response.json();
@@ -449,6 +518,51 @@ export default function Billing({ session, onPaymentModalChange }) {
                 </p>
             </div>
 
+            {/* ─── Inline Active Promo Notification ─── */}
+            {publicPromos.length > 0 && (
+                <div className="max-w-2xl mx-auto mb-8 -mt-8 flex flex-col sm:flex-row items-center justify-center gap-2 flex-wrap">
+                    {publicPromos.map(p => (
+                        <button
+                            key={p.code_name}
+                            onClick={() => setPromoCode(p.code_name)}
+                            className="group flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#34A853]/10 border border-[#34A853]/30 text-[#34A853] hover:bg-[#34A853]/20 transition-all duration-200 cursor-pointer"
+                        >
+                            <span className="text-lg">🔥</span>
+                            <span className="text-xs font-mono">USE PROMO:</span>
+                            <span className="font-bold tracking-widest text-sm bg-[#34A853] text-white px-2 py-0.5 rounded-lg group-hover:scale-105 transition-transform">{p.code_name}</span>
+                            <span className="text-xs font-semibold opacity-80">— {p.discount_amount}{p.is_percentage ? '%' : '₱'} OFF</span>
+                            <span className="text-[10px] opacity-60 hidden sm:inline">{p.max_uses - p.current_uses} left</span>
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {/* Promo Code Input */}
+            <div className="max-w-xs mx-auto mb-28 lg:mb-32 relative z-20 text-center animate-fade-in-up">
+                <label className="text-xs font-mono uppercase tracking-widest text-slate dark:text-darkText/50 mb-2 block">Optional Promo Code</label>
+                <div className="flex items-center space-x-2 bg-white dark:bg-darkCard/40 p-1.5 rounded-2xl border border-obsidian/10 dark:border-darkText/10 shadow-sm transition-all focus-within:border-champagne focus-within:ring-1 focus-within:ring-champagne">
+                    <input
+                        type="text"
+                        placeholder="Promo Code"
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                        className="flex-1 bg-transparent border-none text-center outline-none text-sm font-bold text-obsidian dark:text-darkText placeholder:text-slate/40 dark:placeholder:text-darkText/40 uppercase tracking-widest py-2"
+                        style={{ textTransform: 'uppercase' }}
+                    />
+                    {promoCode && (
+                        <button onClick={() => setPromoCode('')} className="p-2 text-slate/50 hover:text-obsidian dark:hover:text-darkText transition-colors bg-obsidian/5 dark:bg-darkText/5 rounded-xl">
+                            <X className="w-4 h-4" />
+                        </button>
+                    )}
+                </div>
+                {checkingPromo && <p className="text-[10px] text-slate/50 mt-2 animate-pulse">Checking code...</p>}
+                {activePromo && !checkingPromo && <p className="text-[10px] text-[#34A853] font-bold mt-2 animate-fade-in text-left px-2 flex flex-col gap-0.5">
+                    <span>Code Applied: -{activePromo.discount_amount}{activePromo.is_percentage ? '%' : '₱'} discount!</span>
+                    <span className="text-slate/60 font-normal">Prices below reflect this discount.</span>
+                </p>}
+                {!activePromo && promoCode.length >= 3 && !checkingPromo && <p className="text-[10px] text-[#EA4335] mt-2 animate-fade-in text-left px-2">Invalid or expired code.</p>}
+            </div>
+
             {/* ─── Feature comparison row labels (desktop only) ─── */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-5 max-w-5xl mx-auto items-stretch">
 
@@ -461,13 +575,30 @@ export default function Billing({ session, onPaymentModalChange }) {
                     </div>
 
                     {/* Price */}
-                    <div className="mb-8">
+                    <div className="mb-8 relative">
+                        {activePromo && (
+                            <div className="absolute -top-6 right-0 bg-[#34A853]/10 text-[#34A853] px-2 py-0.5 rounded text-xs font-bold animate-fade-in whitespace-nowrap">
+                                -{activePromo.discount_amount}{activePromo.is_percentage ? '%' : '₱'} OFF
+                            </div>
+                        )}
                         <div className="flex items-baseline mb-1">
                             <span className="text-xl font-bold text-obsidian dark:text-darkText mr-1">₱</span>
-                            <span className="text-7xl font-sans font-black text-obsidian dark:text-darkText tracking-tighter">49</span>
-                            <span className="text-3xl font-bold text-champagne tabular-nums">.{randomCents}</span>
+                            {activePromo ? (
+                                <>
+                                    <span className="text-7xl font-sans font-black text-obsidian dark:text-darkText tracking-tighter">
+                                        {Math.floor(49 * (activePromo.is_percentage ? (100 - activePromo.discount_amount) / 100 : 1))}
+                                    </span>
+                                    <span className="text-3xl font-bold text-champagne tabular-nums">.{randomCents}</span>
+                                    <span className="ml-2 text-xl line-through text-slate/40 dark:text-darkText/30 font-bold">₱49</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span className="text-7xl font-sans font-black text-obsidian dark:text-darkText tracking-tighter">49</span>
+                                    <span className="text-3xl font-bold text-champagne tabular-nums">.{randomCents}</span>
+                                </>
+                            )}
                         </div>
-                        <p className="text-xs text-slate/60 dark:text-darkText/40">~₱49.XX unique amount per session</p>
+                        <p className="text-xs text-slate/60 dark:text-darkText/40">~₱{activePromo ? Math.floor(49 * (activePromo.is_percentage ? (100 - activePromo.discount_amount) / 100 : 1)) : '49'}.XX unique amount per session</p>
                     </div>
 
                     {/* Features */}
@@ -531,13 +662,30 @@ export default function Billing({ session, onPaymentModalChange }) {
 
                     {/* Price */}
                     <div className="mb-8 relative z-10">
+                        {activePromo && (
+                            <div className="absolute -top-4 right-8 md:right-12 bg-[#34A853] text-white px-3 py-1 rounded-full text-xs font-bold animate-fade-in shadow-lg whitespace-nowrap z-20">
+                                PROMO APPLIED! -{activePromo.discount_amount}{activePromo.is_percentage ? '%' : '₱'}
+                            </div>
+                        )}
                         <div className="flex justify-center flex-col items-center mb-1">
                             <div className="flex items-baseline justify-center">
                                 <span className="text-3xl font-bold text-obsidian dark:text-darkText mr-2">₱</span>
-                                <span className="text-[120px] leading-[0.8] font-sans font-black text-obsidian dark:text-darkText tracking-tighter">195</span>
-                                <span className="text-5xl font-bold text-champagne tabular-nums">.{randomCents}</span>
+                                {activePromo ? (
+                                    <>
+                                        <span className="text-[120px] leading-[0.8] font-sans font-black text-obsidian dark:text-darkText tracking-tighter">
+                                            {Math.floor(195 * (activePromo.is_percentage ? (100 - activePromo.discount_amount) / 100 : 1))}
+                                        </span>
+                                        <span className="text-5xl font-bold text-champagne tabular-nums">.{randomCents}</span>
+                                        <span className="ml-3 text-3xl line-through text-slate/40 dark:text-darkText/30 font-bold mb-4">₱195</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="text-[120px] leading-[0.8] font-sans font-black text-obsidian dark:text-darkText tracking-tighter">195</span>
+                                        <span className="text-5xl font-bold text-champagne tabular-nums">.{randomCents}</span>
+                                    </>
+                                )}
                             </div>
-                            <span className="text-xs text-slate/80 dark:text-darkText/60 mt-4">~₱195.XX unique amount per session</span>
+                            <span className="text-xs text-slate/80 dark:text-darkText/60 mt-4">~₱{activePromo ? Math.floor(195 * (activePromo.is_percentage ? (100 - activePromo.discount_amount) / 100 : 1)) : '195'}.XX unique amount per session</span>
                         </div>
                     </div>
 
@@ -592,13 +740,30 @@ export default function Billing({ session, onPaymentModalChange }) {
                     </div>
 
                     {/* Price */}
-                    <div className="mb-8">
+                    <div className="mb-8 relative">
+                        {activePromo && (
+                            <div className="absolute -top-6 right-0 bg-[#34A853]/10 text-[#34A853] px-2 py-0.5 rounded text-xs font-bold animate-fade-in whitespace-nowrap">
+                                -{activePromo.discount_amount}{activePromo.is_percentage ? '%' : '₱'} OFF
+                            </div>
+                        )}
                         <div className="flex items-baseline mb-1">
                             <span className="text-xl font-bold text-obsidian dark:text-darkText mr-1">₱</span>
-                            <span className="text-7xl font-sans font-black text-obsidian dark:text-darkText tracking-tighter">175</span>
-                            <span className="text-3xl font-bold text-champagne tabular-nums">.{randomCents}</span>
+                            {activePromo ? (
+                                <>
+                                    <span className="text-7xl font-sans font-black text-obsidian dark:text-darkText tracking-tighter">
+                                        {Math.floor(175 * (activePromo.is_percentage ? (100 - activePromo.discount_amount) / 100 : 1))}
+                                    </span>
+                                    <span className="text-3xl font-bold text-champagne tabular-nums">.{randomCents}</span>
+                                    <span className="ml-2 text-xl line-through text-slate/40 dark:text-darkText/30 font-bold">₱175</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span className="text-7xl font-sans font-black text-obsidian dark:text-darkText tracking-tighter">175</span>
+                                    <span className="text-3xl font-bold text-champagne tabular-nums">.{randomCents}</span>
+                                </>
+                            )}
                         </div>
-                        <p className="text-xs text-slate/60 dark:text-darkText/40">~₱175.XX unique amount per session</p>
+                        <p className="text-xs text-slate/60 dark:text-darkText/40">~₱{activePromo ? Math.floor(175 * (activePromo.is_percentage ? (100 - activePromo.discount_amount) / 100 : 1)) : '175'}.XX unique amount per session</p>
                     </div>
 
                     {/* Features */}
