@@ -64,33 +64,31 @@ BEGIN
         WHERE email = NEW.email
     ) INTO v_was_previously_registered;
 
-    -- Extract referral code from metadata
-    v_referral_code := NEW.raw_user_meta_data->>'referral_code';
-    IF v_referral_code IS NOT NULL AND length(TRIM(v_referral_code)) >= 8 THEN
-        -- Find a user whose UUID starts with this code
-        SELECT id INTO v_referrer_id
-        FROM auth.users
-        WHERE id::text LIKE TRIM(v_referral_code) || '%'
-        LIMIT 1;
+    -- Extract referral code from metadata safely
+    IF NEW.raw_user_meta_data IS NOT NULL THEN
+        v_referral_code := NEW.raw_user_meta_data->>'referral_code';
+        IF v_referral_code IS NOT NULL AND length(TRIM(v_referral_code)) >= 8 THEN
+            -- Find a user whose UUID starts with this code
+            SELECT id INTO v_referrer_id
+            FROM auth.users
+            WHERE id::text LIKE TRIM(v_referral_code) || '%'
+            LIMIT 1;
+        END IF;
     END IF;
 
-    -- === PROMO ACQUISITION LOGIC WITH ROW LOCK ===
+    -- === PROMO ACQUISITION LOGIC WITH ATOMIC UPDATE ===
     v_credits_to_grant := 3; -- Default
 
-    -- Acquire an exclusive lock on the single promo_tracker row
-    SELECT spots_remaining INTO v_promo_spots_left 
-    FROM public.promo_tracker 
-    WHERE id = 1 
-    FOR UPDATE;
+    -- Atomic decrement (will only update if spots > 0)
+    UPDATE public.promo_tracker 
+    SET spots_remaining = spots_remaining - 1,
+        updated_at = NOW()
+    WHERE id = 1 AND spots_remaining > 0
+    RETURNING spots_remaining INTO v_promo_spots_left;
 
-    -- If spots are available, allocate 10 credits and decrement atomic tracker
-    IF v_promo_spots_left > 0 THEN
+    -- If the UPDATE succeeded (meaning it returned a row), allocate 10 credits
+    IF FOUND THEN
         v_credits_to_grant := 10;
-        
-        UPDATE public.promo_tracker 
-        SET spots_remaining = spots_remaining - 1,
-            updated_at = NOW()
-        WHERE id = 1;
     END IF;
 
     -- Allocate credits for new users
