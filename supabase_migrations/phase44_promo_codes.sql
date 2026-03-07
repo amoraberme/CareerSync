@@ -33,11 +33,12 @@ END
 $$;
 
 -- Enable Realtime for promo_codes to power 'ticking banners'
-BEGIN;
+DO $$
+BEGIN
     ALTER PUBLICATION supabase_realtime ADD TABLE public.promo_codes;
 EXCEPTION WHEN OTHERS THEN
     -- Ignore if already added
-END;
+END $$;
 
 -- Atomic RPC for consuming a promo code
 -- FIXED to return NUMERIC(5,2) instead of INTEGER
